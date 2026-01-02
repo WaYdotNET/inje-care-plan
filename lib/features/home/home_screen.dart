@@ -27,10 +27,6 @@ class HomeScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: () {},
-        ),
         title: const Text('InjeCare Plan'),
         actions: [
           IconButton(
@@ -46,6 +42,82 @@ class HomeScreen extends ConsumerWidget {
             onPressed: () => context.go(AppRoutes.settings),
           ),
         ],
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.darkSurface : AppColors.dawnSurface,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  CircleAvatar(
+                    radius: 32,
+                    backgroundImage: user?.photoUrl != null
+                        ? NetworkImage(user!.photoUrl!)
+                        : null,
+                    child: user?.photoUrl == null
+                        ? const Icon(Icons.person, size: 32)
+                        : null,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Ciao, $displayName',
+                    style: theme.textTheme.titleMedium,
+                  ),
+                  if (user?.email != null)
+                    Text(
+                      user!.email!,
+                      style: theme.textTheme.bodySmall,
+                    ),
+                ],
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.home),
+              title: const Text('Home'),
+              selected: true,
+              onTap: () => Navigator.pop(context),
+            ),
+            ListTile(
+              leading: const Icon(Icons.calendar_month),
+              title: const Text('Calendario'),
+              onTap: () {
+                Navigator.pop(context);
+                context.go(AppRoutes.calendar);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.add_circle_outline),
+              title: const Text('Nuova iniezione'),
+              onTap: () {
+                Navigator.pop(context);
+                context.go(AppRoutes.bodyMap);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.history),
+              title: const Text('Storico'),
+              onTap: () {
+                Navigator.pop(context);
+                context.go(AppRoutes.history);
+              },
+            ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('Impostazioni'),
+              onTap: () {
+                Navigator.pop(context);
+                context.go(AppRoutes.settings);
+              },
+            ),
+          ],
+        ),
       ),
       body: RefreshIndicator(
         onRefresh: () async {

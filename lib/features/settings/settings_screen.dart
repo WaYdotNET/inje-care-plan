@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/theme_provider.dart';
 import '../../core/services/export_service.dart';
 import '../../core/services/backup_provider.dart';
 import '../../core/services/startup_service.dart';
@@ -11,6 +12,7 @@ import '../../core/database/app_database.dart' hide TherapyPlan;
 import '../../core/database/database_provider.dart';
 import '../../app/router.dart';
 import '../../models/therapy_plan.dart';
+import '../../models/blacklisted_point.dart' as models;
 import '../auth/auth_provider.dart';
 import '../auth/auth_repository.dart' show LocalUser;
 import '../injection/injection_provider.dart';
@@ -28,7 +30,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _missedDoseReminder = true;
   bool _googleCalendarSync = false;
   bool _biometricEnabled = false;
-  String _themeMode = 'system';
 
   @override
   Widget build(BuildContext context) {
@@ -305,11 +306,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     return injections;
   }
 
-  String get _themeModeLabel => switch (_themeMode) {
-    'light' => 'Chiaro (Dawn)',
-    'dark' => 'Scuro (Rosé Pine)',
-    _ => 'Automatico (sistema)',
-  };
+  String get _themeModeLabel {
+    final mode = ref.watch(themeModeProvider);
+    return switch (mode) {
+      ThemeMode.light => 'Chiaro (Dawn)',
+      ThemeMode.dark => 'Scuro (Rosé Pine)',
+      ThemeMode.system => 'Automatico (sistema)',
+    };
+  }
 
   Future<void> _signOut(BuildContext context) async {
     final authNotifier = ref.read(authNotifierProvider.notifier);
@@ -485,36 +489,38 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   void _showThemeSelector(BuildContext context) {
+    final currentMode = ref.read(themeModeProvider);
+
     showModalBottomSheet<void>(
       context: context,
-      builder: (context) => Column(
+      builder: (ctx) => Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          RadioListTile<String>(
+          RadioListTile<ThemeMode>(
             title: const Text('Chiaro (Dawn)'),
-            value: 'light',
-            groupValue: _themeMode,
+            value: ThemeMode.light,
+            groupValue: currentMode,
             onChanged: (value) {
-              setState(() => _themeMode = value!);
-              Navigator.pop(context);
+              ref.read(themeModeProvider.notifier).setThemeMode(value!);
+              Navigator.pop(ctx);
             },
           ),
-          RadioListTile<String>(
+          RadioListTile<ThemeMode>(
             title: const Text('Scuro (Rosé Pine)'),
-            value: 'dark',
-            groupValue: _themeMode,
+            value: ThemeMode.dark,
+            groupValue: currentMode,
             onChanged: (value) {
-              setState(() => _themeMode = value!);
-              Navigator.pop(context);
+              ref.read(themeModeProvider.notifier).setThemeMode(value!);
+              Navigator.pop(ctx);
             },
           ),
-          RadioListTile<String>(
+          RadioListTile<ThemeMode>(
             title: const Text('Automatico (sistema)'),
-            value: 'system',
-            groupValue: _themeMode,
+            value: ThemeMode.system,
+            groupValue: currentMode,
             onChanged: (value) {
-              setState(() => _themeMode = value!);
-              Navigator.pop(context);
+              ref.read(themeModeProvider.notifier).setThemeMode(value!);
+              Navigator.pop(ctx);
             },
           ),
           const SizedBox(height: 16),
@@ -532,12 +538,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      builder: (context) => DraggableScrollableSheet(
+      builder: (ctx) => DraggableScrollableSheet(
         initialChildSize: 0.6,
         minChildSize: 0.3,
         maxChildSize: 0.9,
         expand: false,
-        builder: (context, scrollController) => Column(
+        builder: (ctx, scrollController) => Column(
           children: [
             Padding(
               padding: const EdgeInsets.all(16),
@@ -552,9 +558,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ),
                     ),
                   ),
+                  TextButton.icon(
+                    onPressed: () {
+                      Navigator.pop(ctx);
+                      _showAddBlacklistPoint(context);
+                    },
+                    icon: const Icon(Icons.add),
+                    label: const Text('Aggiungi'),
+                  ),
                   IconButton(
                     icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () => Navigator.pop(ctx),
                   ),
                 ],
               ),
@@ -580,7 +594,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           const SizedBox(height: 16),
                           Text(
                             'Nessun punto escluso',
-                            style: Theme.of(context).textTheme.titleMedium,
+                            style: Theme.of(ctx).textTheme.titleMedium,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Tocca "Aggiungi" per escludere un punto',
+                            style: Theme.of(ctx).textTheme.bodySmall,
                           ),
                         ],
                       ),
@@ -588,7 +607,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   else ...[
                     Text(
                       '${blacklist.length} punti attualmente esclusi dalla rotazione automatica',
-                      style: Theme.of(context).textTheme.bodyMedium,
+                      style: Theme.of(ctx).textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 16),
                     ...blacklist.map(
@@ -612,9 +631,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                     Text(bp.pointLabel),
                                     Text(
                                       'Motivo: ${bp.reason}',
-                                      style: Theme.of(
-                                        context,
-                                      ).textTheme.bodySmall,
+                                      style: Theme.of(ctx).textTheme.bodySmall,
                                     ),
                                   ],
                                 ),
@@ -627,6 +644,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                   await repository.unblacklistPoint(
                                     bp.pointCode,
                                   );
+                                  ref.invalidate(blacklistedPointsProvider);
+                                  if (mounted) Navigator.pop(ctx);
                                 },
                                 child: const Text('Riabilita'),
                               ),
@@ -642,11 +661,142 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     child: Text(
                       'Nota: i punti esclusi non vengono suggeriti nella rotazione automatica ma restano selezionabili manualmente.',
-                      style: Theme.of(context).textTheme.bodySmall,
+                      style: Theme.of(ctx).textTheme.bodySmall,
                     ),
                   ),
                 ],
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showAddBlacklistPoint(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    // (zoneId, code, name, numPoints)
+    final zones = [
+      (1, 'CD', 'Coscia Destra', 6),
+      (2, 'CS', 'Coscia Sinistra', 6),
+      (3, 'BD', 'Braccio Destro', 4),
+      (4, 'BS', 'Braccio Sinistro', 4),
+      (5, 'AD', 'Addome Destro', 4),
+      (6, 'AS', 'Addome Sinistro', 4),
+      (7, 'GD', 'Gluteo Destro', 4),
+      (8, 'GS', 'Gluteo Sinistro', 4),
+    ];
+
+    int? selectedZoneId;
+    int? selectedPoint;
+    final reasonController = TextEditingController();
+
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: const Text('Escludi un punto'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Seleziona la zona:'),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: zones.map((zone) {
+                    final isSelected = selectedZoneId == zone.$1;
+                    return ChoiceChip(
+                      label: Text(zone.$3),
+                      selected: isSelected,
+                      onSelected: (selected) {
+                        setDialogState(() {
+                          selectedZoneId = selected ? zone.$1 : null;
+                          selectedPoint = null;
+                        });
+                      },
+                    );
+                  }).toList(),
+                ),
+                if (selectedZoneId != null) ...[
+                  const SizedBox(height: 16),
+                  const Text('Seleziona il punto:'),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: List.generate(
+                      zones.firstWhere((z) => z.$1 == selectedZoneId).$4,
+                      (i) {
+                        final pointNum = i + 1;
+                        final isSelected = selectedPoint == pointNum;
+                        return ChoiceChip(
+                          label: Text('$pointNum'),
+                          selected: isSelected,
+                          onSelected: (selected) {
+                            setDialogState(() {
+                              selectedPoint = selected ? pointNum : null;
+                            });
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 16),
+                TextField(
+                  controller: reasonController,
+                  decoration: const InputDecoration(
+                    labelText: 'Motivo (opzionale)',
+                    hintText: 'Es: cicatrice, reazione, difficile da raggiungere',
+                    border: OutlineInputBorder(),
+                  ),
+                  maxLines: 2,
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Annulla'),
+            ),
+            ElevatedButton(
+              onPressed: selectedZoneId != null && selectedPoint != null
+                  ? () async {
+                      final zone = zones.firstWhere((z) => z.$1 == selectedZoneId);
+                      final reason = reasonController.text.isNotEmpty
+                          ? reasonController.text
+                          : 'Non specificato';
+
+                      final repository = ref.read(injectionRepositoryProvider);
+                      await repository.blacklistPoint(
+                        models.BlacklistedPoint(
+                          zoneId: zone.$1,
+                          pointNumber: selectedPoint!,
+                          reason: reason,
+                          blacklistedAt: DateTime.now(),
+                        ),
+                      );
+                      ref.invalidate(blacklistedPointsProvider);
+
+                      final pointLabel = '${zone.$3} · $selectedPoint';
+                      if (mounted) {
+                        Navigator.pop(ctx);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Punto $pointLabel escluso'),
+                            backgroundColor: isDark
+                                ? AppColors.darkPine
+                                : AppColors.dawnPine,
+                          ),
+                        );
+                      }
+                    }
+                  : null,
+              child: const Text('Escludi'),
             ),
           ],
         ),
@@ -659,25 +809,33 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     showDialog<void>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (ctx) => AlertDialog(
         title: const Text('Elimina tutti i dati'),
         content: const Text(
           'Sei sicuro di voler eliminare tutti i dati? Questa azione è irreversibile.',
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(ctx),
             child: const Text('Annulla'),
           ),
           ElevatedButton(
             onPressed: () async {
-              Navigator.pop(context);
+              Navigator.pop(ctx);
               final db = ref.read(databaseProvider);
               await db.deleteAllData();
+
+              // Refresh all providers
+              ref.invalidate(therapyPlanProvider);
+              ref.invalidate(injectionsProvider);
+              ref.invalidate(blacklistedPointsProvider);
+              ref.invalidate(adherenceStatsProvider);
+              ref.invalidate(suggestedNextPointProvider);
+
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: const Text('Dati eliminati'),
+                    content: const Text('Tutti i dati sono stati eliminati'),
                     backgroundColor: isDark
                         ? AppColors.darkPine
                         : AppColors.dawnPine,

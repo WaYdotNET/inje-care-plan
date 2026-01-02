@@ -319,4 +319,3 @@ Per segnalare bug o richiedere funzionalità:
 **InjeCare Plan** - Sviluppato con ❤️ da Carlo Bertini (WaYdotNET)
 
 Licenza: GPL-3.0
-

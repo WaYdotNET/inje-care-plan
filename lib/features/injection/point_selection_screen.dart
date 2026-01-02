@@ -973,4 +973,3 @@ class _PointChip extends StatelessWidget {
     );
   }
 }
-

@@ -136,10 +136,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     return switch (_currentPage) {
       0 => _OnboardingPage(
           key: const ValueKey(0),
-          icon: Icons.calendar_month,
-          title: 'Pianifica con cura',
-          description: 'Organizza le tue iniezioni con un calendario intelligente',
+          icon: Icons.favorite,
+          title: 'InjeCare Plan',
+          description: 'La tua terapia, sotto controllo.\nGestisci le iniezioni con cura e semplicità.',
           isDark: isDark,
+          showLogo: true,
         ),
       1 => _OnboardingPage(
           key: const ValueKey(1),
@@ -237,12 +238,14 @@ class _OnboardingPage extends StatelessWidget {
     required this.title,
     required this.description,
     required this.isDark,
+    this.showLogo = false,
   });
 
   final IconData icon;
   final String title;
   final String description;
   final bool isDark;
+  final bool showLogo;
 
   @override
   Widget build(BuildContext context) {
@@ -251,19 +254,26 @@ class _OnboardingPage extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(
-          width: 120,
-          height: 120,
-          decoration: BoxDecoration(
-            color: isDark ? AppColors.darkOverlay : AppColors.dawnOverlay,
-            borderRadius: BorderRadius.circular(24),
+        if (showLogo)
+          Image.asset(
+            'assets/images/logo.png',
+            width: 160,
+            height: 160,
+          )
+        else
+          Container(
+            width: 120,
+            height: 120,
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.darkOverlay : AppColors.dawnOverlay,
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Icon(
+              icon,
+              size: 64,
+              color: isDark ? AppColors.darkPine : AppColors.dawnPine,
+            ),
           ),
-          child: Icon(
-            icon,
-            size: 64,
-            color: isDark ? AppColors.darkPine : AppColors.dawnPine,
-          ),
-        ),
 
         const SizedBox(height: 32),
 

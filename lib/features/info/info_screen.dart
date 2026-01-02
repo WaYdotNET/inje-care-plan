@@ -27,18 +27,14 @@ class InfoScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // App icon
-            Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: Icon(
-                Icons.medical_services_outlined,
-                size: 48,
-                color: isDark ? AppColors.darkBase : AppColors.dawnBase,
+            // App logo
+            ClipRRect(
+              borderRadius: BorderRadius.circular(24),
+              child: Image.asset(
+                'assets/images/logo.png',
+                width: 120,
+                height: 120,
+                fit: BoxFit.contain,
               ),
             ),
             const SizedBox(height: 24),

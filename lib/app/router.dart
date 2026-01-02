@@ -13,7 +13,7 @@ import '../features/history/history_screen.dart';
 import '../features/settings/settings_screen.dart';
 import '../features/info/info_screen.dart';
 import '../features/help/help_screen.dart';
-import '../features/settings/blacklist_screen.dart';
+import '../features/injection/point_selection_screen.dart';
 
 /// App routes
 sealed class AppRoutes {
@@ -28,6 +28,7 @@ sealed class AppRoutes {
   static const info = '/info';
   static const help = '/help';
   static const blacklist = '/blacklist';
+  static const selectPoint = '/select-point';
 }
 
 /// Router provider
@@ -126,7 +127,23 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.blacklist,
         name: 'blacklist',
-        builder: (context, state) => const BlacklistScreen(),
+        builder: (context, state) => const PointSelectionScreen(
+          mode: PointSelectionMode.blacklist,
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.selectPoint,
+        name: 'select-point',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          final mode = extra?['mode'] as PointSelectionMode? ??
+              PointSelectionMode.injection;
+          final initialZoneId = extra?['zoneId'] as int?;
+          return PointSelectionScreen(
+            mode: mode,
+            initialZoneId: initialZoneId,
+          );
+        },
       ),
     ],
   );

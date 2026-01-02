@@ -36,6 +36,7 @@ dependencies:
   # UI
   flutter_svg: ^2.0.17
   go_router: ^17.0.1
+  url_launcher: ^6.3.0
 
   # Security
   local_auth: ^3.0.0

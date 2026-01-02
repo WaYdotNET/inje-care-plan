@@ -11,6 +11,8 @@ import '../features/injection/zone_detail_screen.dart';
 import '../features/injection/record_screen.dart';
 import '../features/history/history_screen.dart';
 import '../features/settings/settings_screen.dart';
+import '../features/info/info_screen.dart';
+import '../features/help/help_screen.dart';
 
 /// App routes
 sealed class AppRoutes {
@@ -22,6 +24,8 @@ sealed class AppRoutes {
   static const recordInjection = '/record';
   static const history = '/history';
   static const settings = '/settings';
+  static const info = '/info';
+  static const help = '/help';
 }
 
 /// Router provider
@@ -99,6 +103,16 @@ final routerProvider = Provider<GoRouter>((ref) {
             pointNumber: extra?['pointNumber'] as int? ?? 1,
           );
         },
+      ),
+      GoRoute(
+        path: AppRoutes.info,
+        name: 'info',
+        builder: (context, state) => const InfoScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.help,
+        name: 'help',
+        builder: (context, state) => const HelpScreen(),
       ),
     ],
   );

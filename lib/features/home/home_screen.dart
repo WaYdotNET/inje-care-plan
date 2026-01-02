@@ -116,6 +116,22 @@ class HomeScreen extends ConsumerWidget {
                 context.go(AppRoutes.settings);
               },
             ),
+            ListTile(
+              leading: const Icon(Icons.help_outline),
+              title: const Text('Guida'),
+              onTap: () {
+                Navigator.pop(context);
+                context.push(AppRoutes.help);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.info_outline),
+              title: const Text('Informazioni'),
+              onTap: () {
+                Navigator.pop(context);
+                context.push(AppRoutes.info);
+              },
+            ),
           ],
         ),
       ),

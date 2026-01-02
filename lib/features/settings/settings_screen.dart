@@ -276,6 +276,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             onTap: () => _showDeleteConfirmation(context),
           ),
 
+          _SectionHeader(title: 'AIUTO'),
+          _SettingsTile(
+            title: 'Guida all\'uso',
+            icon: Icons.help_outline,
+            onTap: () => context.push(AppRoutes.help),
+          ),
+          _SettingsTile(
+            title: 'Informazioni sull\'app',
+            icon: Icons.info_outline,
+            onTap: () => context.push(AppRoutes.info),
+          ),
+
           const SizedBox(height: 32),
 
           // App version

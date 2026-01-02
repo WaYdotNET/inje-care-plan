@@ -419,6 +419,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       final authNotifier = ref.read(authNotifierProvider.notifier);
       await authNotifier.resetOnboarding();
       if (mounted) {
+        // Forza la navigazione con sostituzione completa dello stack
+        while (context.canPop()) {
+          context.pop();
+        }
         context.go(AppRoutes.login);
       }
     }

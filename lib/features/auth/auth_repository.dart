@@ -12,12 +12,7 @@ class LocalUser {
   final String? email;
   final String? photoUrl;
 
-  LocalUser({
-    required this.id,
-    this.displayName,
-    this.email,
-    this.photoUrl,
-  });
+  LocalUser({required this.id, this.displayName, this.email, this.photoUrl});
 
   factory LocalUser.fromGoogleSignIn(GoogleSignInAccount account) {
     return LocalUser(
@@ -31,16 +26,12 @@ class LocalUser {
 
 /// Authentication repository - versione offline-first senza Firebase
 class AuthRepository {
-  AuthRepository({
-    LocalAuthentication? localAuth,
-    AppDatabase? database,
-  })  : _localAuth = localAuth ?? LocalAuthentication(),
-        _database = database;
+  AuthRepository({LocalAuthentication? localAuth})
+    : _localAuth = localAuth ?? LocalAuthentication();
 
   static const _driveScopes = [drive.DriveApi.driveFileScope];
 
   final LocalAuthentication _localAuth;
-  final AppDatabase? _database;
 
   LocalUser? _currentUser;
   GoogleSignInAccount? _googleAccount;
@@ -74,7 +65,6 @@ class AuthRepository {
     try {
       final signIn = GoogleSignIn.instance;
       final googleUser = await signIn.authenticate(scopeHint: _driveScopes);
-      if (googleUser == null) return null;
 
       _googleAccount = googleUser;
       _currentUser = LocalUser.fromGoogleSignIn(googleUser);
@@ -82,29 +72,36 @@ class AuthRepository {
 
       return _currentUser;
     } catch (e) {
+      // Login annullato o errore
       return null;
     }
   }
 
   /// Save user profile to local database
   Future<void> _saveUserProfile(
-      AppDatabase db, GoogleSignInAccount googleUser) async {
+    AppDatabase db,
+    GoogleSignInAccount googleUser,
+  ) async {
     final existingProfile = await db.getUserProfile();
 
     if (existingProfile != null) {
-      await db.updateUserProfile(UserProfilesCompanion(
-        id: Value(existingProfile.id),
-        displayName: Value(googleUser.displayName ?? ''),
-        email: Value(googleUser.email),
-        photoUrl: Value(googleUser.photoUrl ?? ''),
-        updatedAt: Value(DateTime.now()),
-      ));
+      await db.updateUserProfile(
+        UserProfilesCompanion(
+          id: Value(existingProfile.id),
+          displayName: Value(googleUser.displayName ?? ''),
+          email: Value(googleUser.email),
+          photoUrl: Value(googleUser.photoUrl ?? ''),
+          updatedAt: Value(DateTime.now()),
+        ),
+      );
     } else {
-      await db.insertUserProfile(UserProfilesCompanion.insert(
-        displayName: Value(googleUser.displayName ?? ''),
-        email: Value(googleUser.email),
-        photoUrl: Value(googleUser.photoUrl ?? ''),
-      ));
+      await db.insertUserProfile(
+        UserProfilesCompanion.insert(
+          displayName: Value(googleUser.displayName ?? ''),
+          email: Value(googleUser.email),
+          photoUrl: Value(googleUser.photoUrl ?? ''),
+        ),
+      );
     }
   }
 
@@ -142,11 +139,13 @@ class AuthRepository {
     final profile = await db.getUserProfile();
     if (profile == null) return;
 
-    await db.updateUserProfile(UserProfilesCompanion(
-      id: Value(profile.id),
-      biometricEnabled: Value(enabled),
-      updatedAt: Value(DateTime.now()),
-    ));
+    await db.updateUserProfile(
+      UserProfilesCompanion(
+        id: Value(profile.id),
+        biometricEnabled: Value(enabled),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
   }
 
   /// Check if biometric is enabled for user

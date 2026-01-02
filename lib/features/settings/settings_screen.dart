@@ -12,6 +12,7 @@ import '../../core/database/database_provider.dart';
 import '../../app/router.dart';
 import '../../models/therapy_plan.dart';
 import '../auth/auth_provider.dart';
+import '../auth/auth_repository.dart' show LocalUser;
 import '../injection/injection_provider.dart';
 
 /// Settings screen
@@ -40,60 +41,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final backupState = ref.watch(backupNotifierProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Impostazioni'),
-      ),
+      appBar: AppBar(title: const Text('Impostazioni')),
       body: ListView(
         children: [
           // User info
-          if (user != null)
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 30,
-                    backgroundImage: user.photoUrl != null
-                        ? NetworkImage(user.photoUrl!)
-                        : null,
-                    child: user.photoUrl == null
-                        ? const Icon(Icons.person, size: 30)
-                        : null,
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          user.displayName ?? 'Utente',
-                          style: theme.textTheme.titleMedium,
-                        ),
-                        Text(
-                          user.email ?? '',
-                          style: theme.textTheme.bodySmall,
-                        ),
-                      ],
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () => _signOut(context),
-                    child: const Text('Esci'),
-                  ),
-                ],
-              ),
-            ),
+          _UserInfoSection(
+            user: user,
+            isDark: isDark,
+            onLinkGoogle: () => _linkGoogleAccount(context),
+            onUnlinkGoogle: () => _unlinkGoogleAccount(context),
+            onSignOut: () => _signOut(context),
+          ),
 
           const Divider(),
 
           _SectionHeader(title: 'PIANO TERAPEUTICO'),
           therapyPlanAsync.when(
-            loading: () => const ListTile(
-              title: Text('Caricamento...'),
-            ),
-            error: (_, __) => const ListTile(
-              title: Text('Errore nel caricamento'),
-            ),
+            loading: () => const ListTile(title: Text('Caricamento...')),
+            error: (_, __) =>
+                const ListTile(title: Text('Errore nel caricamento')),
             data: (plan) {
               final therapyPlan = plan ?? TherapyPlan.defaults;
               return Column(
@@ -119,10 +85,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
 
           _SectionHeader(title: 'ZONE E PUNTI'),
-          _SettingsTile(
-            title: 'Configura zone',
-            onTap: () {},
-          ),
+          _SettingsTile(title: 'Configura zone', onTap: () {}),
           blacklistAsync.when(
             loading: () => const SizedBox(),
             error: (_, __) => const SizedBox(),
@@ -182,9 +145,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(result.success
-                        ? 'Backup completato'
-                        : result.error ?? 'Errore'),
+                    content: Text(
+                      result.success
+                          ? 'Backup completato'
+                          : result.error ?? 'Errore',
+                    ),
                     backgroundColor: result.success
                         ? (isDark ? AppColors.darkPine : AppColors.dawnPine)
                         : (isDark ? AppColors.darkLove : AppColors.dawnLove),
@@ -211,15 +176,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 if (result.success) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: const Text('Ripristino completato. Riavvia l\'app.'),
-                      backgroundColor: isDark ? AppColors.darkPine : AppColors.dawnPine,
+                      content: const Text(
+                        'Ripristino completato. Riavvia l\'app.',
+                      ),
+                      backgroundColor: isDark
+                          ? AppColors.darkPine
+                          : AppColors.dawnPine,
                     ),
                   );
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(result.error ?? 'Errore'),
-                      backgroundColor: isDark ? AppColors.darkLove : AppColors.dawnLove,
+                      backgroundColor: isDark
+                          ? AppColors.darkLove
+                          : AppColors.dawnLove,
                     ),
                   );
                 }
@@ -348,6 +319,59 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
+  Future<void> _linkGoogleAccount(BuildContext context) async {
+    final authNotifier = ref.read(authNotifierProvider.notifier);
+    final success = await authNotifier.linkGoogleAccount();
+    if (mounted) {
+      final isDark = Theme.of(context).brightness == Brightness.dark;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            success
+                ? 'Account Google collegato con successo'
+                : 'Collegamento annullato',
+          ),
+          backgroundColor: success
+              ? (isDark ? AppColors.darkPine : AppColors.dawnPine)
+              : (isDark ? AppColors.darkLove : AppColors.dawnLove),
+        ),
+      );
+    }
+  }
+
+  Future<void> _unlinkGoogleAccount(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Scollega account Google'),
+        content: const Text(
+          'Scollegando l\'account non potrai più eseguire backup su Google Drive. '
+          'I tuoi dati locali non verranno eliminati.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Annulla'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Scollega'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      final authNotifier = ref.read(authNotifierProvider.notifier);
+      await authNotifier.unlinkGoogleAccount();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Account Google scollegato')),
+        );
+      }
+    }
+  }
+
   void _editInjectionsPerWeek(BuildContext context, TherapyPlan plan) {
     showDialog<void>(
       context: context,
@@ -358,12 +382,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           content: StatefulBuilder(
             builder: (context, setState) => Column(
               mainAxisSize: MainAxisSize.min,
-              children: [1, 2, 3, 4, 5].map((n) => RadioListTile<int>(
-                title: Text('$n'),
-                value: n,
-                groupValue: value,
-                onChanged: (v) => setState(() => value = v!),
-              )).toList(),
+              children: [1, 2, 3, 4, 5]
+                  .map(
+                    (n) => RadioListTile<int>(
+                      title: Text('$n'),
+                      value: n,
+                      groupValue: value,
+                      onChanged: (v) => setState(() => value = v!),
+                    ),
+                  )
+                  .toList(),
             ),
           ),
           actions: [
@@ -374,7 +402,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ElevatedButton(
               onPressed: () async {
                 Navigator.pop(context);
-                await _updateTherapyPlan(plan.copyWith(injectionsPerWeek: value));
+                await _updateTherapyPlan(
+                  plan.copyWith(injectionsPerWeek: value),
+                );
               },
               child: const Text('Salva'),
             ),
@@ -440,13 +470,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       minute: int.parse(parts[1]),
     );
 
-    final time = await showTimePicker(
-      context: context,
-      initialTime: initial,
-    );
+    final time = await showTimePicker(context: context, initialTime: initial);
 
     if (time != null) {
-      final timeStr = '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+      final timeStr =
+          '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
       await _updateTherapyPlan(plan.copyWith(preferredTime: timeStr));
     }
   }
@@ -495,7 +523,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  void _showBlacklistedPoints(BuildContext context, List<BlacklistedPoint> blacklist) {
+  void _showBlacklistedPoints(
+    BuildContext context,
+    List<BlacklistedPoint> blacklist,
+  ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     showModalBottomSheet<void>(
@@ -542,7 +573,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           Icon(
                             Icons.check_circle_outline,
                             size: 48,
-                            color: isDark ? AppColors.darkPine : AppColors.dawnPine,
+                            color: isDark
+                                ? AppColors.darkPine
+                                : AppColors.dawnPine,
                           ),
                           const SizedBox(height: 16),
                           Text(
@@ -558,40 +591,50 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 16),
-                    ...blacklist.map((bp) => Card(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.block,
-                              color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(bp.pointLabel),
-                                  Text(
-                                    'Motivo: ${bp.reason}',
-                                    style: Theme.of(context).textTheme.bodySmall,
-                                  ),
-                                ],
+                    ...blacklist.map(
+                      (bp) => Card(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.block,
+                                color: isDark
+                                    ? AppColors.darkMuted
+                                    : AppColors.dawnMuted,
                               ),
-                            ),
-                            TextButton(
-                              onPressed: () async {
-                                final repository = ref.read(injectionRepositoryProvider);
-                                await repository.unblacklistPoint(bp.pointCode);
-                              },
-                              child: const Text('Riabilita'),
-                            ),
-                          ],
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(bp.pointLabel),
+                                    Text(
+                                      'Motivo: ${bp.reason}',
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.bodySmall,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () async {
+                                  final repository = ref.read(
+                                    injectionRepositoryProvider,
+                                  );
+                                  await repository.unblacklistPoint(
+                                    bp.pointCode,
+                                  );
+                                },
+                                child: const Text('Riabilita'),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    )),
+                    ),
                   ],
                   const SizedBox(height: 16),
                   const Divider(),
@@ -607,28 +650,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Future<bool?> _showRestoreConfirmation(BuildContext context) {
-    return showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Ripristina backup'),
-        content: const Text(
-          'I dati attuali verranno sostituiti con quelli del backup. Vuoi continuare?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Annulla'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Ripristina'),
-          ),
-        ],
       ),
     );
   }
@@ -657,7 +678,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: const Text('Dati eliminati'),
-                    backgroundColor: isDark ? AppColors.darkPine : AppColors.dawnPine,
+                    backgroundColor: isDark
+                        ? AppColors.darkPine
+                        : AppColors.dawnPine,
                   ),
                 );
               }
@@ -779,9 +802,9 @@ class _SectionHeader extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
       child: Text(
         title,
-        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-          letterSpacing: 1.2,
-        ),
+        style: Theme.of(
+          context,
+        ).textTheme.labelMedium?.copyWith(letterSpacing: 1.2),
       ),
     );
   }
@@ -807,14 +830,10 @@ class _SettingsTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: icon != null
-          ? Icon(icon, color: iconColor)
-          : null,
+      leading: icon != null ? Icon(icon, color: iconColor) : null,
       title: Text(
         title,
-        style: titleColor != null
-            ? TextStyle(color: titleColor)
-            : null,
+        style: titleColor != null ? TextStyle(color: titleColor) : null,
       ),
       trailing: trailing != null
           ? Row(
@@ -827,6 +846,160 @@ class _SettingsTile extends StatelessWidget {
             )
           : const Icon(Icons.chevron_right),
       onTap: onTap,
+    );
+  }
+}
+
+/// Widget per mostrare le informazioni utente
+/// Gestisce sia la modalità offline che con account Google
+class _UserInfoSection extends StatelessWidget {
+  const _UserInfoSection({
+    required this.user,
+    required this.isDark,
+    required this.onLinkGoogle,
+    required this.onUnlinkGoogle,
+    required this.onSignOut,
+  });
+
+  final LocalUser? user;
+  final bool isDark;
+  final VoidCallback onLinkGoogle;
+  final VoidCallback onUnlinkGoogle;
+  final VoidCallback onSignOut;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    // Utente con account Google collegato
+    if (user != null) {
+      return Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 30,
+              backgroundImage: user!.photoUrl != null
+                  ? NetworkImage(user!.photoUrl!)
+                  : null,
+              child: user!.photoUrl == null
+                  ? const Icon(Icons.person, size: 30)
+                  : null,
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    user!.displayName ?? 'Utente',
+                    style: theme.textTheme.titleMedium,
+                  ),
+                  Text(user!.email ?? '', style: theme.textTheme.bodySmall),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.cloud_done,
+                        size: 14,
+                        color: isDark ? AppColors.darkPine : AppColors.dawnPine,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Backup abilitato',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: isDark
+                              ? AppColors.darkPine
+                              : AppColors.dawnPine,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            PopupMenuButton<String>(
+              onSelected: (value) {
+                if (value == 'unlink') {
+                  onUnlinkGoogle();
+                } else if (value == 'signout') {
+                  onSignOut();
+                }
+              },
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: 'unlink',
+                  child: Row(
+                    children: [
+                      Icon(Icons.link_off),
+                      SizedBox(width: 8),
+                      Text('Scollega Google'),
+                    ],
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: 'signout',
+                  child: Row(
+                    children: [
+                      Icon(Icons.logout),
+                      SizedBox(width: 8),
+                      Text('Esci e cancella dati'),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Utente in modalità offline (senza account Google)
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 30,
+                backgroundColor: isDark
+                    ? AppColors.darkOverlay
+                    : AppColors.dawnOverlay,
+                child: Icon(
+                  Icons.person_outline,
+                  size: 30,
+                  color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Modalità offline',
+                      style: theme.textTheme.titleMedium,
+                    ),
+                    Text(
+                      'I tuoi dati sono salvati solo su questo dispositivo',
+                      style: theme.textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: onLinkGoogle,
+              icon: const Icon(Icons.cloud_outlined),
+              label: const Text('Collega account Google per backup'),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

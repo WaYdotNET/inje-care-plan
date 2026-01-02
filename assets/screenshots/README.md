@@ -35,4 +35,3 @@ brew install pngquant
 # Ottimizza tutti gli screenshot
 pngquant --quality=65-80 --ext .png --force *.png
 ```
-

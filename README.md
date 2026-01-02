@@ -6,7 +6,7 @@ Applicazione Flutter per la gestione delle iniezioni di Interferone beta-1a per 
 
 ![Flutter](https://img.shields.io/badge/Flutter-3.38+-02569B?logo=flutter)
 ![Dart](https://img.shields.io/badge/Dart-3.10+-0175C2?logo=dart)
-![License](https://img.shields.io/badge/License-Proprietary-red)
+![License](https://img.shields.io/badge/License-GPL--3.0-blue)
 
 ## Screenshots
 
@@ -210,4 +210,16 @@ L'app utilizza la palette [Rosé Pine](https://rosepinetheme.com/palette/):
 
 ## Licenza
 
-Proprietario - Tutti i diritti riservati.
+Questo progetto è rilasciato sotto licenza **GNU General Public License v3.0**.
+
+Vedi il file [LICENSE](LICENSE) per i dettagli completi.
+
+```
+InjeCare Plan - App per gestione terapie iniettive
+Copyright (C) 2024
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+```

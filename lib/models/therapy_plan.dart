@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 /// Therapy plan model
 class TherapyPlan {
   const TherapyPlan({
@@ -41,25 +39,35 @@ class TherapyPlan {
     startDate: DateTime.now(),
   );
 
-  /// Create from Firestore document
-  factory TherapyPlan.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
-    final data = doc.data()!;
+  /// Create from JSON map
+  factory TherapyPlan.fromJson(Map<String, dynamic> json) {
     return TherapyPlan(
-      injectionsPerWeek: data['injectionsPerWeek'] as int,
-      weekDays: (data['weekDays'] as List<dynamic>).cast<int>(),
-      preferredTime: data['preferredTime'] as String,
-      startDate: (data['startDate'] as Timestamp).toDate(),
-      notificationMinutesBefore: data['notificationMinutesBefore'] as int? ?? 30,
-      missedDoseReminderEnabled: data['missedDoseReminderEnabled'] as bool? ?? true,
+      injectionsPerWeek: json['injectionsPerWeek'] as int,
+      weekDays: _parseWeekDays(json['weekDays']),
+      preferredTime: json['preferredTime'] as String,
+      startDate: DateTime.parse(json['startDate'] as String),
+      notificationMinutesBefore: json['notificationMinutesBefore'] as int? ?? 30,
+      missedDoseReminderEnabled: json['missedDoseReminderEnabled'] as bool? ?? true,
     );
   }
 
-  /// Convert to Firestore map
-  Map<String, dynamic> toFirestore() => {
+  /// Parse weekDays from either CSV string or List
+  static List<int> _parseWeekDays(dynamic value) {
+    if (value is List) {
+      return value.map((e) => e as int).toList();
+    }
+    if (value is String) {
+      return value.split(',').map((s) => int.parse(s.trim())).toList();
+    }
+    return [1, 3, 5]; // Default
+  }
+
+  /// Convert to JSON map
+  Map<String, dynamic> toJson() => {
     'injectionsPerWeek': injectionsPerWeek,
-    'weekDays': weekDays,
+    'weekDays': weekDays.join(','),
     'preferredTime': preferredTime,
-    'startDate': Timestamp.fromDate(startDate),
+    'startDate': startDate.toIso8601String(),
     'notificationMinutesBefore': notificationMinutesBefore,
     'missedDoseReminderEnabled': missedDoseReminderEnabled,
   };

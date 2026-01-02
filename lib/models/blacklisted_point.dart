@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 /// Blacklist reason enum
 enum BlacklistReason {
   skinReaction,
@@ -15,15 +13,15 @@ class BlacklistedPoint {
     required this.zoneId,
     required this.pointNumber,
     required this.reason,
-    this.notes,
+    this.notes = '',
     required this.blacklistedAt,
   });
 
-  final String? id;
+  final int? id;
   final int zoneId;
   final int pointNumber;
-  final BlacklistReason reason;
-  final String? notes;
+  final String reason;
+  final String notes;
   final DateTime blacklistedAt;
 
   /// Get zone code from zoneId
@@ -52,45 +50,43 @@ class BlacklistedPoint {
 
   /// Get human-readable reason
   String get reasonLabel => switch (reason) {
-    BlacklistReason.skinReaction => 'Reazione cutanea',
-    BlacklistReason.scar => 'Cicatrice / lesione',
-    BlacklistReason.hardToReach => 'Difficile da raggiungere',
-    BlacklistReason.other => 'Altro',
+    'skinReaction' => 'Reazione cutanea',
+    'scar' => 'Cicatrice / lesione',
+    'hardToReach' => 'Difficile da raggiungere',
+    'other' => 'Altro',
+    _ => reason,
   };
 
-  /// Create from Firestore document
-  factory BlacklistedPoint.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
-    final data = doc.data()!;
+  /// Create from JSON map
+  factory BlacklistedPoint.fromJson(Map<String, dynamic> json) {
     return BlacklistedPoint(
-      id: doc.id,
-      zoneId: data['zoneId'] as int,
-      pointNumber: data['pointNumber'] as int,
-      reason: BlacklistReason.values.firstWhere(
-        (e) => e.name == data['reason'],
-        orElse: () => BlacklistReason.other,
-      ),
-      notes: data['notes'] as String?,
-      blacklistedAt: (data['blacklistedAt'] as Timestamp).toDate(),
+      id: json['id'] as int?,
+      zoneId: json['zoneId'] as int,
+      pointNumber: json['pointNumber'] as int,
+      reason: json['reason'] as String,
+      notes: json['notes'] as String? ?? '',
+      blacklistedAt: DateTime.parse(json['blacklistedAt'] as String),
     );
   }
 
-  /// Convert to Firestore map
-  Map<String, dynamic> toFirestore() => {
+  /// Convert to JSON map
+  Map<String, dynamic> toJson() => {
+    'id': id,
     'zoneId': zoneId,
     'pointNumber': pointNumber,
     'pointCode': pointCode,
     'pointLabel': pointLabel,
-    'reason': reason.name,
+    'reason': reason,
     'notes': notes,
-    'blacklistedAt': Timestamp.fromDate(blacklistedAt),
+    'blacklistedAt': blacklistedAt.toIso8601String(),
   };
 
   /// Copy with modifications
   BlacklistedPoint copyWith({
-    String? id,
+    int? id,
     int? zoneId,
     int? pointNumber,
-    BlacklistReason? reason,
+    String? reason,
     String? notes,
     DateTime? blacklistedAt,
   }) => BlacklistedPoint(

@@ -16,10 +16,10 @@ todos:
     status: completed
   - id: remove-firebase
     content: "Rimuovere Firebase: dipendenze, config, codice + commit"
-    status: in_progress
+    status: completed
   - id: update-repositories
     content: Aggiornare repository per usare Drift invece di Firestore + commit
-    status: pending
+    status: in_progress
   - id: backup-ui
     content: Aggiungere UI backup/restore in Settings + commit finale
     status: pending

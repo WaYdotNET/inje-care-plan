@@ -1,101 +1,72 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../models/injection_record.dart';
-import '../../models/blacklisted_point.dart';
-import '../../models/body_zone.dart';
-import '../../models/therapy_plan.dart';
-import '../auth/auth_provider.dart';
+import '../../core/database/app_database.dart';
+import '../../core/database/database_provider.dart';
 import 'injection_repository.dart';
 
 /// Injection repository provider
 final injectionRepositoryProvider = Provider<InjectionRepository>((ref) {
-  return InjectionRepository();
+  final db = ref.watch(databaseProvider);
+  return InjectionRepository(database: db);
 });
 
 /// All injections provider
-final injectionsProvider = StreamProvider<List<InjectionRecord>>((ref) {
-  final user = ref.watch(currentUserProvider);
-  if (user == null) return Stream.value([]);
-
+final injectionsProvider = StreamProvider<List<Injection>>((ref) {
   final repository = ref.watch(injectionRepositoryProvider);
-  return repository.watchInjections(user.uid);
+  return repository.watchInjections();
 });
 
 /// Injections for a date range provider
 final injectionsInRangeProvider = StreamProvider.family<
-    List<InjectionRecord>,
+    List<Injection>,
     ({DateTime start, DateTime end})>((ref, range) {
-  final user = ref.watch(currentUserProvider);
-  if (user == null) return Stream.value([]);
-
   final repository = ref.watch(injectionRepositoryProvider);
-  return repository.watchInjectionsInRange(user.uid, range.start, range.end);
+  return repository.watchInjectionsInRange(range.start, range.end);
 });
 
 /// Injections by zone provider
 final injectionsByZoneProvider =
-    StreamProvider.family<List<InjectionRecord>, int>((ref, zoneId) {
-  final user = ref.watch(currentUserProvider);
-  if (user == null) return Stream.value([]);
-
+    StreamProvider.family<List<Injection>, int>((ref, zoneId) {
   final repository = ref.watch(injectionRepositoryProvider);
-  return repository.watchInjectionsByZone(user.uid, zoneId);
+  return repository.watchInjectionsByZone(zoneId);
 });
 
 /// Blacklisted points provider
 final blacklistedPointsProvider = StreamProvider<List<BlacklistedPoint>>((ref) {
-  final user = ref.watch(currentUserProvider);
-  if (user == null) return Stream.value([]);
-
   final repository = ref.watch(injectionRepositoryProvider);
-  return repository.watchBlacklistedPoints(user.uid);
+  return repository.watchBlacklistedPoints();
 });
 
 /// Blacklisted points by zone provider
 final blacklistedPointsByZoneProvider =
     StreamProvider.family<List<BlacklistedPoint>, int>((ref, zoneId) {
-  final user = ref.watch(currentUserProvider);
-  if (user == null) return Stream.value([]);
-
   final repository = ref.watch(injectionRepositoryProvider);
-  return repository.watchBlacklistedPointsByZone(user.uid, zoneId);
+  return repository.watchBlacklistedPointsByZone(zoneId);
 });
 
 /// Body zones provider
 final bodyZonesProvider = StreamProvider<List<BodyZone>>((ref) {
-  final user = ref.watch(currentUserProvider);
-  if (user == null) return Stream.value([]);
-
   final repository = ref.watch(injectionRepositoryProvider);
-  return repository.watchBodyZones(user.uid);
+  return repository.watchBodyZones();
 });
 
 /// Therapy plan provider
-final therapyPlanProvider = StreamProvider<TherapyPlan>((ref) {
-  final user = ref.watch(currentUserProvider);
-  if (user == null) return Stream.value(TherapyPlan.defaults);
-
+final therapyPlanProvider = StreamProvider<TherapyPlan?>((ref) {
   final repository = ref.watch(injectionRepositoryProvider);
-  return repository.watchTherapyPlan(user.uid);
+  return repository.watchTherapyPlan();
 });
 
 /// Adherence stats provider
 final adherenceStatsProvider = FutureProvider<({int completed, int total, double percentage})>((ref) async {
-  final user = ref.watch(currentUserProvider);
-  if (user == null) return (completed: 0, total: 0, percentage: 0.0);
-
   final repository = ref.watch(injectionRepositoryProvider);
-  return repository.getAdherenceStats(user.uid);
+  return repository.getAdherenceStats();
 });
 
 /// Suggested next point provider
 final suggestedNextPointProvider =
     FutureProvider<({int zoneId, int pointNumber})?>((ref) async {
-  final user = ref.watch(currentUserProvider);
-  if (user == null) return null;
-
   final repository = ref.watch(injectionRepositoryProvider);
-  return repository.getSuggestedNextPoint(user.uid);
+  return repository.getSuggestedNextPoint();
 });
 
 /// Selected day provider for calendar

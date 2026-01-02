@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 /// Injection status enum
 enum InjectionStatus { scheduled, completed, skipped, delayed }
 
@@ -12,22 +10,22 @@ class InjectionRecord {
     required this.scheduledAt,
     this.completedAt,
     required this.status,
-    this.notes,
+    this.notes = '',
     this.sideEffects = const [],
-    this.calendarEventId,
+    this.calendarEventId = '',
     required this.createdAt,
     required this.updatedAt,
   });
 
-  final String? id;
+  final int? id;
   final int zoneId;
   final int pointNumber;
   final DateTime scheduledAt;
   final DateTime? completedAt;
   final InjectionStatus status;
-  final String? notes;
+  final String notes;
   final List<String> sideEffects;
-  final String? calendarEventId;
+  final String calendarEventId;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -64,48 +62,48 @@ class InjectionRecord {
     _ => '📍',
   };
 
-  /// Create from Firestore document
-  factory InjectionRecord.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
-    final data = doc.data()!;
+  /// Create from JSON map
+  factory InjectionRecord.fromJson(Map<String, dynamic> json) {
     return InjectionRecord(
-      id: doc.id,
-      zoneId: data['zoneId'] as int,
-      pointNumber: data['pointNumber'] as int,
-      scheduledAt: (data['scheduledAt'] as Timestamp).toDate(),
-      completedAt: data['completedAt'] != null
-          ? (data['completedAt'] as Timestamp).toDate()
+      id: json['id'] as int?,
+      zoneId: json['zoneId'] as int,
+      pointNumber: json['pointNumber'] as int,
+      scheduledAt: DateTime.parse(json['scheduledAt'] as String),
+      completedAt: json['completedAt'] != null
+          ? DateTime.parse(json['completedAt'] as String)
           : null,
       status: InjectionStatus.values.firstWhere(
-        (e) => e.name == data['status'],
+        (e) => e.name == json['status'],
         orElse: () => InjectionStatus.scheduled,
       ),
-      notes: data['notes'] as String?,
-      sideEffects: (data['sideEffects'] as List<dynamic>?)?.cast<String>() ?? [],
-      calendarEventId: data['calendarEventId'] as String?,
-      createdAt: (data['createdAt'] as Timestamp).toDate(),
-      updatedAt: (data['updatedAt'] as Timestamp).toDate(),
+      notes: json['notes'] as String? ?? '',
+      sideEffects: (json['sideEffects'] as String?)?.split(',').where((s) => s.isNotEmpty).toList() ?? [],
+      calendarEventId: json['calendarEventId'] as String? ?? '',
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      updatedAt: DateTime.parse(json['updatedAt'] as String),
     );
   }
 
-  /// Convert to Firestore map
-  Map<String, dynamic> toFirestore() => {
+  /// Convert to JSON map
+  Map<String, dynamic> toJson() => {
+    'id': id,
     'zoneId': zoneId,
     'pointNumber': pointNumber,
     'pointCode': pointCode,
     'pointLabel': pointLabel,
-    'scheduledAt': Timestamp.fromDate(scheduledAt),
-    'completedAt': completedAt != null ? Timestamp.fromDate(completedAt!) : null,
+    'scheduledAt': scheduledAt.toIso8601String(),
+    'completedAt': completedAt?.toIso8601String(),
     'status': status.name,
     'notes': notes,
-    'sideEffects': sideEffects,
+    'sideEffects': sideEffects.join(','),
     'calendarEventId': calendarEventId,
-    'createdAt': Timestamp.fromDate(createdAt),
-    'updatedAt': Timestamp.fromDate(updatedAt),
+    'createdAt': createdAt.toIso8601String(),
+    'updatedAt': updatedAt.toIso8601String(),
   };
 
   /// Copy with modifications
   InjectionRecord copyWith({
-    String? id,
+    int? id,
     int? zoneId,
     int? pointNumber,
     DateTime? scheduledAt,

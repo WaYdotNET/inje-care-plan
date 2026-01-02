@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 /// Body zone model
 class BodyZone {
   const BodyZone({
@@ -36,6 +34,18 @@ class BodyZone {
 
   /// Get point code (e.g., "CD-3")
   String pointCode(int pointNumber) => '$code-$pointNumber';
+
+  /// Get type from code
+  static String typeFromCode(String code) => switch (code) {
+    'CD' || 'CS' => 'thigh',
+    'BD' || 'BS' => 'arm',
+    'AD' || 'AS' => 'abdomen',
+    'GD' || 'GS' => 'buttock',
+    _ => 'unknown',
+  };
+
+  /// Get side from code
+  static String sideFromCode(String code) => code.endsWith('D') ? 'right' : 'left';
 
   /// Default body zones configuration
   static List<BodyZone> get defaults => const [
@@ -81,23 +91,22 @@ class BodyZone {
     ),
   ];
 
-  /// Create from Firestore document
-  factory BodyZone.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
-    final data = doc.data()!;
+  /// Create from JSON map
+  factory BodyZone.fromJson(Map<String, dynamic> json) {
     return BodyZone(
-      id: data['id'] as int,
-      code: data['code'] as String,
-      name: data['name'] as String,
-      type: data['type'] as String,
-      side: data['side'] as String,
-      numberOfPoints: data['numberOfPoints'] as int,
-      isEnabled: data['isEnabled'] as bool? ?? true,
-      sortOrder: data['sortOrder'] as int? ?? 0,
+      id: json['id'] as int,
+      code: json['code'] as String,
+      name: json['name'] as String,
+      type: json['type'] as String,
+      side: json['side'] as String,
+      numberOfPoints: json['numberOfPoints'] as int,
+      isEnabled: json['isEnabled'] as bool? ?? true,
+      sortOrder: json['sortOrder'] as int? ?? 0,
     );
   }
 
-  /// Convert to Firestore map
-  Map<String, dynamic> toFirestore() => {
+  /// Convert to JSON map
+  Map<String, dynamic> toJson() => {
     'id': id,
     'code': code,
     'name': name,

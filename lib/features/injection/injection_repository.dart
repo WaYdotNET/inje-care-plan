@@ -1,244 +1,242 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../core/database/app_database.dart';
+import '../../models/injection_record.dart' as models;
+import '../../models/blacklisted_point.dart' as models;
+import '../../models/body_zone.dart' as models;
+import '../../models/therapy_plan.dart' as models;
 
-import '../../models/injection_record.dart';
-import '../../models/blacklisted_point.dart';
-import '../../models/body_zone.dart';
-import '../../models/therapy_plan.dart';
-
-/// Injection repository for Firestore operations
+/// Injection repository per operazioni Drift (offline-first)
 class InjectionRepository {
-  InjectionRepository({
-    FirebaseFirestore? firestore,
-  }) : _firestore = firestore ?? FirebaseFirestore.instance;
+  InjectionRepository({required AppDatabase database}) : _db = database;
 
-  final FirebaseFirestore _firestore;
+  final AppDatabase _db;
 
   // ============================================================================
   // Injections
   // ============================================================================
 
-  /// Get injections collection reference
-  CollectionReference<Map<String, dynamic>> _injectionsRef(String userId) {
-    return _firestore.collection('users').doc(userId).collection('injections');
+  /// Watch all injections
+  Stream<List<Injection>> watchInjections() {
+    return _db.select(_db.injections)
+        .watch()
+        .map((rows) => rows.toList());
   }
 
-  /// Get all injections for user
-  Stream<List<InjectionRecord>> watchInjections(String userId) {
-    return _injectionsRef(userId)
-        .orderBy('scheduledAt', descending: true)
-        .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => InjectionRecord.fromFirestore(doc))
-            .toList());
+  /// Get all injections
+  Future<List<Injection>> getInjections() {
+    return _db.getAllInjections();
   }
 
   /// Get injections for a specific date range
-  Stream<List<InjectionRecord>> watchInjectionsInRange(
-    String userId,
-    DateTime start,
-    DateTime end,
-  ) {
-    return _injectionsRef(userId)
-        .where('scheduledAt', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
-        .where('scheduledAt', isLessThan: Timestamp.fromDate(end))
-        .orderBy('scheduledAt')
-        .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => InjectionRecord.fromFirestore(doc))
-            .toList());
+  Future<List<Injection>> getInjectionsInRange(DateTime start, DateTime end) {
+    return _db.getInjectionsByDateRange(start, end);
+  }
+
+  /// Watch injections for a specific date range
+  Stream<List<Injection>> watchInjectionsInRange(DateTime start, DateTime end) {
+    return (_db.select(_db.injections)
+          ..where((i) => i.scheduledAt.isBetweenValues(start, end))
+          ..orderBy([(i) => OrderingTerm.asc(i.scheduledAt)]))
+        .watch();
   }
 
   /// Get injections for a specific zone
-  Stream<List<InjectionRecord>> watchInjectionsByZone(
-    String userId,
-    int zoneId,
-  ) {
-    return _injectionsRef(userId)
-        .where('zoneId', isEqualTo: zoneId)
-        .orderBy('scheduledAt', descending: true)
-        .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => InjectionRecord.fromFirestore(doc))
-            .toList());
+  Future<List<Injection>> getInjectionsByZone(int zoneId) {
+    return _db.getInjectionsByZone(zoneId);
+  }
+
+  /// Watch injections for a specific zone
+  Stream<List<Injection>> watchInjectionsByZone(int zoneId) {
+    return (_db.select(_db.injections)
+          ..where((i) => i.zoneId.equals(zoneId))
+          ..orderBy([(i) => OrderingTerm.desc(i.scheduledAt)]))
+        .watch();
   }
 
   /// Get last injection for a specific point
-  Future<InjectionRecord?> getLastInjectionForPoint(
-    String userId,
-    int zoneId,
-    int pointNumber,
-  ) async {
-    final snapshot = await _injectionsRef(userId)
-        .where('zoneId', isEqualTo: zoneId)
-        .where('pointNumber', isEqualTo: pointNumber)
-        .where('status', isEqualTo: 'completed')
-        .orderBy('completedAt', descending: true)
-        .limit(1)
-        .get();
-
-    if (snapshot.docs.isEmpty) return null;
-    return InjectionRecord.fromFirestore(snapshot.docs.first);
+  Future<Injection?> getLastInjectionForPoint(int zoneId, int pointNumber) {
+    return _db.getLastInjectionForPoint(zoneId, pointNumber);
   }
 
   /// Create a new injection record
-  Future<String> createInjection(String userId, InjectionRecord record) async {
-    final docRef = await _injectionsRef(userId).add(record.toFirestore());
-    return docRef.id;
+  Future<int> createInjection(models.InjectionRecord record) {
+    return _db.insertInjection(InjectionsCompanion.insert(
+      zoneId: record.zoneId,
+      pointNumber: record.pointNumber,
+      pointCode: record.pointCode,
+      pointLabel: record.pointLabel,
+      scheduledAt: record.scheduledAt,
+      completedAt: Value(record.completedAt),
+      status: Value(record.status.name),
+      notes: Value(record.notes),
+      sideEffects: Value(record.sideEffects.join(',')),
+      calendarEventId: Value(record.calendarEventId),
+    ));
   }
 
   /// Update an injection record
-  Future<void> updateInjection(
-    String userId,
-    String injectionId,
-    InjectionRecord record,
-  ) async {
-    await _injectionsRef(userId)
-        .doc(injectionId)
-        .update(record.toFirestore());
+  Future<int> updateInjection(int id, models.InjectionRecord record) {
+    return _db.updateInjection(InjectionsCompanion(
+      id: Value(id),
+      zoneId: Value(record.zoneId),
+      pointNumber: Value(record.pointNumber),
+      pointCode: Value(record.pointCode),
+      pointLabel: Value(record.pointLabel),
+      scheduledAt: Value(record.scheduledAt),
+      completedAt: Value(record.completedAt),
+      status: Value(record.status.name),
+      notes: Value(record.notes),
+      sideEffects: Value(record.sideEffects.join(',')),
+      calendarEventId: Value(record.calendarEventId),
+      updatedAt: Value(DateTime.now()),
+    ));
   }
 
   /// Complete an injection
   Future<void> completeInjection(
-    String userId,
-    String injectionId, {
+    int injectionId, {
     String? notes,
     List<String> sideEffects = const [],
   }) async {
-    await _injectionsRef(userId).doc(injectionId).update({
-      'status': InjectionStatus.completed.name,
-      'completedAt': Timestamp.now(),
-      'notes': notes,
-      'sideEffects': sideEffects,
-      'updatedAt': Timestamp.now(),
-    });
+    await _db.updateInjection(InjectionsCompanion(
+      id: Value(injectionId),
+      status: const Value('completed'),
+      completedAt: Value(DateTime.now()),
+      notes: Value(notes ?? ''),
+      sideEffects: Value(sideEffects.join(',')),
+      updatedAt: Value(DateTime.now()),
+    ));
   }
 
   /// Skip an injection
-  Future<void> skipInjection(String userId, String injectionId) async {
-    await _injectionsRef(userId).doc(injectionId).update({
-      'status': InjectionStatus.skipped.name,
-      'updatedAt': Timestamp.now(),
-    });
+  Future<void> skipInjection(int injectionId) async {
+    await _db.updateInjection(InjectionsCompanion(
+      id: Value(injectionId),
+      status: const Value('skipped'),
+      updatedAt: Value(DateTime.now()),
+    ));
   }
 
   /// Delete an injection
-  Future<void> deleteInjection(String userId, String injectionId) async {
-    await _injectionsRef(userId).doc(injectionId).delete();
+  Future<int> deleteInjection(int injectionId) {
+    return _db.deleteInjection(injectionId);
   }
 
   // ============================================================================
   // Blacklisted Points
   // ============================================================================
 
-  /// Get blacklisted points collection reference
-  CollectionReference<Map<String, dynamic>> _blacklistRef(String userId) {
-    return _firestore.collection('users').doc(userId).collection('blacklistedPoints');
+  /// Watch all blacklisted points
+  Stream<List<BlacklistedPoint>> watchBlacklistedPoints() {
+    return _db.select(_db.blacklistedPoints).watch();
   }
 
-  /// Watch all blacklisted points
-  Stream<List<BlacklistedPoint>> watchBlacklistedPoints(String userId) {
-    return _blacklistRef(userId)
-        .orderBy('blacklistedAt', descending: true)
-        .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => BlacklistedPoint.fromFirestore(doc))
-            .toList());
+  /// Get all blacklisted points
+  Future<List<BlacklistedPoint>> getBlacklistedPoints() {
+    return _db.getAllBlacklistedPoints();
   }
 
   /// Watch blacklisted points for a specific zone
-  Stream<List<BlacklistedPoint>> watchBlacklistedPointsByZone(
-    String userId,
-    int zoneId,
-  ) {
-    return _blacklistRef(userId)
-        .where('zoneId', isEqualTo: zoneId)
-        .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => BlacklistedPoint.fromFirestore(doc))
-            .toList());
+  Stream<List<BlacklistedPoint>> watchBlacklistedPointsByZone(int zoneId) {
+    return (_db.select(_db.blacklistedPoints)
+          ..where((b) => b.zoneId.equals(zoneId)))
+        .watch();
   }
 
   /// Check if a point is blacklisted
-  Future<bool> isPointBlacklisted(
-    String userId,
-    int zoneId,
-    int pointNumber,
-  ) async {
-    final snapshot = await _blacklistRef(userId)
-        .where('zoneId', isEqualTo: zoneId)
-        .where('pointNumber', isEqualTo: pointNumber)
-        .limit(1)
-        .get();
-
-    return snapshot.docs.isNotEmpty;
+  Future<bool> isPointBlacklisted(String pointCode) {
+    return _db.isPointBlacklisted(pointCode);
   }
 
   /// Add a point to blacklist
-  Future<String> blacklistPoint(String userId, BlacklistedPoint point) async {
-    final docRef = await _blacklistRef(userId).add(point.toFirestore());
-    return docRef.id;
+  Future<int> blacklistPoint(models.BlacklistedPoint point) {
+    return _db.insertBlacklistedPoint(BlacklistedPointsCompanion.insert(
+      pointCode: point.pointCode,
+      pointLabel: point.pointLabel,
+      zoneId: point.zoneId,
+      pointNumber: point.pointNumber,
+      reason: Value(point.reason),
+      notes: Value(point.notes),
+    ));
   }
 
   /// Remove a point from blacklist
-  Future<void> unblacklistPoint(String userId, String blacklistId) async {
-    await _blacklistRef(userId).doc(blacklistId).delete();
+  Future<int> unblacklistPoint(String pointCode) {
+    return _db.removeBlacklistedPoint(pointCode);
   }
 
   // ============================================================================
   // Body Zones
   // ============================================================================
 
-  /// Get body zones collection reference
-  CollectionReference<Map<String, dynamic>> _zonesRef(String userId) {
-    return _firestore.collection('users').doc(userId).collection('bodyZones');
+  /// Watch all body zones
+  Stream<List<BodyZone>> watchBodyZones() {
+    return _db.select(_db.bodyZones).watch();
   }
 
-  /// Watch all body zones
-  Stream<List<BodyZone>> watchBodyZones(String userId) {
-    return _zonesRef(userId)
-        .orderBy('sortOrder')
-        .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => BodyZone.fromFirestore(doc))
-            .toList());
+  /// Get all body zones
+  Future<List<BodyZone>> getBodyZones() {
+    return _db.getAllZones();
+  }
+
+  /// Get enabled body zones
+  Future<List<BodyZone>> getEnabledZones() {
+    return _db.getEnabledZones();
+  }
+
+  /// Get zone by ID
+  Future<BodyZone?> getZoneById(int id) {
+    return _db.getZoneById(id);
+  }
+
+  /// Get zone by code
+  Future<BodyZone?> getZoneByCode(String code) {
+    return _db.getZoneByCode(code);
   }
 
   /// Update body zone
-  Future<void> updateBodyZone(String userId, BodyZone zone) async {
-    await _zonesRef(userId).doc(zone.id.toString()).update(zone.toFirestore());
+  Future<int> updateBodyZone(int id, {bool? isEnabled}) {
+    return _db.updateZone(BodyZonesCompanion(
+      id: Value(id),
+      isEnabled: isEnabled != null ? Value(isEnabled) : const Value.absent(),
+      updatedAt: Value(DateTime.now()),
+    ));
   }
 
   // ============================================================================
   // Therapy Plan
   // ============================================================================
 
-  /// Get therapy plan document reference
-  DocumentReference<Map<String, dynamic>> _therapyPlanRef(String userId) {
-    return _firestore
-        .collection('users')
-        .doc(userId)
-        .collection('settings')
-        .doc('therapyPlan');
-  }
-
   /// Watch therapy plan
-  Stream<TherapyPlan> watchTherapyPlan(String userId) {
-    return _therapyPlanRef(userId).snapshots().map((doc) {
-      if (!doc.exists) return TherapyPlan.defaults;
-      return TherapyPlan.fromFirestore(doc);
-    });
+  Stream<TherapyPlan?> watchTherapyPlan() {
+    return (_db.select(_db.therapyPlans)..limit(1)).watchSingleOrNull();
   }
 
   /// Get therapy plan
-  Future<TherapyPlan> getTherapyPlan(String userId) async {
-    final doc = await _therapyPlanRef(userId).get();
-    if (!doc.exists) return TherapyPlan.defaults;
-    return TherapyPlan.fromFirestore(doc);
+  Future<TherapyPlan?> getTherapyPlan() {
+    return _db.getCurrentTherapyPlan();
   }
 
-  /// Update therapy plan
-  Future<void> updateTherapyPlan(String userId, TherapyPlan plan) async {
-    await _therapyPlanRef(userId).set(plan.toFirestore());
+  /// Create or update therapy plan
+  Future<int> saveTherapyPlan(models.TherapyPlan plan) async {
+    final existing = await _db.getCurrentTherapyPlan();
+    
+    if (existing != null) {
+      return _db.updateTherapyPlan(TherapyPlansCompanion(
+        id: Value(existing.id),
+        injectionsPerWeek: Value(plan.injectionsPerWeek),
+        weekDays: Value(plan.weekDays.join(',')),
+        preferredTime: Value(plan.preferredTime),
+        startDate: Value(plan.startDate),
+        updatedAt: Value(DateTime.now()),
+      ));
+    } else {
+      return _db.insertTherapyPlan(TherapyPlansCompanion.insert(
+        injectionsPerWeek: Value(plan.injectionsPerWeek),
+        weekDays: Value(plan.weekDays.join(',')),
+        preferredTime: Value(plan.preferredTime),
+        startDate: plan.startDate,
+      ));
+    }
   }
 
   // ============================================================================
@@ -246,41 +244,25 @@ class InjectionRepository {
   // ============================================================================
 
   /// Get adherence statistics for last N days
-  Future<({int completed, int total, double percentage})> getAdherenceStats(
-    String userId, {
+  Future<({int completed, int total, double percentage})> getAdherenceStats({
     int days = 30,
   }) async {
     final now = DateTime.now();
     final startDate = now.subtract(Duration(days: days));
 
-    final snapshot = await _injectionsRef(userId)
-        .where('scheduledAt', isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
-        .where('scheduledAt', isLessThan: Timestamp.fromDate(now))
-        .get();
+    final injections = await _db.getInjectionsByDateRange(startDate, now);
 
-    final total = snapshot.docs.length;
-    final completed = snapshot.docs
-        .where((doc) => doc.data()['status'] == 'completed')
-        .length;
-
+    final total = injections.length;
+    final completed = injections.where((i) => i.status == 'completed').length;
     final percentage = total > 0 ? (completed / total) * 100 : 0.0;
 
     return (completed: completed, total: total, percentage: percentage);
   }
 
   /// Get suggested next point based on history
-  Future<({int zoneId, int pointNumber})?> getSuggestedNextPoint(
-    String userId,
-  ) async {
-    // Get all body zones
-    final zonesSnapshot = await _zonesRef(userId).where('isEnabled', isEqualTo: true).get();
-    final zones = zonesSnapshot.docs.map((doc) => BodyZone.fromFirestore(doc)).toList();
-
-    // Get all blacklisted points
-    final blacklistSnapshot = await _blacklistRef(userId).get();
-    final blacklist = blacklistSnapshot.docs
-        .map((doc) => BlacklistedPoint.fromFirestore(doc))
-        .toList();
+  Future<({int zoneId, int pointNumber})?> getSuggestedNextPoint() async {
+    final zones = await _db.getEnabledZones();
+    final blacklist = await _db.getAllBlacklistedPoints();
 
     ({int zoneId, int pointNumber})? bestPoint;
     DateTime? oldestUsage;
@@ -294,8 +276,7 @@ class InjectionRepository {
         if (isBlacklisted) continue;
 
         // Get last usage for this point
-        final lastInjection = await getLastInjectionForPoint(
-          userId,
+        final lastInjection = await _db.getLastInjectionForPoint(
           zone.id,
           point,
         );
@@ -314,5 +295,10 @@ class InjectionRepository {
     }
 
     return bestPoint;
+  }
+
+  /// Find least used point for a specific zone
+  Future<int?> findLeastUsedPoint(int zoneId, {int days = 30}) {
+    return _db.findLeastUsedPoint(zoneId, days: days);
   }
 }

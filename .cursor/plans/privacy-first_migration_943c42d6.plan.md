@@ -4,10 +4,10 @@ overview: Migrazione da Firebase a architettura offline-first con Drift (SQLite)
 todos:
   - id: drift-setup
     content: "Setup Drift: schema tabelle, DAO, migrazioni + commit"
-    status: in_progress
+    status: completed
   - id: crypto-service
     content: Implementare CryptoService con chiave biometrica + AES-256 + commit
-    status: pending
+    status: in_progress
   - id: backup-service
     content: Implementare BackupService per Google Drive sync + commit
     status: pending

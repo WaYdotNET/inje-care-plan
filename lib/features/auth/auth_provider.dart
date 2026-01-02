@@ -55,7 +55,11 @@ class AuthState {
 /// Notifier per gestire lo stato di autenticazione (Riverpod 3.x)
 class AuthNotifier extends Notifier<AuthState> {
   @override
-  AuthState build() => const AuthState();
+  AuthState build() {
+    // Avvia l'inizializzazione automaticamente
+    Future.microtask(() => initialize());
+    return const AuthState(isLoading: true);
+  }
 
   AuthRepository get _repository => ref.read(authRepositoryProvider);
 
@@ -156,6 +160,13 @@ class AuthNotifier extends Notifier<AuthState> {
   /// Autenticazione biometrica
   Future<bool> authenticateWithBiometrics() async {
     return _repository.authenticateWithBiometrics();
+  }
+
+  /// Reset onboarding (per rivederlo)
+  Future<void> resetOnboarding() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_onboardingCompletedKey);
+    state = state.copyWith(hasCompletedOnboarding: false);
   }
 }
 

@@ -36,14 +36,21 @@ final routerProvider = Provider<GoRouter>((ref) {
     initialLocation: AppRoutes.login,
     debugLogDiagnostics: true,
     redirect: (context, state) {
-      final isAuthenticated = authState.isAuthenticated;
+      // Se sta ancora caricando lo stato, non fare redirect
+      if (authState.isLoading) {
+        return null;
+      }
+
+      final hasCompletedOnboarding = authState.hasCompletedOnboarding;
       final isLoginRoute = state.matchedLocation == AppRoutes.login;
 
-      if (!isAuthenticated && !isLoginRoute) {
+      // Se non ha completato l'onboarding, vai alla schermata di login/onboarding
+      if (!hasCompletedOnboarding && !isLoginRoute) {
         return AppRoutes.login;
       }
 
-      if (isAuthenticated && isLoginRoute) {
+      // Se ha completato l'onboarding ed è sulla schermata di login, vai alla home
+      if (hasCompletedOnboarding && isLoginRoute) {
         return AppRoutes.home;
       }
 

@@ -287,6 +287,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             icon: Icons.info_outline,
             onTap: () => context.push(AppRoutes.info),
           ),
+          _SettingsTile(
+            title: 'Rivedi introduzione',
+            icon: Icons.replay,
+            onTap: () => _showOnboardingConfirmation(context),
+          ),
 
           const SizedBox(height: 32),
 
@@ -384,6 +389,37 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Account Google scollegato')),
         );
+      }
+    }
+  }
+
+  Future<void> _showOnboardingConfirmation(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Rivedi introduzione'),
+        content: const Text(
+          'Vuoi rivedere la schermata di introduzione? '
+          'Verrai riportato alla schermata iniziale.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Annulla'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Rivedi'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      final authNotifier = ref.read(authNotifierProvider.notifier);
+      await authNotifier.resetOnboarding();
+      if (mounted) {
+        context.go(AppRoutes.login);
       }
     }
   }

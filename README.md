@@ -11,18 +11,22 @@ Applicazione Flutter per la gestione delle iniezioni di Interferone beta-1a per 
 
 **Developed by [Carlo Bertini](https://waydotnet.com) (WaYdotNET)**
 
+📖 **[Manuale Utente Completo](docs/MANUALE_UTENTE.md)** - Guida dettagliata con screenshot
+
 ## Screenshots
 
 <p align="center">
-  <img src="assets/screenshots/home.png" width="180" alt="Home">
-  <img src="assets/screenshots/body_map.png" width="180" alt="Body Map">
-  <img src="assets/screenshots/zone_detail.png" width="180" alt="Zona">
-  <img src="assets/screenshots/record_injection.png" width="180" alt="Registra">
+  <img src="assets/screenshots/login.png" width="160" alt="Login">
+  <img src="assets/screenshots/home.png" width="160" alt="Home">
+  <img src="assets/screenshots/body_map.png" width="160" alt="Body Map">
+  <img src="assets/screenshots/zone_detail.png" width="160" alt="Zona">
 </p>
 
 <p align="center">
-  <img src="assets/screenshots/calendar.png" width="180" alt="Calendario">
-  <img src="assets/screenshots/settings.png" width="180" alt="Impostazioni">
+  <img src="assets/screenshots/record_injection.png" width="160" alt="Registra">
+  <img src="assets/screenshots/calendar.png" width="160" alt="Calendario">
+  <img src="assets/screenshots/history.png" width="160" alt="Storico">
+  <img src="assets/screenshots/notifications.png" width="160" alt="Impostazioni">
 </p>
 
 > L'app funziona completamente offline. Google è opzionale per il backup su Drive.

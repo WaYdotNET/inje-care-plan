@@ -27,11 +27,13 @@ class LocalUser {
 /// Authentication repository - versione offline-first senza Firebase
 class AuthRepository {
   AuthRepository({LocalAuthentication? localAuth})
-    : _localAuth = localAuth ?? LocalAuthentication();
+    : _localAuth = localAuth ?? LocalAuthentication(),
+      _googleSignIn = GoogleSignIn(scopes: _driveScopes);
 
   static const _driveScopes = [drive.DriveApi.driveFileScope];
 
   final LocalAuthentication _localAuth;
+  final GoogleSignIn _googleSignIn;
 
   LocalUser? _currentUser;
   GoogleSignInAccount? _googleAccount;
@@ -55,16 +57,25 @@ class AuthRepository {
       );
     }
 
-    // Prova lightweight auth per rinnovare token Google
-    final signIn = GoogleSignIn.instance;
-    await signIn.attemptLightweightAuthentication();
+    // Prova login silenzioso per rinnovare token Google
+    try {
+      final googleUser = await _googleSignIn.signInSilently();
+      if (googleUser != null) {
+        _googleAccount = googleUser;
+      }
+    } catch (_) {
+      // Ignora errori di login silenzioso
+    }
   }
 
   /// Sign in with Google (solo per Google Drive access)
   Future<LocalUser?> signInWithGoogle(AppDatabase db) async {
     try {
-      final signIn = GoogleSignIn.instance;
-      final googleUser = await signIn.authenticate(scopeHint: _driveScopes);
+      final googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) {
+        // Login annullato dall'utente
+        return null;
+      }
 
       _googleAccount = googleUser;
       _currentUser = LocalUser.fromGoogleSignIn(googleUser);
@@ -72,7 +83,7 @@ class AuthRepository {
 
       return _currentUser;
     } catch (e) {
-      // Login annullato o errore
+      // Errore durante il login
       return null;
     }
   }
@@ -107,8 +118,7 @@ class AuthRepository {
 
   /// Sign out
   Future<void> signOut() async {
-    final signIn = GoogleSignIn.instance;
-    await signIn.signOut();
+    await _googleSignIn.signOut();
     _currentUser = null;
     _googleAccount = null;
   }

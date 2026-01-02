@@ -68,11 +68,13 @@ class BackupService {
   static const _driveScopes = [drive.DriveApi.driveFileScope];
 
   final CryptoService _cryptoService;
+  final GoogleSignIn _googleSignIn;
   GoogleSignInAccount? _currentUser;
 
   BackupService({
     required CryptoService cryptoService,
-  }) : _cryptoService = cryptoService;
+  })  : _cryptoService = cryptoService,
+        _googleSignIn = GoogleSignIn(scopes: _driveScopes);
 
   /// Verifica se l'utente è autenticato con Google (con scope Drive)
   Future<bool> isAuthenticated() async {
@@ -82,8 +84,7 @@ class BackupService {
   /// Richiede accesso a Google Drive
   Future<bool> signIn() async {
     try {
-      final signIn = GoogleSignIn.instance;
-      final account = await signIn.authenticate(scopeHint: _driveScopes);
+      final account = await _googleSignIn.signIn();
       _currentUser = account;
       return account != null;
     } catch (e) {
@@ -93,8 +94,7 @@ class BackupService {
 
   /// Disconnette da Google Drive
   Future<void> signOut() async {
-    final signIn = GoogleSignIn.instance;
-    await signIn.signOut();
+    await _googleSignIn.signOut();
     _currentUser = null;
   }
 
@@ -102,24 +102,20 @@ class BackupService {
   Future<drive.DriveApi?> _getDriveApi() async {
     if (_currentUser == null) {
       // Prova a fare sign-in silenzioso
-      final signIn = GoogleSignIn.instance;
-      await signIn.attemptLightweightAuthentication();
-
-      // Aspetta un po' per l'evento
-      await Future.delayed(const Duration(milliseconds: 500));
+      try {
+        _currentUser = await _googleSignIn.signInSilently();
+      } catch (_) {
+        // Ignora errori
+      }
 
       if (_currentUser == null) {
         return null;
       }
     }
 
-    // Ottieni access token per gli scopes
-    final headers = await _currentUser!.authorizationClient
-        .authorizationHeaders(_driveScopes, promptIfNecessary: true);
-
-    if (headers == null) return null;
-
-    final authHeader = headers['Authorization'];
+    // Ottieni auth headers per Drive API
+    final authHeaders = await _currentUser!.authHeaders;
+    final authHeader = authHeaders['Authorization'];
     if (authHeader == null) return null;
 
     final accessToken = authHeader.replaceFirst('Bearer ', '');

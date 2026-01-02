@@ -20,7 +20,7 @@ dependencies:
   riverpod_annotation: ^4.0.0
 
   # Google Services
-  google_sign_in: ^7.2.0
+  google_sign_in: ^6.2.2
   googleapis: ^15.0.0
   googleapis_auth: ^2.0.0
   http: ^1.2.0
@@ -55,8 +55,7 @@ dependencies:
   flutter_secure_storage: ^10.0.0
   pointycastle: ^3.9.1
 
-  # Google Drive
-  extension_google_sign_in_as_googleapis_auth: ^3.0.0
+  # Google Drive (auth handled manually)
 
   # Connectivity
   connectivity_plus: ^7.0.0

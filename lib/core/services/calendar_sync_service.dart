@@ -1,6 +1,5 @@
 import 'package:http/http.dart' as http;
 import 'package:googleapis/calendar/v3.dart' as gcal;
-import 'package:googleapis_auth/googleapis_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../models/injection_record.dart';
@@ -26,33 +25,27 @@ class CalendarSyncService {
 
   static const _scopes = [gcal.CalendarApi.calendarScope];
 
+  final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: _scopes);
   gcal.CalendarApi? _calendarApi;
   GoogleSignInAccount? _currentUser;
 
   /// Initialize the calendar API with Google Sign-In credentials
   Future<bool> initialize() async {
     try {
-      final signIn = GoogleSignIn.instance;
+      // Try silent sign-in first
+      _currentUser = await _googleSignIn.signInSilently();
 
-      // Try lightweight auth first
-      await signIn.attemptLightweightAuthentication();
-
-      // Wait for current user
-      await Future<void>.delayed(const Duration(milliseconds: 300));
-
-      // currentUser is set in the authenticate flow
       if (_currentUser == null) {
         // Try full authentication
-        _currentUser = await signIn.authenticate(scopeHint: _scopes);
+        _currentUser = await _googleSignIn.signIn();
       }
 
       if (_currentUser == null) return false;
 
       // Get authorization headers for calendar scope
-      final headers = await _currentUser!.authorizationClient
-          .authorizationHeaders(_scopes, promptIfNecessary: false);
+      final headers = await _currentUser!.authHeaders;
 
-      if (headers == null || headers['Authorization'] == null) {
+      if (headers['Authorization'] == null) {
         return false;
       }
 
@@ -76,7 +69,7 @@ class CalendarSyncService {
         ..summary = 'Iniezione - ${injection.pointLabel}'
         ..description = 'InjeCare Plan\n'
             'Punto: ${injection.pointCode}\n'
-            '${injection.notes ?? ''}'
+            '${injection.notes}'
         ..start = (gcal.EventDateTime()
           ..dateTime = injection.scheduledAt
           ..timeZone = 'Europe/Rome')
@@ -116,7 +109,7 @@ class CalendarSyncService {
       event.description = 'InjeCare Plan\n'
           'Punto: ${injection.pointCode}\n'
           'Stato: ${_statusLabel(injection.status)}\n'
-          '${injection.notes ?? ''}';
+          '${injection.notes}';
 
       if (injection.status == InjectionStatus.completed) {
         event.colorId = '10'; // Green

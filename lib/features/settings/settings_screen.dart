@@ -701,27 +701,162 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Seleziona la zona:'),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: zones.map((zone) {
-                    final isSelected = selectedZoneId == zone.$1;
-                    return ChoiceChip(
-                      label: Text(zone.$3),
-                      selected: isSelected,
-                      onSelected: (selected) {
-                        setDialogState(() {
-                          selectedZoneId = selected ? zone.$1 : null;
-                          selectedPoint = null;
-                        });
-                      },
-                    );
-                  }).toList(),
+                // Mini body map illustration
+                Container(
+                  height: 200,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? AppColors.darkSurface
+                        : AppColors.dawnSurface,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isDark
+                          ? AppColors.darkHighlightMed
+                          : AppColors.dawnHighlightMed,
+                    ),
+                  ),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // Body silhouette
+                      Icon(
+                        Icons.accessibility_new,
+                        size: 140,
+                        color: (isDark
+                                ? AppColors.darkMuted
+                                : AppColors.dawnMuted)
+                            .withValues(alpha: 0.3),
+                      ),
+                      // Zone labels - positioned around the body
+                      // Arms (top left/right)
+                      Positioned(
+                        top: 55,
+                        left: 15,
+                        child: _MiniZoneLabel(
+                          code: 'BD',
+                          name: 'Braccio Dx',
+                          isSelected: selectedZoneId == 3,
+                          isDark: isDark,
+                          onTap: () => setDialogState(() {
+                            selectedZoneId = 3;
+                            selectedPoint = null;
+                          }),
+                        ),
+                      ),
+                      Positioned(
+                        top: 55,
+                        right: 15,
+                        child: _MiniZoneLabel(
+                          code: 'BS',
+                          name: 'Braccio Sx',
+                          isSelected: selectedZoneId == 4,
+                          isDark: isDark,
+                          onTap: () => setDialogState(() {
+                            selectedZoneId = 4;
+                            selectedPoint = null;
+                          }),
+                        ),
+                      ),
+                      // Abdomen (middle left/right)
+                      Positioned(
+                        top: 75,
+                        left: 75,
+                        child: _MiniZoneLabel(
+                          code: 'AD',
+                          name: 'Addome Dx',
+                          isSelected: selectedZoneId == 5,
+                          isDark: isDark,
+                          onTap: () => setDialogState(() {
+                            selectedZoneId = 5;
+                            selectedPoint = null;
+                          }),
+                        ),
+                      ),
+                      Positioned(
+                        top: 75,
+                        right: 75,
+                        child: _MiniZoneLabel(
+                          code: 'AS',
+                          name: 'Addome Sx',
+                          isSelected: selectedZoneId == 6,
+                          isDark: isDark,
+                          onTap: () => setDialogState(() {
+                            selectedZoneId = 6;
+                            selectedPoint = null;
+                          }),
+                        ),
+                      ),
+                      // Glutes (middle-bottom)
+                      Positioned(
+                        bottom: 75,
+                        left: 55,
+                        child: _MiniZoneLabel(
+                          code: 'GD',
+                          name: 'Gluteo Dx',
+                          isSelected: selectedZoneId == 7,
+                          isDark: isDark,
+                          onTap: () => setDialogState(() {
+                            selectedZoneId = 7;
+                            selectedPoint = null;
+                          }),
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 75,
+                        right: 55,
+                        child: _MiniZoneLabel(
+                          code: 'GS',
+                          name: 'Gluteo Sx',
+                          isSelected: selectedZoneId == 8,
+                          isDark: isDark,
+                          onTap: () => setDialogState(() {
+                            selectedZoneId = 8;
+                            selectedPoint = null;
+                          }),
+                        ),
+                      ),
+                      // Thighs (bottom left/right)
+                      Positioned(
+                        bottom: 25,
+                        left: 40,
+                        child: _MiniZoneLabel(
+                          code: 'CD',
+                          name: 'Coscia Dx',
+                          isSelected: selectedZoneId == 1,
+                          isDark: isDark,
+                          onTap: () => setDialogState(() {
+                            selectedZoneId = 1;
+                            selectedPoint = null;
+                          }),
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 25,
+                        right: 40,
+                        child: _MiniZoneLabel(
+                          code: 'CS',
+                          name: 'Coscia Sx',
+                          isSelected: selectedZoneId == 2,
+                          isDark: isDark,
+                          onTap: () => setDialogState(() {
+                            selectedZoneId = 2;
+                            selectedPoint = null;
+                          }),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
+                const SizedBox(height: 16),
                 if (selectedZoneId != null) ...[
-                  const SizedBox(height: 16),
+                  Text(
+                    'Zona selezionata: ${zones.firstWhere((z) => z.$1 == selectedZoneId).$3}',
+                    style: Theme.of(ctx).textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                  const SizedBox(height: 8),
                   const Text('Seleziona il punto:'),
                   const SizedBox(height: 8),
                   Wrap(
@@ -744,8 +879,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       },
                     ),
                   ),
+                  const SizedBox(height: 16),
+                ] else ...[
+                  Text(
+                    'Tocca una zona sulla mappa per selezionarla',
+                    style: Theme.of(ctx).textTheme.bodySmall?.copyWith(
+                          color:
+                              isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                        ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
                 ],
-                const SizedBox(height: 16),
                 TextField(
                   controller: reasonController,
                   decoration: const InputDecoration(
@@ -1157,6 +1302,64 @@ class _UserInfoSection extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Mini zone label for the blacklist dialog body map
+class _MiniZoneLabel extends StatelessWidget {
+  const _MiniZoneLabel({
+    required this.code,
+    required this.name,
+    required this.isSelected,
+    required this.isDark,
+    required this.onTap,
+  });
+
+  final String code;
+  final String name;
+  final bool isSelected;
+  final bool isDark;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final bgColor = isSelected
+        ? (isDark ? AppColors.darkFoam : AppColors.dawnFoam)
+        : (isDark
+            ? AppColors.darkHighlightLow
+            : AppColors.dawnHighlightLow);
+    final textColor = isSelected
+        ? (isDark ? AppColors.darkBase : AppColors.dawnBase)
+        : (isDark ? AppColors.darkText : AppColors.dawnText);
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(6),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius: BorderRadius.circular(6),
+            border: isSelected
+                ? Border.all(
+                    color: isDark ? AppColors.darkPine : AppColors.dawnPine,
+                    width: 2,
+                  )
+                : null,
+          ),
+          child: Text(
+            code,
+            style: TextStyle(
+              color: textColor,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+              fontSize: 10,
+            ),
+          ),
+        ),
       ),
     );
   }

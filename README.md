@@ -4,9 +4,12 @@
 
 Applicazione Flutter per la gestione delle iniezioni di Interferone beta-1a per pazienti con terapie iniettive.
 
-![Flutter](https://img.shields.io/badge/Flutter-3.38+-02569B?logo=flutter)
-![Dart](https://img.shields.io/badge/Dart-3.10+-0175C2?logo=dart)
-![License](https://img.shields.io/badge/License-GPL--3.0-blue)
+[![Flutter](https://img.shields.io/badge/Flutter-3.38+-02569B?logo=flutter)](https://flutter.dev)
+[![Dart](https://img.shields.io/badge/Dart-3.10+-0175C2?logo=dart)](https://dart.dev)
+[![License](https://img.shields.io/badge/License-GPL--3.0-blue)](LICENSE)
+[![GitHub](https://img.shields.io/github/stars/WaYdotNET/inje-care-plan?style=social)](https://github.com/WaYdotNET/inje-care-plan)
+
+**Developed by [Carlo Bertini](https://waydotnet.com) (WaYdotNET)**
 
 ## Screenshots
 
@@ -85,7 +88,7 @@ Applicazione Flutter per la gestione delle iniezioni di Interferone beta-1a per 
 ### 1. Clona il repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/WaYdotNET/inje-care-plan.git
 cd inje-care-plan
 ```
 
@@ -211,6 +214,12 @@ L'app utilizza la palette [Rosé Pine](https://rosepinetheme.com/palette/):
 - [ ] Accesso caregiver (read-only)
 - [ ] Widget iOS/Android per quick-access
 
+## Autore
+
+**Carlo Bertini** (WaYdotNET)
+- 🌐 Website: [waydotnet.com](https://waydotnet.com)
+- 📦 Repository: [github.com/WaYdotNET/inje-care-plan](https://github.com/WaYdotNET/inje-care-plan)
+
 ## Licenza
 
 Questo progetto è rilasciato sotto licenza **GNU General Public License v3.0**.
@@ -219,7 +228,7 @@ Vedi il file [LICENSE](LICENSE) per i dettagli completi.
 
 ```
 InjeCare Plan - App per gestione terapie iniettive
-Copyright (C) 2024
+Copyright (C) 2024-2026 Carlo Bertini (WaYdotNET)
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

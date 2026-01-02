@@ -10,10 +10,10 @@ todos:
     status: completed
   - id: backup-service
     content: Implementare BackupService per Google Drive sync + commit
-    status: in_progress
+    status: completed
   - id: startup-import
     content: Implementare import automatico all'avvio se esiste backup + commit
-    status: pending
+    status: in_progress
   - id: remove-firebase
     content: "Rimuovere Firebase: dipendenze, config, codice + commit"
     status: pending

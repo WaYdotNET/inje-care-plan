@@ -4,33 +4,78 @@
 
 Applicazione Flutter per la gestione delle iniezioni di Interferone beta-1a per pazienti con terapie iniettive.
 
+![Flutter](https://img.shields.io/badge/Flutter-3.38+-02569B?logo=flutter)
+![Dart](https://img.shields.io/badge/Dart-3.10+-0175C2?logo=dart)
+![License](https://img.shields.io/badge/License-Proprietary-red)
+
+## Screenshots
+
+> **Nota**: Per generare gli screenshot, vedi [`assets/screenshots/README.md`](assets/screenshots/README.md)
+
+<!--
+<p align="center">
+  <img src="assets/screenshots/home.png" width="200" alt="Home Screen">
+  <img src="assets/screenshots/calendar.png" width="200" alt="Calendar">
+  <img src="assets/screenshots/body_map.png" width="200" alt="Body Map">
+  <img src="assets/screenshots/settings.png" width="200" alt="Settings">
+</p>
+-->
+
 ## Caratteristiche
 
-- **📅 Calendario intelligente**: Pianificazione automatica delle iniezioni con supporto a più schemi terapeutici
+### Core
+- **📅 Calendario intelligente**: Pianificazione automatica delle iniezioni con supporto a più schemi terapeutici (3x/settimana default)
 - **🧍 Mappa corpo interattiva**: 8 zone di iniezione con rotazione automatica dei punti
 - **🔔 Promemoria avanzati**: Notifiche push configurabili pre e post-iniezione
 - **📊 Diario terapia**: Storico completo con note ed effetti collaterali
-- **☁️ Sync Cloud**: Firebase Firestore con persistenza offline nativa
-- **📤 Export**: Generazione PDF/CSV dello storico
-- **🔐 Privacy-first**: Nessun riferimento esplicito alla patologia, accesso biometrico
+- **📤 Export**: Generazione PDF/CSV dello storico per condivisione con medico
+
+### Privacy-First Architecture
+- **🔒 Offline-first**: Database SQLite locale con Drift
+- **☁️ Backup cifrato**: Google Drive con cifratura AES-256 (password utente)
+- **🔐 Cross-device**: Ripristino backup su qualsiasi dispositivo con la stessa password
+- **🛡️ GDPR-compliant**: Nessun dato sensibile su server centrali
+- **👁️ Privacy UI**: Nessun riferimento esplicito alla patologia nell'interfaccia
 
 ## Stack Tecnologico
 
 | Componente | Tecnologia |
 |------------|------------|
 | Framework | Flutter 3.38+ / Dart 3.10+ |
-| Database | Firebase Firestore (offline-first) |
-| Auth | Firebase Auth + Google Sign-in |
+| Database | **Drift (SQLite)** - offline-first |
+| Backup | **Google Drive** + AES-256 encryption |
+| Auth | Google Sign-in (solo per Drive API) |
+| Crypto | PBKDF2 (100k iterations) + AES-256-CBC |
 | Calendario | table_calendar |
-| State | Riverpod 2.x |
+| State | Riverpod 3.x |
 | Routing | go_router |
 | Notifiche | flutter_local_notifications |
+
+## Architettura Sicurezza
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      DISPOSITIVO                             │
+│  ┌─────────────────┐    ┌─────────────────────────────────┐ │
+│  │   SQLite DB     │    │        CryptoService            │ │
+│  │   (Drift)       │───▶│  PBKDF2(password, salt) → key   │ │
+│  │   Plain data    │    │  AES-256-CBC(data, key) → enc   │ │
+│  └─────────────────┘    └─────────────────────────────────┘ │
+└────────────────────────────────┬────────────────────────────┘
+                                 │ [salt][iv][encrypted_data]
+                                 ▼
+                    ┌────────────────────────┐
+                    │     Google Drive       │
+                    │  (encrypted backup)    │
+                    │  injecare_backup.enc   │
+                    └────────────────────────┘
+```
 
 ## Requisiti
 
 - Flutter SDK 3.38+
 - Dart SDK 3.10+
-- Firebase project configurato
+- Account Google (per backup su Drive)
 
 ## Setup
 
@@ -47,28 +92,27 @@ cd inje-care-plan
 flutter pub get
 ```
 
-### 3. Configura Firebase
+### 3. Genera il codice Drift
 
 ```bash
-# Installa FlutterFire CLI
-dart pub global activate flutterfire_cli
-
-# Configura Firebase (richiede un progetto Firebase esistente)
-flutterfire configure
+dart run build_runner build --delete-conflicting-outputs
 ```
-
-Questo genera `lib/firebase_options.dart` con le configurazioni per la tua app.
 
 ### 4. Configura Google Sign-In
 
 #### Android
-Aggiungi il tuo SHA-1 fingerprint alla console Firebase:
+1. Crea un progetto nella [Google Cloud Console](https://console.cloud.google.com/)
+2. Abilita Google Drive API
+3. Crea credenziali OAuth 2.0 per Android
+4. Aggiungi il tuo SHA-1 fingerprint:
 ```bash
 cd android && ./gradlew signingReport
 ```
 
 #### iOS
-Aggiungi il `GoogleService-Info.plist` a `ios/Runner/`.
+1. Crea credenziali OAuth 2.0 per iOS nella Google Cloud Console
+2. Aggiungi `GoogleService-Info.plist` a `ios/Runner/`
+3. Configura URL schemes in `Info.plist`
 
 ### 5. Esegui l'app
 
@@ -81,16 +125,21 @@ flutter run
 ```
 lib/
 ├── main.dart
-├── firebase_options.dart
 ├── app/
 │   ├── app.dart
 │   └── router.dart
 ├── core/
+│   ├── database/
+│   │   ├── app_database.dart      # Drift database
+│   │   ├── tables.dart            # Schema tabelle
+│   │   └── database_provider.dart
 │   ├── theme/
-│   │   ├── app_colors.dart      # Palette Rosé Pine
-│   │   └── app_theme.dart       # Light/Dark theme
+│   │   ├── app_colors.dart        # Palette Rosé Pine
+│   │   └── app_theme.dart         # Light/Dark theme
 │   ├── services/
-│   │   ├── firebase_service.dart
+│   │   ├── crypto_service.dart    # AES-256 + PBKDF2
+│   │   ├── backup_service.dart    # Google Drive sync
+│   │   ├── startup_service.dart   # App initialization
 │   │   ├── notification_service.dart
 │   │   ├── calendar_sync_service.dart
 │   │   └── export_service.dart
@@ -123,9 +172,27 @@ lib/
 | 7 | GD | Gluteo Dx | 4 |
 | 8 | GS | Gluteo Sx | 4 |
 
+**Totale: 36 punti** con rotazione automatica per evitare sovrapposizioni.
+
 **Formato identificativi:**
 - Database/Export: `CD-3`
 - UI: `Coscia Dx · 3`
+
+## Backup e Ripristino
+
+### Creare un Backup
+1. Vai in **Impostazioni** → **Backup e Ripristino**
+2. Tocca **Backup su Google Drive**
+3. Inserisci una **password sicura** (minimo 8 caratteri)
+4. Il backup viene cifrato e caricato su Drive
+
+### Ripristinare su Nuovo Dispositivo
+1. Accedi con lo stesso account Google
+2. L'app rileva automaticamente il backup esistente
+3. Inserisci la **stessa password** usata per il backup
+4. I dati vengono decifrati e ripristinati
+
+> ⚠️ **Importante**: La password non viene salvata. Se la dimentichi, non potrai recuperare il backup.
 
 ## Design System
 
@@ -133,19 +200,13 @@ L'app utilizza la palette [Rosé Pine](https://rosepinetheme.com/palette/):
 - **Light Mode**: Rosé Pine Dawn
 - **Dark Mode**: Rosé Pine
 
-## Privacy e Sicurezza
-
-- Nessun riferimento esplicito alla patologia nella UI
-- Dati sincronizzati in modo sicuro con Firebase
-- Autenticazione biometrica opzionale
-- Persistenza offline per uso senza connessione
-- GDPR-first by design
-
 ## Roadmap Future
 
 - [ ] IA locale per suggerimenti intelligenti basati sullo storico
+- [ ] Recovery key per backup (alternativa alla password)
 - [ ] Condivisione report con neurologo
 - [ ] Accesso caregiver (read-only)
+- [ ] Widget iOS/Android per quick-access
 
 ## Licenza
 

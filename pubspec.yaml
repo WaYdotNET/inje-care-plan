@@ -1,0 +1,67 @@
+name: injecare_plan
+description: InjeCare Plan - La tua terapia, sotto controllo.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.10.0
+  flutter: ^3.38.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # State Management
+  flutter_riverpod: ^3.1.0
+  riverpod_annotation: ^4.0.0
+
+  # Firebase
+  firebase_core: ^4.3.0
+  firebase_auth: ^6.1.3
+  cloud_firestore: ^6.1.1
+  firebase_messaging: ^16.1.0
+
+  # Google Services
+  google_sign_in: ^7.2.0
+  googleapis: ^15.0.0
+  googleapis_auth: ^2.0.0
+  http: ^1.2.0
+
+  # Calendar
+  table_calendar: ^3.1.3
+  intl: ^0.20.2
+
+  # Notifications
+  flutter_local_notifications: ^19.5.0
+  timezone: ^0.10.0
+
+  # UI
+  flutter_svg: ^2.0.17
+  go_router: ^17.0.1
+
+  # Security
+  local_auth: ^3.0.0
+
+  # Export
+  pdf: ^3.11.2
+  share_plus: ^12.0.1
+  path_provider: ^2.1.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  riverpod_generator: ^4.0.0+1
+  build_runner: ^2.4.15
+  custom_lint: ^0.8.1
+  riverpod_lint: ^3.1.0
+
+flutter:
+  uses-material-design: true
+  generate: true
+
+  assets:
+    - assets/images/
+    - assets/icons/

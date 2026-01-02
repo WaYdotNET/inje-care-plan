@@ -1,0 +1,261 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
+
+import '../../core/theme/app_colors.dart';
+import '../../app/router.dart';
+import '../../models/body_zone.dart';
+import '../../models/injection_record.dart';
+import '../../core/services/notification_service.dart';
+import '../auth/auth_provider.dart';
+import 'injection_provider.dart';
+
+/// Record injection screen
+class RecordInjectionScreen extends ConsumerStatefulWidget {
+  const RecordInjectionScreen({
+    super.key,
+    required this.zoneId,
+    required this.pointNumber,
+  });
+
+  final int zoneId;
+  final int pointNumber;
+
+  @override
+  ConsumerState<RecordInjectionScreen> createState() => _RecordInjectionScreenState();
+}
+
+class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
+  final _notesController = TextEditingController();
+  final Set<String> _selectedSideEffects = {};
+  bool _isLoading = false;
+
+  BodyZone get _zone => BodyZone.defaults.firstWhere(
+    (z) => z.id == widget.zoneId,
+    orElse: () => BodyZone.defaults.first,
+  );
+
+  @override
+  void dispose() {
+    _notesController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final now = DateTime.now();
+    final dateFormat = DateFormat('d MMMM yyyy, HH:mm', 'it_IT');
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Registra iniezione'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.pop(),
+        ),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Date/time
+            Row(
+              children: [
+                Icon(
+                  Icons.calendar_today,
+                  color: isDark ? AppColors.darkSubtle : AppColors.dawnSubtle,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  dateFormat.format(now),
+                  style: theme.textTheme.bodyLarge,
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 24),
+
+            // Selected point
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    Text(_zone.emoji, style: const TextStyle(fontSize: 32)),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _zone.pointLabel(widget.pointNumber),
+                            style: theme.textTheme.titleMedium,
+                          ),
+                          Text(
+                            _zone.pointCode(widget.pointNumber),
+                            style: theme.textTheme.bodySmall,
+                          ),
+                        ],
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => context.pop(),
+                      child: const Text('Cambia'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // Notes
+            Text(
+              'Note (opzionale)',
+              style: theme.textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _notesController,
+              maxLines: 3,
+              decoration: const InputDecoration(
+                hintText: 'Aggiungi note...',
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // Side effects
+            Text(
+              'Effetti collaterali',
+              style: theme.textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+
+            ...[
+              'Rossore nel punto',
+              'Dolore locale',
+              'Stanchezza',
+              'Sintomi influenzali',
+              'Altro',
+            ].map((effect) => CheckboxListTile(
+              title: Text(effect),
+              value: _selectedSideEffects.contains(effect),
+              onChanged: (value) {
+                setState(() {
+                  if (value == true) {
+                    _selectedSideEffects.add(effect);
+                  } else {
+                    _selectedSideEffects.remove(effect);
+                  }
+                });
+              },
+              controlAffinity: ListTileControlAffinity.leading,
+              contentPadding: EdgeInsets.zero,
+            )),
+
+            const SizedBox(height: 32),
+
+            // Confirm button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _isLoading ? null : _confirmInjection,
+                icon: _isLoading
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Icon(Icons.check),
+                label: Text(_isLoading ? 'Salvataggio...' : 'Conferma iniezione'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _confirmInjection() async {
+    final user = ref.read(currentUserProvider);
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Devi effettuare il login')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final repository = ref.read(injectionRepositoryProvider);
+      final now = DateTime.now();
+
+      // Create completed injection record
+      final record = InjectionRecord(
+        zoneId: widget.zoneId,
+        pointNumber: widget.pointNumber,
+        scheduledAt: now,
+        completedAt: now,
+        status: InjectionStatus.completed,
+        notes: _notesController.text.isNotEmpty ? _notesController.text : null,
+        sideEffects: _selectedSideEffects.toList(),
+        createdAt: now,
+        updatedAt: now,
+      );
+
+      await repository.createInjection(user.uid, record);
+
+      // Schedule next injection notification
+      final therapyPlan = await repository.getTherapyPlan(user.uid);
+      final nextDate = therapyPlan.getNextInjectionDate(now.add(const Duration(hours: 1)));
+      final suggestedPoint = await repository.getSuggestedNextPoint(user.uid);
+
+      if (suggestedPoint != null) {
+        final nextZone = BodyZone.defaults.firstWhere(
+          (z) => z.id == suggestedPoint.zoneId,
+          orElse: () => BodyZone.defaults.first,
+        );
+
+        // Schedule notification for next injection
+        await NotificationService.instance.scheduleInjectionReminder(
+          id: nextDate.millisecondsSinceEpoch ~/ 1000,
+          scheduledTime: nextDate,
+          pointLabel: nextZone.pointLabel(suggestedPoint.pointNumber),
+          minutesBefore: therapyPlan.notificationMinutesBefore,
+        );
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${_zone.pointLabel(widget.pointNumber)} registrata'),
+            backgroundColor: Theme.of(context).colorScheme.primary,
+          ),
+        );
+        context.go(AppRoutes.home);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Errore: $e'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+}

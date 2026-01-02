@@ -41,4 +41,3 @@ class ThemeModeNotifier extends Notifier<ThemeMode> {
         _ => ThemeMode.system,
       };
 }
-

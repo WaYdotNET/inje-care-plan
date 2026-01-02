@@ -9,7 +9,6 @@ import '../../models/body_zone.dart';
 import '../../models/injection_record.dart';
 import '../../models/therapy_plan.dart';
 import '../../core/services/notification_service.dart';
-import '../auth/auth_provider.dart';
 import 'injection_provider.dart';
 
 /// Record injection screen
@@ -186,14 +185,6 @@ class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
   }
 
   Future<void> _confirmInjection() async {
-    final user = ref.read(currentUserProvider);
-    if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Devi effettuare il login')),
-      );
-      return;
-    }
-
     setState(() => _isLoading = true);
 
     try {

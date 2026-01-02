@@ -24,12 +24,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final isDark = theme.brightness == Brightness.dark;
 
     // Watch auth state to navigate when authenticated
-    ref.listen(authStateProvider, (_, next) {
-      next.whenData((user) {
-        if (user != null) {
-          context.go(AppRoutes.home);
-        }
-      });
+    ref.listen(authStateProvider, (previous, next) {
+      if (next.isAuthenticated && !(previous?.isAuthenticated ?? false)) {
+        context.go(AppRoutes.home);
+      }
     });
 
     return Scaffold(
@@ -161,10 +159,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final repository = ref.read(authRepositoryProvider);
-      final user = await repository.signInWithGoogle();
+      final notifier = ref.read(authNotifierProvider.notifier);
+      final success = await notifier.signInWithGoogle();
 
-      if (user != null && mounted) {
+      if (success && mounted) {
         context.go(AppRoutes.home);
       }
     } catch (e) {

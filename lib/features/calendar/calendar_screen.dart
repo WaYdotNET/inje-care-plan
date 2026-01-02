@@ -5,8 +5,8 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/database/app_database.dart' as db;
 import '../../app/router.dart';
-import '../../models/injection_record.dart';
 import '../injection/injection_provider.dart';
 
 /// Calendar screen with injection schedule
@@ -37,7 +37,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
         error: (error, _) => Center(child: Text('Errore: $error')),
         data: (injections) => Column(
           children: [
-            TableCalendar<InjectionRecord>(
+            TableCalendar<db.Injection>(
               firstDay: DateTime.utc(2020, 1, 1),
               lastDay: DateTime.utc(2030, 12, 31),
               focusedDay: focusedDay,
@@ -50,8 +50,8 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
               eventLoader: (day) => _getInjections(injections, day),
 
               onDaySelected: (selected, focused) {
-                ref.read(selectedDayProvider.notifier).state = selected;
-                ref.read(focusedDayProvider.notifier).state = focused;
+                ref.read(selectedDayProvider.notifier).select(selected);
+                ref.read(focusedDayProvider.notifier).focus(focused);
               },
 
               onFormatChanged: (format) {
@@ -61,7 +61,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
               },
 
               onPageChanged: (focused) {
-                ref.read(focusedDayProvider.notifier).state = focused;
+                ref.read(focusedDayProvider.notifier).focus(focused);
               },
 
               calendarBuilders: CalendarBuilders(
@@ -69,10 +69,37 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                   if (events.isEmpty) return null;
                   return _buildMarkers(events, isDark);
                 },
+                todayBuilder: (context, day, focusedDay) {
+                  return _buildDayCell(
+                    day,
+                    isToday: true,
+                    isSelected: false,
+                    isDark: isDark,
+                  );
+                },
+                selectedBuilder: (context, day, focusedDay) {
+                  return _buildDayCell(
+                    day,
+                    isToday: isSameDay(day, DateTime.now()),
+                    isSelected: true,
+                    isDark: isDark,
+                  );
+                },
+              ),
+
+              headerStyle: HeaderStyle(
+                formatButtonVisible: true,
+                titleCentered: true,
+                formatButtonShowsNext: false,
+                formatButtonDecoration: BoxDecoration(
+                  border: Border.all(
+                    color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
 
               calendarStyle: CalendarStyle(
-                outsideDaysVisible: false,
                 todayDecoration: BoxDecoration(
                   color: (isDark ? AppColors.darkFoam : AppColors.dawnFoam)
                       .withValues(alpha: 0.3),
@@ -80,216 +107,207 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                 ),
                 todayTextStyle: TextStyle(
                   color: isDark ? AppColors.darkText : AppColors.dawnText,
-                  fontWeight: FontWeight.w600,
                 ),
                 selectedDecoration: BoxDecoration(
-                  color: isDark ? AppColors.darkPine : AppColors.dawnPine,
+                  color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
                   shape: BoxShape.circle,
                 ),
-                selectedTextStyle: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
+                selectedTextStyle: TextStyle(
+                  color: isDark ? AppColors.darkBase : AppColors.dawnBase,
+                  fontWeight: FontWeight.bold,
                 ),
                 weekendTextStyle: TextStyle(
-                  color: isDark ? AppColors.darkSubtle : AppColors.dawnSubtle,
-                ),
-                defaultTextStyle: TextStyle(
-                  color: isDark ? AppColors.darkText : AppColors.dawnText,
-                ),
-              ),
-
-              headerStyle: HeaderStyle(
-                formatButtonVisible: false,
-                titleCentered: true,
-                titleTextStyle: theme.textTheme.titleLarge!,
-                leftChevronIcon: Icon(
-                  Icons.chevron_left,
-                  color: isDark ? AppColors.darkText : AppColors.dawnText,
-                ),
-                rightChevronIcon: Icon(
-                  Icons.chevron_right,
-                  color: isDark ? AppColors.darkText : AppColors.dawnText,
-                ),
-              ),
-
-              daysOfWeekStyle: DaysOfWeekStyle(
-                weekdayStyle: TextStyle(
-                  color: isDark ? AppColors.darkSubtle : AppColors.dawnSubtle,
-                  fontWeight: FontWeight.w600,
-                ),
-                weekendStyle: TextStyle(
                   color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
-                  fontWeight: FontWeight.w600,
+                ),
+                outsideTextStyle: TextStyle(
+                  color: (isDark ? AppColors.darkMuted : AppColors.dawnMuted)
+                      .withValues(alpha: 0.5),
                 ),
               ),
             ),
-
-            const Divider(),
-
-            // Legend
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _LegendItem(
-                    color: isDark ? AppColors.darkPine : AppColors.dawnPine,
-                    label: 'Completata',
-                  ),
-                  _LegendItem(
-                    color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
-                    label: 'Programmata',
-                  ),
-                  _LegendItem(
-                    color: isDark ? AppColors.darkGold : AppColors.dawnGold,
-                    label: 'In ritardo',
-                  ),
-                  _LegendItem(
-                    color: isDark ? AppColors.darkLove : AppColors.dawnLove,
-                    label: 'Saltata',
-                  ),
-                ],
-              ),
-            ),
-
-            const Divider(),
-
-            // Selected day details
+            const Divider(height: 1),
             Expanded(
               child: selectedDay != null
-                  ? _DayDetails(
+                  ? _DayInjectionsList(
                       selectedDay: selectedDay,
                       injections: _getInjections(injections, selectedDay),
-                      isDark: isDark,
                     )
-                  : Center(
-                      child: Text(
-                        'Seleziona un giorno',
-                        style: theme.textTheme.bodyLarge,
-                      ),
-                    ),
+                  : _EmptyState(isDark: isDark),
             ),
           ],
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => context.push(AppRoutes.bodyMap),
+        child: const Icon(Icons.add),
+      ),
     );
   }
 
-  List<InjectionRecord> _getInjections(List<InjectionRecord> all, DateTime day) {
-    return all.where((inj) => isSameDay(inj.scheduledAt, day)).toList();
+  List<db.Injection> _getInjections(List<db.Injection> injections, DateTime day) {
+    return injections.where((inj) {
+      return isSameDay(inj.scheduledAt, day);
+    }).toList();
   }
 
-  Widget _buildMarkers(List<InjectionRecord> events, bool isDark) {
+  Widget _buildMarkers(List<db.Injection> events, bool isDark) {
     return Positioned(
       bottom: 1,
       child: Row(
         mainAxisSize: MainAxisSize.min,
-        children: events.take(3).map((event) {
-          final color = switch (event.status) {
-            InjectionStatus.completed => isDark ? AppColors.darkPine : AppColors.dawnPine,
-            InjectionStatus.scheduled => isDark ? AppColors.darkFoam : AppColors.dawnFoam,
-            InjectionStatus.delayed => isDark ? AppColors.darkGold : AppColors.dawnGold,
-            InjectionStatus.skipped => isDark ? AppColors.darkLove : AppColors.dawnLove,
-          };
+        children: events.take(3).map((inj) {
+          Color color;
+          switch (inj.status) {
+            case 'completed':
+              color = isDark ? AppColors.darkPine : AppColors.dawnPine;
+              break;
+            case 'skipped':
+              color = isDark ? AppColors.darkLove : AppColors.dawnLove;
+              break;
+            default:
+              color = isDark ? AppColors.darkFoam : AppColors.dawnFoam;
+          }
+
           return Container(
+            margin: const EdgeInsets.symmetric(horizontal: 1),
             width: 6,
             height: 6,
-            margin: const EdgeInsets.symmetric(horizontal: 1),
-            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+            decoration: BoxDecoration(
+              color: color,
+              shape: BoxShape.circle,
+            ),
           );
         }).toList(),
       ),
     );
   }
-}
 
-class _LegendItem extends StatelessWidget {
-  const _LegendItem({required this.color, required this.label});
-
-  final Color color;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 8,
-          height: 8,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+  Widget _buildDayCell(
+    DateTime day, {
+    required bool isToday,
+    required bool isSelected,
+    required bool isDark,
+  }) {
+    return Container(
+      margin: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: isSelected
+            ? (isDark ? AppColors.darkFoam : AppColors.dawnFoam)
+            : isToday
+                ? (isDark ? AppColors.darkFoam : AppColors.dawnFoam)
+                    .withValues(alpha: 0.3)
+                : null,
+        shape: BoxShape.circle,
+      ),
+      child: Center(
+        child: Text(
+          '${day.day}',
+          style: TextStyle(
+            color: isSelected
+                ? (isDark ? AppColors.darkBase : AppColors.dawnBase)
+                : isDark
+                    ? AppColors.darkText
+                    : AppColors.dawnText,
+            fontWeight: isSelected ? FontWeight.bold : null,
+          ),
         ),
-        const SizedBox(width: 4),
-        Text(
-          label,
-          style: Theme.of(context).textTheme.labelSmall,
-        ),
-      ],
+      ),
     );
   }
 }
 
-class _DayDetails extends StatelessWidget {
-  const _DayDetails({
-    required this.selectedDay,
-    required this.injections,
-    required this.isDark,
-  });
+class _EmptyState extends StatelessWidget {
+  const _EmptyState({required this.isDark});
 
-  final DateTime selectedDay;
-  final List<InjectionRecord> injections;
   final bool isDark;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final dateFormat = DateFormat('d MMMM', 'it_IT');
-
-    return Padding(
-      padding: const EdgeInsets.all(16),
+    return Center(
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            dateFormat.format(selectedDay),
-            style: theme.textTheme.titleMedium,
+          Icon(
+            Icons.calendar_today_outlined,
+            size: 48,
+            color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
           ),
-          const SizedBox(height: 12),
-          if (injections.isEmpty)
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.event_available,
-                    size: 48,
-                    color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Nessuna iniezione programmata',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: isDark ? AppColors.darkSubtle : AppColors.dawnSubtle,
-                    ),
-                  ),
-                ],
-              ),
-            )
-          else
-            Expanded(
-              child: ListView.builder(
-                itemCount: injections.length,
-                itemBuilder: (context, index) {
-                  final injection = injections[index];
-                  return _InjectionCard(
-                    injection: injection,
-                    isDark: isDark,
-                  );
-                },
-              ),
-            ),
+          const SizedBox(height: 16),
+          Text(
+            'Seleziona un giorno',
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                ),
+          ),
         ],
       ),
+    );
+  }
+}
+
+class _DayInjectionsList extends StatelessWidget {
+  const _DayInjectionsList({
+    required this.selectedDay,
+    required this.injections,
+  });
+
+  final DateTime selectedDay;
+  final List<db.Injection> injections;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    if (injections.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.check_circle_outline,
+              size: 48,
+              color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Nessuna iniezione programmata',
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+              ),
+            ),
+            Text(
+              DateFormat('d MMMM yyyy', 'it_IT').format(selectedDay),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: Text(
+            DateFormat('EEEE d MMMM', 'it_IT').format(selectedDay),
+            style: theme.textTheme.titleMedium,
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: injections.length,
+            itemBuilder: (context, index) {
+              final injection = injections[index];
+              return _InjectionCard(injection: injection, isDark: isDark);
+            },
+          ),
+        ),
+      ],
     );
   }
 }
@@ -300,41 +318,81 @@ class _InjectionCard extends StatelessWidget {
     required this.isDark,
   });
 
-  final InjectionRecord injection;
+  final db.Injection injection;
   final bool isDark;
-
-  Color get _statusColor => switch (injection.status) {
-    InjectionStatus.completed => isDark ? AppColors.darkPine : AppColors.dawnPine,
-    InjectionStatus.scheduled => isDark ? AppColors.darkFoam : AppColors.dawnFoam,
-    InjectionStatus.delayed => isDark ? AppColors.darkGold : AppColors.dawnGold,
-    InjectionStatus.skipped => isDark ? AppColors.darkLove : AppColors.dawnLove,
-  };
 
   @override
   Widget build(BuildContext context) {
-    final timeFormat = DateFormat('HH:mm', 'it_IT');
+    final theme = Theme.of(context);
+
+    Color statusColor;
+    IconData statusIcon;
+    String statusLabel;
+
+    switch (injection.status) {
+      case 'completed':
+        statusColor = isDark ? AppColors.darkPine : AppColors.dawnPine;
+        statusIcon = Icons.check_circle;
+        statusLabel = 'Completata';
+        break;
+      case 'skipped':
+        statusColor = isDark ? AppColors.darkLove : AppColors.dawnLove;
+        statusIcon = Icons.cancel;
+        statusLabel = 'Saltata';
+        break;
+      case 'delayed':
+        statusColor = isDark ? AppColors.darkGold : AppColors.dawnGold;
+        statusIcon = Icons.schedule;
+        statusLabel = 'In ritardo';
+        break;
+      default:
+        statusColor = isDark ? AppColors.darkFoam : AppColors.dawnFoam;
+        statusIcon = Icons.pending;
+        statusLabel = 'Programmata';
+    }
 
     return Card(
-      child: ListTile(
-        leading: Container(
-          width: 12,
-          height: 12,
-          decoration: BoxDecoration(color: _statusColor, shape: BoxShape.circle),
-        ),
-        title: Text(timeFormat.format(injection.scheduledAt)),
-        subtitle: Text(injection.pointLabel),
-        trailing: injection.status == InjectionStatus.scheduled
-            ? TextButton(
-                onPressed: () => context.push(
-                  AppRoutes.recordInjection,
-                  extra: {
-                    'zoneId': injection.zoneId,
-                    'pointNumber': injection.pointNumber,
-                  },
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Icon(statusIcon, color: statusColor),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    injection.pointLabel,
+                    style: theme.textTheme.titleSmall,
+                  ),
+                  Text(
+                    injection.pointCode,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  DateFormat('HH:mm').format(injection.scheduledAt),
+                  style: theme.textTheme.titleSmall,
                 ),
-                child: const Text('Vai'),
-              )
-            : null,
+                Text(
+                  statusLabel,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: statusColor,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

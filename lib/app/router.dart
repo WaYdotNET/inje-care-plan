@@ -32,7 +32,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     initialLocation: AppRoutes.login,
     debugLogDiagnostics: true,
     redirect: (context, state) {
-      final isAuthenticated = authState.value != null;
+      final isAuthenticated = authState.isAuthenticated;
       final isLoginRoute = state.matchedLocation == AppRoutes.login;
 
       if (!isAuthenticated && !isLoginRoute) {

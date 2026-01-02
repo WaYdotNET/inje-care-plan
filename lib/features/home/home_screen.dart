@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../core/theme/app_colors.dart';
 import '../../app/router.dart';
 import '../../models/body_zone.dart';
+import '../../models/therapy_plan.dart';
 import '../auth/auth_provider.dart';
 import '../injection/injection_provider.dart';
 
@@ -35,10 +36,10 @@ class HomeScreen extends ConsumerWidget {
           IconButton(
             icon: CircleAvatar(
               radius: 16,
-              backgroundImage: user?.photoURL != null
-                  ? NetworkImage(user!.photoURL!)
+              backgroundImage: user?.photoUrl != null
+                  ? NetworkImage(user!.photoUrl!)
                   : null,
-              child: user?.photoURL == null
+              child: user?.photoUrl == null
                   ? const Icon(Icons.person, size: 20)
                   : null,
             ),
@@ -70,7 +71,8 @@ class HomeScreen extends ConsumerWidget {
                 loading: () => const _LoadingCard(),
                 error: (_, __) => const _ErrorCard(),
                 data: (plan) {
-                  final nextDate = plan.getNextInjectionDate(DateTime.now());
+                  final therapyPlan = plan ?? TherapyPlan.defaults;
+                  final nextDate = therapyPlan.getNextInjectionDate(DateTime.now());
                   return suggestedAsync.when(
                     loading: () => _NextInjectionCard(
                       nextDate: nextDate,

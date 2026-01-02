@@ -103,8 +103,7 @@ class BackupService {
     if (_currentUser == null) {
       // Prova a fare sign-in silenzioso
       final signIn = GoogleSignIn.instance;
-      final events = signIn.authenticationEvents;
-      await signIn.attemptLightweightAuthentication(scopes: _driveScopes);
+      await signIn.attemptLightweightAuthentication();
 
       // Aspetta un po' per l'evento
       await Future.delayed(const Duration(milliseconds: 500));

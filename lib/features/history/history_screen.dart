@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/services/export_service.dart';
-import '../../models/injection_record.dart';
+import '../../core/database/app_database.dart' as db;
 import '../injection/injection_provider.dart';
 
 /// Injection history screen
@@ -86,8 +86,8 @@ class HistoryScreen extends ConsumerWidget {
     );
   }
 
-  Map<String, List<InjectionRecord>> _groupByMonth(List<InjectionRecord> injections) {
-    final grouped = <String, List<InjectionRecord>>{};
+  Map<String, List<db.Injection>> _groupByMonth(List<db.Injection> injections) {
+    final grouped = <String, List<db.Injection>>{};
     final monthFormat = DateFormat('MMMM yyyy', 'it_IT');
 
     for (final inj in injections) {
@@ -98,7 +98,7 @@ class HistoryScreen extends ConsumerWidget {
     return grouped;
   }
 
-  void _showExportOptions(BuildContext context, List<InjectionRecord> injections) {
+  void _showExportOptions(BuildContext context, List<db.Injection> injections) {
     showModalBottomSheet(
       context: context,
       builder: (context) => Column(
@@ -151,7 +151,7 @@ class _MonthSection extends StatelessWidget {
   });
 
   final String month;
-  final List<InjectionRecord> injections;
+  final List<db.Injection> injections;
   final bool isDark;
 
   @override
@@ -187,21 +187,31 @@ class _HistoryCard extends StatelessWidget {
     required this.isDark,
   });
 
-  final InjectionRecord injection;
+  final db.Injection injection;
   final bool isDark;
 
   Color get _statusColor => switch (injection.status) {
-    InjectionStatus.completed => isDark ? AppColors.darkPine : AppColors.dawnPine,
-    InjectionStatus.skipped => isDark ? AppColors.darkLove : AppColors.dawnLove,
-    InjectionStatus.delayed => isDark ? AppColors.darkGold : AppColors.dawnGold,
-    InjectionStatus.scheduled => isDark ? AppColors.darkFoam : AppColors.dawnFoam,
+    'completed' => isDark ? AppColors.darkPine : AppColors.dawnPine,
+    'skipped' => isDark ? AppColors.darkLove : AppColors.dawnLove,
+    'delayed' => isDark ? AppColors.darkGold : AppColors.dawnGold,
+    'scheduled' => isDark ? AppColors.darkFoam : AppColors.dawnFoam,
+    _ => isDark ? AppColors.darkMuted : AppColors.dawnMuted,
   };
 
   String get _statusLabel => switch (injection.status) {
-    InjectionStatus.completed => 'Completata',
-    InjectionStatus.skipped => 'Saltata',
-    InjectionStatus.delayed => 'In ritardo',
-    InjectionStatus.scheduled => 'Programmata',
+    'completed' => 'Completata',
+    'skipped' => 'Saltata',
+    'delayed' => 'In ritardo',
+    'scheduled' => 'Programmata',
+    _ => 'Sconosciuto',
+  };
+  
+  String get _emoji => switch (injection.zoneId) {
+    1 => '🦵', 2 => '🦵',
+    3 => '💪', 4 => '💪',
+    5 => '🎯', 6 => '🎯',
+    7 => '🍑', 8 => '🍑',
+    _ => '💉',
   };
 
   @override
@@ -254,7 +264,7 @@ class _HistoryCard extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Text(injection.emoji),
+                        Text(_emoji),
                         const SizedBox(width: 8),
                         Text(
                           injection.pointLabel,
@@ -280,7 +290,7 @@ class _HistoryCard extends StatelessWidget {
                             color: _statusColor,
                           ),
                         ),
-                        if (injection.sideEffects.isNotEmpty) ...[
+                        if (injection.sideEffects?.isNotEmpty == true) ...[
                           const SizedBox(width: 12),
                           Icon(
                             Icons.warning_amber_rounded,
@@ -289,7 +299,7 @@ class _HistoryCard extends StatelessWidget {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            '${injection.sideEffects.length}',
+                            '${injection.sideEffects!.split(',').length}',
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: isDark ? AppColors.darkGold : AppColors.dawnGold,
                             ),
@@ -332,7 +342,7 @@ class _HistoryCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                Text(injection.emoji, style: const TextStyle(fontSize: 40)),
+                Text(_emoji, style: const TextStyle(fontSize: 40)),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
@@ -369,11 +379,11 @@ class _HistoryCard extends StatelessWidget {
                 label: 'Note',
                 value: injection.notes!,
               ),
-            if (injection.sideEffects.isNotEmpty)
+            if (injection.sideEffects?.isNotEmpty == true)
               _DetailRow(
                 icon: Icons.warning_amber_rounded,
                 label: 'Effetti collaterali',
-                value: injection.sideEffects.join(', '),
+                value: injection.sideEffects!,
               ),
           ],
         ),

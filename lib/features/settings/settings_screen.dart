@@ -7,7 +7,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/services/export_service.dart';
 import '../../core/services/backup_provider.dart';
 import '../../core/services/startup_service.dart';
-import '../../core/database/app_database.dart';
+import '../../core/database/app_database.dart' hide TherapyPlan;
 import '../../core/database/database_provider.dart';
 import '../../app/router.dart';
 import '../../models/therapy_plan.dart';

@@ -4,11 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/database/app_database.dart' as db;
 import '../../app/router.dart';
 import '../../models/body_zone.dart';
-import '../../models/injection_record.dart';
 import '../../models/blacklisted_point.dart';
-import '../auth/auth_provider.dart';
 import 'injection_provider.dart';
 
 /// Zone detail screen with point history
@@ -61,13 +60,13 @@ class ZoneDetailScreen extends ConsumerWidget {
     WidgetRef ref,
     ThemeData theme,
     bool isDark,
-    List<InjectionRecord> injections,
-    List<BlacklistedPoint> blacklist,
+    List<db.Injection> injections,
+    List<db.BlacklistedPoint> blacklist,
   ) {
     final availablePoints = _zone.numberOfPoints - blacklist.length;
 
     // Group injections by point and get the most recent for each
-    final pointHistory = <int, InjectionRecord>{};
+    final pointHistory = <int, db.Injection>{};
     for (final inj in injections) {
       if (!pointHistory.containsKey(inj.pointNumber) ||
           (inj.completedAt ?? inj.scheduledAt)
@@ -292,17 +291,13 @@ class ZoneDetailScreen extends ConsumerWidget {
     BlacklistReason reason,
     String? notes,
   ) async {
-    final user = ref.read(currentUserProvider);
-    if (user == null) return;
-
     final repository = ref.read(injectionRepositoryProvider);
     await repository.blacklistPoint(
-      user.uid,
       BlacklistedPoint(
         zoneId: zoneId,
         pointNumber: pointNumber,
-        reason: reason,
-        notes: notes,
+        reason: reason.name,
+        notes: notes ?? '',
         blacklistedAt: DateTime.now(),
       ),
     );
@@ -317,13 +312,10 @@ class ZoneDetailScreen extends ConsumerWidget {
   Future<void> _restorePoint(
     BuildContext context,
     WidgetRef ref,
-    BlacklistedPoint bp,
+    db.BlacklistedPoint bp,
   ) async {
-    final user = ref.read(currentUserProvider);
-    if (user == null || bp.id == null) return;
-
     final repository = ref.read(injectionRepositoryProvider);
-    await repository.unblacklistPoint(user.uid, bp.id!);
+    await repository.unblacklistPoint(bp.pointCode);
 
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -412,7 +404,7 @@ class _PointCard extends StatelessWidget {
 
   final BodyZone zone;
   final int pointNumber;
-  final InjectionRecord? lastInjection;
+  final db.Injection? lastInjection;
   final bool isDark;
   final VoidCallback onTap;
   final VoidCallback onMenu;
@@ -502,9 +494,17 @@ class _BlacklistedPointCard extends StatelessWidget {
     required this.onRestore,
   });
 
-  final BlacklistedPoint blacklistedPoint;
+  final db.BlacklistedPoint blacklistedPoint;
   final bool isDark;
   final VoidCallback onRestore;
+
+  String _reasonLabel(String reason) => switch (reason) {
+    'skinReaction' => 'Reazione cutanea',
+    'scar' => 'Cicatrice / lesione',
+    'hardToReach' => 'Difficile da raggiungere',
+    'other' => 'Altro',
+    _ => reason,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -541,7 +541,7 @@ class _BlacklistedPointCard extends StatelessWidget {
                     ],
                   ),
                   Text(
-                    'Motivo: ${blacklistedPoint.reasonLabel}',
+                    'Motivo: ${_reasonLabel(blacklistedPoint.reason)}',
                     style: theme.textTheme.bodySmall,
                   ),
                 ],

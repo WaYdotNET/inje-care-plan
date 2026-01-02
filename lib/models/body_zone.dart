@@ -20,6 +20,9 @@ class BodyZone {
   final bool isEnabled;
   final int sortOrder;
 
+  /// Alias for numberOfPoints
+  int get pointCount => numberOfPoints;
+
   /// Get emoji for zone type
   String get emoji => switch (type) {
     'thigh' => '🦵',

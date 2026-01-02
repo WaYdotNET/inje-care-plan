@@ -5,6 +5,19 @@ import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../models/injection_record.dart';
 
+/// Client HTTP autenticato con Google
+class _GoogleAuthClient extends http.BaseClient {
+  final Map<String, String> _headers;
+  final http.Client _client = http.Client();
+
+  _GoogleAuthClient(this._headers);
+
+  @override
+  Future<http.StreamedResponse> send(http.BaseRequest request) {
+    return _client.send(request..headers.addAll(_headers));
+  }
+}
+
 /// Google Calendar sync service
 class CalendarSyncService {
   CalendarSyncService._();
@@ -14,31 +27,36 @@ class CalendarSyncService {
   static const _scopes = [gcal.CalendarApi.calendarScope];
 
   gcal.CalendarApi? _calendarApi;
+  GoogleSignInAccount? _currentUser;
 
   /// Initialize the calendar API with Google Sign-In credentials
   Future<bool> initialize() async {
     try {
-      final googleSignIn = GoogleSignIn(scopes: _scopes);
-      final account = await googleSignIn.signInSilently();
+      final signIn = GoogleSignIn.instance;
 
-      if (account == null) return false;
+      // Try lightweight auth first
+      await signIn.attemptLightweightAuthentication();
+      
+      // Wait for current user
+      await Future<void>.delayed(const Duration(milliseconds: 300));
 
-      final auth = await account.authentication;
-      if (auth.accessToken == null) return false;
+      // currentUser is set in the authenticate flow
+      if (_currentUser == null) {
+        // Try full authentication
+        _currentUser = await signIn.authenticate(scopeHint: _scopes);
+      }
 
-      final client = authenticatedClient(
-        http.Client(),
-        AccessCredentials(
-          AccessToken(
-            'Bearer',
-            auth.accessToken!,
-            DateTime.now().add(const Duration(hours: 1)).toUtc(),
-          ),
-          null,
-          _scopes,
-        ),
-      );
+      if (_currentUser == null) return false;
 
+      // Get authorization headers for calendar scope
+      final headers = await _currentUser!.authorizationClient
+          .authorizationHeaders(_scopes, promptIfNecessary: false);
+
+      if (headers == null || headers['Authorization'] == null) {
+        return false;
+      }
+
+      final client = _GoogleAuthClient(headers);
       _calendarApi = gcal.CalendarApi(client);
       return true;
     } catch (e) {

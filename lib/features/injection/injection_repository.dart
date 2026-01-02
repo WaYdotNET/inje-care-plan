@@ -1,3 +1,5 @@
+import 'package:drift/drift.dart';
+
 import '../../core/database/app_database.dart';
 import '../../models/injection_record.dart' as models;
 import '../../models/blacklisted_point.dart' as models;

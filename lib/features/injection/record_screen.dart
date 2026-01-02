@@ -7,6 +7,7 @@ import '../../core/theme/app_colors.dart';
 import '../../app/router.dart';
 import '../../models/body_zone.dart';
 import '../../models/injection_record.dart';
+import '../../models/therapy_plan.dart';
 import '../../core/services/notification_service.dart';
 import '../auth/auth_provider.dart';
 import 'injection_provider.dart';
@@ -206,18 +207,18 @@ class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
         scheduledAt: now,
         completedAt: now,
         status: InjectionStatus.completed,
-        notes: _notesController.text.isNotEmpty ? _notesController.text : null,
+        notes: _notesController.text.isNotEmpty ? _notesController.text : '',
         sideEffects: _selectedSideEffects.toList(),
         createdAt: now,
         updatedAt: now,
       );
 
-      await repository.createInjection(user.uid, record);
+      await repository.createInjection(record);
 
-      // Schedule next injection notification
-      final therapyPlan = await repository.getTherapyPlan(user.uid);
+      // Schedule next injection notification using default plan
+      final therapyPlan = TherapyPlan.defaults;
       final nextDate = therapyPlan.getNextInjectionDate(now.add(const Duration(hours: 1)));
-      final suggestedPoint = await repository.getSuggestedNextPoint(user.uid);
+      final suggestedPoint = await repository.getSuggestedNextPoint();
 
       if (suggestedPoint != null) {
         final nextZone = BodyZone.defaults.firstWhere(

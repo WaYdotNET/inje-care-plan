@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:googleapis/drive/v3.dart' as drive;
@@ -31,19 +32,18 @@ class LocalUser {
 /// Authentication repository - versione offline-first senza Firebase
 class AuthRepository {
   AuthRepository({
-    GoogleSignIn? googleSignIn,
     LocalAuthentication? localAuth,
     AppDatabase? database,
-  })  : _googleSignIn = googleSignIn ??
-            GoogleSignIn(scopes: [drive.DriveApi.driveFileScope]),
-        _localAuth = localAuth ?? LocalAuthentication(),
+  })  : _localAuth = localAuth ?? LocalAuthentication(),
         _database = database;
 
-  final GoogleSignIn _googleSignIn;
+  static const _driveScopes = [drive.DriveApi.driveFileScope];
+
   final LocalAuthentication _localAuth;
   final AppDatabase? _database;
 
   LocalUser? _currentUser;
+  GoogleSignInAccount? _googleAccount;
 
   /// Get current user (locale)
   LocalUser? get currentUser => _currentUser;
@@ -64,21 +64,19 @@ class AuthRepository {
       );
     }
 
-    // Prova silent sign-in per rinnovare token Google
-    final googleUser = await _googleSignIn.signInSilently();
-    if (googleUser != null && _currentUser == null) {
-      _currentUser = LocalUser.fromGoogleSignIn(googleUser);
-      await _saveUserProfile(db, googleUser);
-    }
+    // Prova lightweight auth per rinnovare token Google
+    final signIn = GoogleSignIn.instance;
+    await signIn.attemptLightweightAuthentication();
   }
 
   /// Sign in with Google (solo per Google Drive access)
   Future<LocalUser?> signInWithGoogle(AppDatabase db) async {
     try {
-      // Trigger the authentication flow
-      final googleUser = await _googleSignIn.signIn();
+      final signIn = GoogleSignIn.instance;
+      final googleUser = await signIn.authenticate(scopeHint: _driveScopes);
       if (googleUser == null) return null;
 
+      _googleAccount = googleUser;
       _currentUser = LocalUser.fromGoogleSignIn(googleUser);
       await _saveUserProfile(db, googleUser);
 
@@ -112,8 +110,10 @@ class AuthRepository {
 
   /// Sign out
   Future<void> signOut() async {
-    await _googleSignIn.signOut();
+    final signIn = GoogleSignIn.instance;
+    await signIn.signOut();
     _currentUser = null;
+    _googleAccount = null;
   }
 
   /// Check if biometric authentication is available
@@ -131,10 +131,6 @@ class AuthRepository {
     try {
       return await _localAuth.authenticate(
         localizedReason: 'Sblocca InjeCare Plan',
-        options: const AuthenticationOptions(
-          stickyAuth: true,
-          biometricOnly: true,
-        ),
       );
     } catch (e) {
       return false;
@@ -160,5 +156,5 @@ class AuthRepository {
   }
 
   /// Get Google account for API access (Drive, Calendar)
-  GoogleSignInAccount? get googleAccount => _googleSignIn.currentUser;
+  GoogleSignInAccount? get googleAccount => _googleAccount;
 }

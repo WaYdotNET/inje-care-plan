@@ -35,18 +35,18 @@ class AuthState {
   bool get isAuthenticated => user != null;
 }
 
-/// Notifier per gestire lo stato di autenticazione
-class AuthNotifier extends StateNotifier<AuthState> {
-  final AuthRepository _repository;
-  final Ref _ref;
+/// Notifier per gestire lo stato di autenticazione (Riverpod 3.x)
+class AuthNotifier extends Notifier<AuthState> {
+  @override
+  AuthState build() => const AuthState();
 
-  AuthNotifier(this._repository, this._ref) : super(const AuthState());
+  AuthRepository get _repository => ref.read(authRepositoryProvider);
 
   /// Inizializza lo stato di autenticazione
   Future<void> initialize() async {
     state = state.copyWith(isLoading: true);
     try {
-      final db = _ref.read(databaseProvider);
+      final db = ref.read(databaseProvider);
       await _repository.initialize(db);
       state = AuthState(user: _repository.currentUser);
     } catch (e) {
@@ -58,7 +58,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<bool> signInWithGoogle() async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final db = _ref.read(databaseProvider);
+      final db = ref.read(databaseProvider);
       final user = await _repository.signInWithGoogle(db);
       if (user != null) {
         state = AuthState(user: user);
@@ -86,11 +86,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
 }
 
 /// Provider per AuthNotifier
-final authNotifierProvider =
-    StateNotifierProvider<AuthNotifier, AuthState>((ref) {
-  final repository = ref.watch(authRepositoryProvider);
-  return AuthNotifier(repository, ref);
-});
+final authNotifierProvider = NotifierProvider<AuthNotifier, AuthState>(AuthNotifier.new);
+
+/// Alias per compatibilità
+final authStateProvider = authNotifierProvider;
 
 /// Current user provider
 final currentUserProvider = Provider<LocalUser?>((ref) {

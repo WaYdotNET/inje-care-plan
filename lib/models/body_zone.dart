@@ -23,14 +23,17 @@ class BodyZone {
   /// Alias for numberOfPoints
   int get pointCount => numberOfPoints;
 
-  /// Get emoji for zone type
-  String get emoji => switch (type) {
+  /// Get emoji for zone type (null for abdomen - uses logo image)
+  String? get emoji => switch (type) {
     'thigh' => '🦵',
     'arm' => '💪',
-    'abdomen' => '🫁',
+    'abdomen' => null, // Uses app logo image
     'buttock' => '🍑',
     _ => '📍',
   };
+
+  /// Whether this zone uses the app logo instead of emoji
+  bool get usesLogoIcon => type == 'abdomen';
 
   /// Get full label (e.g., "Coscia Dx · 3")
   String pointLabel(int pointNumber) => '$name · $pointNumber';

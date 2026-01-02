@@ -96,7 +96,14 @@ class ZoneDetailScreen extends ConsumerWidget {
           // Zone header
           Row(
             children: [
-              Text(_zone.emoji, style: const TextStyle(fontSize: 40)),
+              if (_zone.usesLogoIcon)
+                Image.asset(
+                  'assets/images/logo.png',
+                  width: 40,
+                  height: 40,
+                )
+              else
+                Text(_zone.emoji ?? '📍', style: const TextStyle(fontSize: 40)),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(

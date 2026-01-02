@@ -85,7 +85,14 @@ class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
                 padding: const EdgeInsets.all(16),
                 child: Row(
                   children: [
-                    Text(_zone.emoji, style: const TextStyle(fontSize: 32)),
+                    if (_zone.usesLogoIcon)
+                      Image.asset(
+                        'assets/images/logo.png',
+                        width: 32,
+                        height: 32,
+                      )
+                    else
+                      Text(_zone.emoji ?? '📍', style: const TextStyle(fontSize: 32)),
                     const SizedBox(width: 16),
                     Expanded(
                       child: Column(

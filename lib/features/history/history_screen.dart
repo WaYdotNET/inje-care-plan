@@ -206,13 +206,15 @@ class _HistoryCard extends StatelessWidget {
     _ => 'Sconosciuto',
   };
 
-  String get _emoji => switch (injection.zoneId) {
+  String? get _emoji => switch (injection.zoneId) {
     1 => '🦵', 2 => '🦵',
     3 => '💪', 4 => '💪',
-    5 => '🎯', 6 => '🎯',
+    5 => null, 6 => null, // Abdomen uses logo
     7 => '🍑', 8 => '🍑',
     _ => '💉',
   };
+
+  bool get _usesLogo => injection.zoneId == 5 || injection.zoneId == 6;
 
   @override
   Widget build(BuildContext context) {
@@ -264,7 +266,14 @@ class _HistoryCard extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Text(_emoji),
+                        if (_usesLogo)
+                          Image.asset(
+                            'assets/images/logo.png',
+                            width: 20,
+                            height: 20,
+                          )
+                        else
+                          Text(_emoji ?? '💉'),
                         const SizedBox(width: 8),
                         Text(
                           injection.pointLabel,
@@ -342,7 +351,14 @@ class _HistoryCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                Text(_emoji, style: const TextStyle(fontSize: 40)),
+                if (_usesLogo)
+                  Image.asset(
+                    'assets/images/logo.png',
+                    width: 40,
+                    height: 40,
+                  )
+                else
+                  Text(_emoji ?? '💉', style: const TextStyle(fontSize: 40)),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(

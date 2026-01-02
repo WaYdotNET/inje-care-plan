@@ -378,7 +378,7 @@ class _InjectionAreasIllustration extends StatelessWidget {
                         code: 'AD',
                         name: 'Addome Dx',
                         description: 'Lontano dall\'ombelico',
-                        icon: '🎯',
+                        useLogoIcon: true,
                         isSelected: selectedZoneId == 5,
                         isDark: isDark,
                         onTap: () => onZoneTap(5),
@@ -441,7 +441,7 @@ class _InjectionAreasIllustration extends StatelessWidget {
                         code: 'AS',
                         name: 'Addome Sx',
                         description: 'Lontano dall\'ombelico',
-                        icon: '🎯',
+                        useLogoIcon: true,
                         isSelected: selectedZoneId == 6,
                         isDark: isDark,
                         onTap: () => onZoneTap(6),
@@ -520,7 +520,8 @@ class _ZoneButton extends StatelessWidget {
     required this.code,
     required this.name,
     required this.description,
-    required this.icon,
+    this.icon,
+    this.useLogoIcon = false,
     required this.isSelected,
     required this.isDark,
     required this.onTap,
@@ -530,7 +531,8 @@ class _ZoneButton extends StatelessWidget {
   final String code;
   final String name;
   final String description;
-  final String icon;
+  final String? icon;
+  final bool useLogoIcon;
   final bool isSelected;
   final bool isDark;
   final VoidCallback onTap;
@@ -564,7 +566,14 @@ class _ZoneButton extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(icon, style: const TextStyle(fontSize: 20)),
+            if (useLogoIcon)
+              Image.asset(
+                'assets/images/logo.png',
+                width: 24,
+                height: 24,
+              )
+            else if (icon != null)
+              Text(icon!, style: const TextStyle(fontSize: 20)),
             const SizedBox(height: 4),
             Text(
               code,
@@ -627,7 +636,14 @@ class _ZoneDetailCard extends StatelessWidget {
             // Zone header
             Row(
               children: [
-                Text(zone.emoji, style: const TextStyle(fontSize: 32)),
+                if (zone.usesLogoIcon)
+                  Image.asset(
+                    'assets/images/logo.png',
+                    width: 32,
+                    height: 32,
+                  )
+                else
+                  Text(zone.emoji ?? '📍', style: const TextStyle(fontSize: 32)),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -805,7 +821,14 @@ class _PointPositionIllustration extends StatelessWidget {
       child: Row(
         children: [
           // Zone icon
-          Text(zone.emoji, style: const TextStyle(fontSize: 40)),
+          if (zone.usesLogoIcon)
+            Image.asset(
+              'assets/images/logo.png',
+              width: 40,
+              height: 40,
+            )
+          else
+            Text(zone.emoji ?? '📍', style: const TextStyle(fontSize: 40)),
           const SizedBox(width: 16),
           // Point grid
           Expanded(

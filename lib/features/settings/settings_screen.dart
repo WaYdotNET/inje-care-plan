@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/services/export_service.dart';
 import '../../core/services/backup_provider.dart';
+import '../../core/services/startup_service.dart';
 import '../../core/database/app_database.dart';
 import '../../core/database/database_provider.dart';
 import '../../app/router.dart';
@@ -158,14 +159,26 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             onChanged: (value) => setState(() => _googleCalendarSync = value),
           ),
 
-          // BACKUP SECTION - NEW
+          // BACKUP SECTION
           _SectionHeader(title: 'BACKUP E RIPRISTINO'),
           _BackupSection(
             backupState: backupState,
             isDark: isDark,
             onBackup: () async {
+              // Mostra dialog per inserire password
+              final password = await showDialog<String>(
+                context: context,
+                builder: (context) => const BackupPasswordDialog(
+                  title: 'Password backup',
+                  confirmButtonText: 'Crea backup',
+                  isRestore: false,
+                ),
+              );
+
+              if (password == null || !mounted) return;
+
               final notifier = ref.read(backupNotifierProvider.notifier);
-              final result = await notifier.backup();
+              final result = await notifier.backup(password);
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
@@ -180,26 +193,35 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               }
             },
             onRestore: () async {
-              final confirmed = await _showRestoreConfirmation(context);
-              if (confirmed == true) {
-                final notifier = ref.read(backupNotifierProvider.notifier);
-                final result = await notifier.restore();
-                if (mounted) {
-                  if (result.success) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: const Text('Ripristino completato. Riavvia l\'app.'),
-                        backgroundColor: isDark ? AppColors.darkPine : AppColors.dawnPine,
-                      ),
-                    );
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(result.error ?? 'Errore'),
-                        backgroundColor: isDark ? AppColors.darkLove : AppColors.dawnLove,
-                      ),
-                    );
-                  }
+              // Mostra dialog per inserire password
+              final password = await showDialog<String>(
+                context: context,
+                builder: (context) => const BackupPasswordDialog(
+                  title: 'Password ripristino',
+                  confirmButtonText: 'Ripristina',
+                  isRestore: true,
+                ),
+              );
+
+              if (password == null || !mounted) return;
+
+              final notifier = ref.read(backupNotifierProvider.notifier);
+              final result = await notifier.restore(password);
+              if (mounted) {
+                if (result.success) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text('Ripristino completato. Riavvia l\'app.'),
+                      backgroundColor: isDark ? AppColors.darkPine : AppColors.dawnPine,
+                    ),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(result.error ?? 'Errore'),
+                      backgroundColor: isDark ? AppColors.darkLove : AppColors.dawnLove,
+                    ),
+                  );
                 }
               }
             },

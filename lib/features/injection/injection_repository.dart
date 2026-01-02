@@ -219,7 +219,7 @@ class InjectionRepository {
   /// Create or update therapy plan
   Future<int> saveTherapyPlan(models.TherapyPlan plan) async {
     final existing = await _db.getCurrentTherapyPlan();
-    
+
     if (existing != null) {
       return _db.updateTherapyPlan(TherapyPlansCompanion(
         id: Value(existing.id),

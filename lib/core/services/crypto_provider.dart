@@ -6,10 +6,3 @@ import 'crypto_service.dart';
 final cryptoServiceProvider = Provider<CryptoService>((ref) {
   return CryptoService();
 });
-
-/// Provider per verificare se esiste una chiave di cifratura
-final hasEncryptionKeyProvider = FutureProvider<bool>((ref) async {
-  final cryptoService = ref.watch(cryptoServiceProvider);
-  return cryptoService.hasStoredKey();
-});
-

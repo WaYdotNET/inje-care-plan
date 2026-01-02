@@ -22,7 +22,7 @@ todos:
     status: completed
   - id: backup-ui
     content: Aggiungere UI backup/restore in Settings + commit finale
-    status: in_progress
+    status: completed
 ---
 
 # Migrazione Privacy-First: Firebase to Drift + Google Drive
@@ -214,6 +214,7 @@ firebase_core: ...
 firebase_auth: ...
 cloud_firestore: ...
 firebase_messaging: ...
+
 
 
 

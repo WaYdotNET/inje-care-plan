@@ -1,154 +1,139 @@
-import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:encrypt/encrypt.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:pointycastle/export.dart';
 
 /// Servizio per cifratura E2E dei backup
-/// Usa AES-256-GCM con chiave derivata e salvata nel Keychain/Keystore
+/// Usa AES-256-CBC con chiave derivata da password tramite PBKDF2
+///
+/// Formato file backup: [16 bytes salt][N bytes dati cifrati]
 class CryptoService {
-  static const _keyStorageKey = 'injecare_backup_key';
-  static const _ivStorageKey = 'injecare_backup_iv';
+  static const _saltLength = 16;
   static const _keyLength = 32; // 256 bit
   static const _ivLength = 16; // 128 bit per AES
+  static const _pbkdf2Iterations = 100000;
 
-  final FlutterSecureStorage _secureStorage;
+  CryptoService();
 
-  CryptoService({FlutterSecureStorage? secureStorage})
-      : _secureStorage = secureStorage ??
-            const FlutterSecureStorage(
-              aOptions: AndroidOptions(encryptedSharedPreferences: true),
-              iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock),
-            );
-
-  /// Genera una nuova chiave AES-256 e la salva nel secure storage
-  Future<void> generateAndStoreKey() async {
-    final secureRandom = FortunaRandom();
-    final seedSource = Uint8List(_keyLength);
-    for (var i = 0; i < seedSource.length; i++) {
-      seedSource[i] = DateTime.now().microsecondsSinceEpoch % 256;
-    }
-    secureRandom.seed(KeyParameter(seedSource));
-
-    final keyBytes = secureRandom.nextBytes(_keyLength);
-    final ivBytes = secureRandom.nextBytes(_ivLength);
-
-    await _secureStorage.write(
-      key: _keyStorageKey,
-      value: base64Encode(keyBytes),
-    );
-    await _secureStorage.write(
-      key: _ivStorageKey,
-      value: base64Encode(ivBytes),
+  /// Genera un salt random
+  Uint8List _generateSalt() {
+    final random = Random.secure();
+    return Uint8List.fromList(
+      List.generate(_saltLength, (_) => random.nextInt(256)),
     );
   }
 
-  /// Verifica se esiste una chiave salvata
-  Future<bool> hasStoredKey() async {
-    final key = await _secureStorage.read(key: _keyStorageKey);
-    return key != null;
+  /// Genera un IV random
+  Uint8List _generateIV() {
+    final random = Random.secure();
+    return Uint8List.fromList(
+      List.generate(_ivLength, (_) => random.nextInt(256)),
+    );
   }
 
-  /// Recupera la chiave salvata, o ne genera una nuova se non esiste
-  Future<Key> _getOrCreateKey() async {
-    var keyBase64 = await _secureStorage.read(key: _keyStorageKey);
-    if (keyBase64 == null) {
-      await generateAndStoreKey();
-      keyBase64 = await _secureStorage.read(key: _keyStorageKey);
-    }
-    return Key.fromBase64(keyBase64!);
+  /// Deriva una chiave AES-256 dalla password usando PBKDF2
+  Uint8List deriveKeyFromPassword(String password, Uint8List salt) {
+    final pbkdf2 = PBKDF2KeyDerivator(HMac(SHA256Digest(), 64))
+      ..init(Pbkdf2Parameters(salt, _pbkdf2Iterations, _keyLength));
+
+    return pbkdf2.process(Uint8List.fromList(password.codeUnits));
   }
 
-  /// Recupera l'IV salvato
-  Future<IV> _getOrCreateIV() async {
-    var ivBase64 = await _secureStorage.read(key: _ivStorageKey);
-    if (ivBase64 == null) {
-      await generateAndStoreKey();
-      ivBase64 = await _secureStorage.read(key: _ivStorageKey);
-    }
-    return IV.fromBase64(ivBase64!);
-  }
+  /// Cifra un file con password
+  /// Restituisce: [16 bytes salt][16 bytes IV][N bytes dati cifrati]
+  Future<Uint8List> encryptFileWithPassword(File file, String password) async {
+    // Genera salt e IV random
+    final salt = _generateSalt();
+    final ivBytes = _generateIV();
 
-  /// Cifra un file e restituisce i bytes cifrati
-  Future<Uint8List> encryptFile(File file) async {
-    final key = await _getOrCreateKey();
-    final iv = await _getOrCreateIV();
+    // Deriva chiave dalla password
+    final keyBytes = deriveKeyFromPassword(password, salt);
+    final key = Key(keyBytes);
+    final iv = IV(ivBytes);
+
+    // Cifra
     final encrypter = Encrypter(AES(key, mode: AESMode.cbc));
-
     final plainBytes = await file.readAsBytes();
     final encrypted = encrypter.encryptBytes(plainBytes, iv: iv);
 
-    return encrypted.bytes;
+    // Combina: salt + iv + dati cifrati
+    final result = Uint8List(_saltLength + _ivLength + encrypted.bytes.length);
+    result.setRange(0, _saltLength, salt);
+    result.setRange(_saltLength, _saltLength + _ivLength, ivBytes);
+    result.setRange(_saltLength + _ivLength, result.length, encrypted.bytes);
+
+    return result;
   }
 
-  /// Decifra i bytes e restituisce i dati originali
-  Future<Uint8List> decryptBytes(Uint8List encryptedBytes) async {
-    final key = await _getOrCreateKey();
-    final iv = await _getOrCreateIV();
-    final encrypter = Encrypter(AES(key, mode: AESMode.cbc));
+  /// Decifra bytes con password
+  /// Input: [16 bytes salt][16 bytes IV][N bytes dati cifrati]
+  Uint8List decryptBytesWithPassword(Uint8List encryptedData, String password) {
+    if (encryptedData.length < _saltLength + _ivLength + 1) {
+      throw ArgumentError('Dati cifrati non validi');
+    }
 
-    final decrypted = encrypter.decryptBytes(Encrypted(encryptedBytes), iv: iv);
+    // Estrai salt e IV
+    final salt = encryptedData.sublist(0, _saltLength);
+    final ivBytes = encryptedData.sublist(_saltLength, _saltLength + _ivLength);
+    final cipherBytes = encryptedData.sublist(_saltLength + _ivLength);
+
+    // Deriva chiave dalla password
+    final keyBytes = deriveKeyFromPassword(password, salt);
+    final key = Key(keyBytes);
+    final iv = IV(ivBytes);
+
+    // Decifra
+    final encrypter = Encrypter(AES(key, mode: AESMode.cbc));
+    final decrypted = encrypter.decryptBytes(Encrypted(cipherBytes), iv: iv);
+
     return Uint8List.fromList(decrypted);
   }
 
-  /// Cifra una stringa
-  Future<String> encryptString(String plainText) async {
-    final key = await _getOrCreateKey();
-    final iv = await _getOrCreateIV();
+  /// Cifra bytes con password (per uso generico)
+  Uint8List encryptBytesWithPassword(Uint8List plainBytes, String password) {
+    final salt = _generateSalt();
+    final ivBytes = _generateIV();
+
+    final keyBytes = deriveKeyFromPassword(password, salt);
+    final key = Key(keyBytes);
+    final iv = IV(ivBytes);
+
     final encrypter = Encrypter(AES(key, mode: AESMode.cbc));
+    final encrypted = encrypter.encryptBytes(plainBytes, iv: iv);
 
-    final encrypted = encrypter.encrypt(plainText, iv: iv);
-    return encrypted.base64;
+    final result = Uint8List(_saltLength + _ivLength + encrypted.bytes.length);
+    result.setRange(0, _saltLength, salt);
+    result.setRange(_saltLength, _saltLength + _ivLength, ivBytes);
+    result.setRange(_saltLength + _ivLength, result.length, encrypted.bytes);
+
+    return result;
   }
 
-  /// Decifra una stringa
-  Future<String> decryptString(String encryptedBase64) async {
-    final key = await _getOrCreateKey();
-    final iv = await _getOrCreateIV();
-    final encrypter = Encrypter(AES(key, mode: AESMode.cbc));
-
-    final decrypted = encrypter.decrypt64(encryptedBase64, iv: iv);
-    return decrypted;
-  }
-
-  /// Esporta la chiave in formato base64 (per backup manuale)
-  /// ATTENZIONE: Mostrare solo all'utente, mai loggare
-  Future<String> exportKeyForBackup() async {
-    final keyBase64 = await _secureStorage.read(key: _keyStorageKey);
-    final ivBase64 = await _secureStorage.read(key: _ivStorageKey);
-    if (keyBase64 == null || ivBase64 == null) {
-      throw StateError('No encryption key found');
-    }
-    // Combina key e IV per il backup
-    return '$keyBase64:$ivBase64';
-  }
-
-  /// Importa una chiave da backup manuale
-  Future<void> importKeyFromBackup(String backupKey) async {
-    final parts = backupKey.split(':');
-    if (parts.length != 2) {
-      throw ArgumentError('Invalid backup key format');
-    }
-    await _secureStorage.write(key: _keyStorageKey, value: parts[0]);
-    await _secureStorage.write(key: _ivStorageKey, value: parts[1]);
-  }
-
-  /// Cancella la chiave (usare con cautela!)
-  Future<void> deleteKey() async {
-    await _secureStorage.delete(key: _keyStorageKey);
-    await _secureStorage.delete(key: _ivStorageKey);
-  }
-
-  /// Verifica che una chiave importata possa decifrare dei dati di test
-  Future<bool> verifyKeyWithTestData(String testEncrypted) async {
+  /// Verifica se una password può decifrare i dati
+  bool verifyPassword(Uint8List encryptedData, String password) {
     try {
-      await decryptString(testEncrypted);
+      decryptBytesWithPassword(encryptedData, password);
       return true;
     } catch (_) {
       return false;
     }
   }
-}
 
+  /// Valida la password (minimo 8 caratteri)
+  static bool isValidPassword(String password) {
+    return password.length >= 8;
+  }
+
+  /// Messaggio di errore per password non valida
+  static String? validatePassword(String? password) {
+    if (password == null || password.isEmpty) {
+      return 'Inserisci una password';
+    }
+    if (password.length < 8) {
+      return 'La password deve avere almeno 8 caratteri';
+    }
+    return null;
+  }
+}

@@ -1,9 +1,9 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:extension_google_sign_in_as_googleapis_auth/extension_google_sign_in_as_googleapis_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/drive/v3.dart' as drive;
+import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 
 import '../database/app_database.dart';
@@ -41,31 +41,50 @@ class BackupInfo {
   });
 }
 
+/// HTTP Client autenticato con Google
+class _AuthenticatedClient extends http.BaseClient {
+  final String _accessToken;
+  final http.Client _inner = http.Client();
+
+  _AuthenticatedClient(this._accessToken);
+
+  @override
+  Future<http.StreamedResponse> send(http.BaseRequest request) {
+    request.headers['Authorization'] = 'Bearer $_accessToken';
+    return _inner.send(request);
+  }
+
+  @override
+  void close() {
+    _inner.close();
+  }
+}
+
 /// Servizio per backup/restore su Google Drive
+/// Richiede password per cifratura/decifratura
 class BackupService {
   static const _backupFileName = 'injecare_backup.enc';
   static const _backupFolderName = 'InjeCare Backups';
   static const _driveScopes = [drive.DriveApi.driveFileScope];
 
   final CryptoService _cryptoService;
-  final GoogleSignIn _googleSignIn;
+  GoogleSignInAccount? _currentUser;
 
   BackupService({
     required CryptoService cryptoService,
-    GoogleSignIn? googleSignIn,
-  })  : _cryptoService = cryptoService,
-        _googleSignIn = googleSignIn ??
-            GoogleSignIn(scopes: _driveScopes);
+  }) : _cryptoService = cryptoService;
 
   /// Verifica se l'utente è autenticato con Google (con scope Drive)
   Future<bool> isAuthenticated() async {
-    return _googleSignIn.currentUser != null;
+    return _currentUser != null;
   }
 
   /// Richiede accesso a Google Drive
   Future<bool> signIn() async {
     try {
-      final account = await _googleSignIn.signIn();
+      final signIn = GoogleSignIn.instance;
+      final account = await signIn.authenticate(scopeHint: _driveScopes);
+      _currentUser = account;
       return account != null;
     } catch (e) {
       return false;
@@ -74,14 +93,40 @@ class BackupService {
 
   /// Disconnette da Google Drive
   Future<void> signOut() async {
-    await _googleSignIn.signOut();
+    final signIn = GoogleSignIn.instance;
+    await signIn.signOut();
+    _currentUser = null;
   }
 
   /// Ottiene l'API client per Google Drive
   Future<drive.DriveApi?> _getDriveApi() async {
-    final httpClient = await _googleSignIn.authenticatedClient();
-    if (httpClient == null) return null;
-    return drive.DriveApi(httpClient);
+    if (_currentUser == null) {
+      // Prova a fare sign-in silenzioso
+      final signIn = GoogleSignIn.instance;
+      final events = signIn.authenticationEvents;
+      await signIn.attemptLightweightAuthentication(scopes: _driveScopes);
+
+      // Aspetta un po' per l'evento
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      if (_currentUser == null) {
+        return null;
+      }
+    }
+
+    // Ottieni access token per gli scopes
+    final headers = await _currentUser!.authorizationClient
+        .authorizationHeaders(_driveScopes, promptIfNecessary: true);
+
+    if (headers == null) return null;
+
+    final authHeader = headers['Authorization'];
+    if (authHeader == null) return null;
+
+    final accessToken = authHeader.replaceFirst('Bearer ', '');
+    final client = _AuthenticatedClient(accessToken);
+
+    return drive.DriveApi(client);
   }
 
   /// Trova o crea la cartella di backup su Drive
@@ -106,7 +151,13 @@ class BackupService {
   }
 
   /// Esegue il backup del database su Google Drive
-  Future<BackupResult> backup() async {
+  /// Richiede password per cifrare i dati
+  Future<BackupResult> backup(String password) async {
+    // Valida password
+    if (!CryptoService.isValidPassword(password)) {
+      return BackupResult.failure('Password non valida (minimo 8 caratteri)');
+    }
+
     try {
       final driveApi = await _getDriveApi();
       if (driveApi == null) {
@@ -121,8 +172,9 @@ class BackupService {
         return BackupResult.failure('Database non trovato');
       }
 
-      // Cifra il database
-      final encryptedBytes = await _cryptoService.encryptFile(dbFile);
+      // Cifra il database con password
+      final encryptedBytes =
+          await _cryptoService.encryptFileWithPassword(dbFile, password);
 
       // Ottieni/crea cartella backup
       final folderId = await _getOrCreateBackupFolder(driveApi);
@@ -207,7 +259,12 @@ class BackupService {
   }
 
   /// Ripristina il database da un backup su Google Drive
-  Future<BackupResult> restore() async {
+  /// Richiede password per decifrare i dati
+  Future<BackupResult> restore(String password) async {
+    if (!CryptoService.isValidPassword(password)) {
+      return BackupResult.failure('Password non valida');
+    }
+
     try {
       final driveApi = await _getDriveApi();
       if (driveApi == null) {
@@ -231,10 +288,16 @@ class BackupService {
         bytes.addAll(chunk);
       }
 
-      // Decifra
-      final decryptedBytes = await _cryptoService.decryptBytes(
-        Uint8List.fromList(bytes),
-      );
+      // Decifra con password
+      final Uint8List decryptedBytes;
+      try {
+        decryptedBytes = _cryptoService.decryptBytesWithPassword(
+          Uint8List.fromList(bytes),
+          password,
+        );
+      } catch (e) {
+        return BackupResult.failure('Password errata o backup corrotto');
+      }
 
       // Salva come nuovo database
       final dbPath = await AppDatabase.getDatabasePath();
@@ -263,7 +326,11 @@ class BackupService {
   }
 
   /// Esporta il database localmente (per backup manuale)
-  Future<String?> exportLocally() async {
+  Future<String?> exportLocally(String password) async {
+    if (!CryptoService.isValidPassword(password)) {
+      return null;
+    }
+
     try {
       final dbPath = await AppDatabase.getDatabasePath();
       final dbFile = File(dbPath);
@@ -272,8 +339,9 @@ class BackupService {
         return null;
       }
 
-      // Cifra il database
-      final encryptedBytes = await _cryptoService.encryptFile(dbFile);
+      // Cifra il database con password
+      final encryptedBytes =
+          await _cryptoService.encryptFileWithPassword(dbFile, password);
 
       // Salva nella directory documenti
       final docsDir = await getApplicationDocumentsDirectory();
@@ -289,7 +357,11 @@ class BackupService {
   }
 
   /// Importa un backup da file locale
-  Future<BackupResult> importFromFile(String filePath) async {
+  Future<BackupResult> importFromFile(String filePath, String password) async {
+    if (!CryptoService.isValidPassword(password)) {
+      return BackupResult.failure('Password non valida');
+    }
+
     try {
       final importFile = File(filePath);
       if (!await importFile.exists()) {
@@ -297,12 +369,21 @@ class BackupService {
       }
 
       final encryptedBytes = await importFile.readAsBytes();
-      final decryptedBytes = await _cryptoService.decryptBytes(encryptedBytes);
+
+      final Uint8List decryptedBytes;
+      try {
+        decryptedBytes = _cryptoService.decryptBytesWithPassword(
+          encryptedBytes,
+          password,
+        );
+      } catch (e) {
+        return BackupResult.failure('Password errata o file corrotto');
+      }
 
       // Salva come nuovo database
       final dbPath = await AppDatabase.getDatabasePath();
       final currentDb = File(dbPath);
-      
+
       if (await currentDb.exists()) {
         await currentDb.delete();
       }
@@ -339,4 +420,3 @@ class BackupService {
     }
   }
 }
-

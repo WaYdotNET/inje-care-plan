@@ -37,13 +37,11 @@ class StartupInfo {
 /// Servizio per gestire la logica di avvio dell'app
 class StartupService {
   final BackupService _backupService;
-  final CryptoService _cryptoService;
 
   StartupService({
     required BackupService backupService,
-    required CryptoService cryptoService,
-  })  : _backupService = backupService,
-        _cryptoService = cryptoService;
+    CryptoService? cryptoService, // Non più necessario, mantenuto per compatibilità
+  }) : _backupService = backupService;
 
   /// Controlla lo stato all'avvio
   /// - Se esiste DB locale -> avvio normale
@@ -86,17 +84,9 @@ class StartupService {
     }
   }
 
-  /// Esegue il restore del backup
-  Future<BackupResult> restoreBackup() async {
-    return _backupService.restore();
-  }
-
-  /// Inizializza la chiave di cifratura se non esiste
-  Future<void> ensureEncryptionKey() async {
-    final hasKey = await _cryptoService.hasStoredKey();
-    if (!hasKey) {
-      await _cryptoService.generateAndStoreKey();
-    }
+  /// Esegue il restore del backup con password
+  Future<BackupResult> restoreBackup(String password) async {
+    return _backupService.restore(password);
   }
 }
 
@@ -168,7 +158,7 @@ class RestoreBackupDialog extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'Vuoi ripristinare i dati dal backup?',
+            'Per ripristinare dovrai inserire la password usata per il backup.',
             style: theme.textTheme.bodyMedium,
           ),
         ],
@@ -236,3 +226,111 @@ class RestoreProgressDialog extends StatelessWidget {
   }
 }
 
+/// Dialog per inserire la password di backup
+class BackupPasswordDialog extends StatefulWidget {
+  final String title;
+  final String confirmButtonText;
+  final bool isRestore;
+
+  const BackupPasswordDialog({
+    super.key,
+    required this.title,
+    this.confirmButtonText = 'Conferma',
+    this.isRestore = false,
+  });
+
+  @override
+  State<BackupPasswordDialog> createState() => _BackupPasswordDialogState();
+}
+
+class _BackupPasswordDialogState extends State<BackupPasswordDialog> {
+  final _formKey = GlobalKey<FormState>();
+  final _passwordController = TextEditingController();
+  final _confirmController = TextEditingController();
+  bool _obscurePassword = true;
+  bool _obscureConfirm = true;
+
+  @override
+  void dispose() {
+    _passwordController.dispose();
+    _confirmController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(widget.title),
+      content: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextFormField(
+              controller: _passwordController,
+              obscureText: _obscurePassword,
+              decoration: InputDecoration(
+                labelText: 'Password',
+                hintText: 'Minimo 8 caratteri',
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                  ),
+                  onPressed: () {
+                    setState(() => _obscurePassword = !_obscurePassword);
+                  },
+                ),
+              ),
+              validator: CryptoService.validatePassword,
+            ),
+            if (!widget.isRestore) ...[
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _confirmController,
+                obscureText: _obscureConfirm,
+                decoration: InputDecoration(
+                  labelText: 'Conferma password',
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscureConfirm ? Icons.visibility : Icons.visibility_off,
+                    ),
+                    onPressed: () {
+                      setState(() => _obscureConfirm = !_obscureConfirm);
+                    },
+                  ),
+                ),
+                validator: (value) {
+                  if (value != _passwordController.text) {
+                    return 'Le password non coincidono';
+                  }
+                  return null;
+                },
+              ),
+            ],
+            const SizedBox(height: 16),
+            Text(
+              widget.isRestore
+                  ? 'Inserisci la password usata per creare il backup.'
+                  : 'Questa password sarà necessaria per ripristinare il backup su un nuovo dispositivo.',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Annulla'),
+        ),
+        FilledButton(
+          onPressed: () {
+            if (_formKey.currentState!.validate()) {
+              Navigator.pop(context, _passwordController.text);
+            }
+          },
+          child: Text(widget.confirmButtonText),
+        ),
+      ],
+    );
+  }
+}

@@ -46,11 +46,12 @@ class BackupState {
   }
 }
 
-/// Notifier per gestire le operazioni di backup
-class BackupNotifier extends StateNotifier<BackupState> {
-  final BackupService _backupService;
+/// Notifier per gestire le operazioni di backup (Riverpod 3.x)
+class BackupNotifier extends Notifier<BackupState> {
+  @override
+  BackupState build() => const BackupState();
 
-  BackupNotifier(this._backupService) : super(const BackupState());
+  BackupService get _backupService => ref.read(backupServiceProvider);
 
   Future<void> checkBackup() async {
     state = state.copyWith(isLoading: true);
@@ -58,9 +59,10 @@ class BackupNotifier extends StateNotifier<BackupState> {
     state = state.copyWith(isLoading: false, backupInfo: info);
   }
 
-  Future<BackupResult> backup() async {
+  /// Esegue il backup con password
+  Future<BackupResult> backup(String password) async {
     state = state.copyWith(isLoading: true);
-    final result = await _backupService.backup();
+    final result = await _backupService.backup(password);
     state = state.copyWith(isLoading: false, lastResult: result);
     if (result.success) {
       await checkBackup();
@@ -68,9 +70,10 @@ class BackupNotifier extends StateNotifier<BackupState> {
     return result;
   }
 
-  Future<BackupResult> restore() async {
+  /// Ripristina il backup con password
+  Future<BackupResult> restore(String password) async {
     state = state.copyWith(isLoading: true);
-    final result = await _backupService.restore();
+    final result = await _backupService.restore(password);
     state = state.copyWith(isLoading: false, lastResult: result);
     return result;
   }
@@ -87,8 +90,4 @@ class BackupNotifier extends StateNotifier<BackupState> {
 
 /// Provider per BackupNotifier
 final backupNotifierProvider =
-    StateNotifierProvider<BackupNotifier, BackupState>((ref) {
-  final backupService = ref.watch(backupServiceProvider);
-  return BackupNotifier(backupService);
-});
-
+    NotifierProvider<BackupNotifier, BackupState>(BackupNotifier.new);

@@ -337,13 +337,7 @@ class _NextInjectionCard extends StatelessWidget {
                           : AppColors.dawnHighlightLow,
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: _zone!.usesLogoIcon
-                        ? Image.asset(
-                            'assets/images/logo.png',
-                            width: 24,
-                            height: 24,
-                          )
-                        : Text(_zone!.emoji ?? '📍'),
+                    child: Text(_zone!.emoji),
                   ),
                   const SizedBox(width: 12),
                   Column(

@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/services/export_service.dart';
+import '../../core/services/backup_provider.dart';
+import '../../core/database/app_database.dart';
+import '../../core/database/database_provider.dart';
 import '../../app/router.dart';
 import '../../models/therapy_plan.dart';
-import '../../models/blacklisted_point.dart';
 import '../auth/auth_provider.dart';
 import '../injection/injection_provider.dart';
 
@@ -33,6 +36,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final therapyPlanAsync = ref.watch(therapyPlanProvider);
     final blacklistAsync = ref.watch(blacklistedPointsProvider);
     final injectionsAsync = ref.watch(injectionsProvider);
+    final backupState = ref.watch(backupNotifierProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -48,10 +52,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 children: [
                   CircleAvatar(
                     radius: 30,
-                    backgroundImage: user.photoURL != null
-                        ? NetworkImage(user.photoURL!)
+                    backgroundImage: user.photoUrl != null
+                        ? NetworkImage(user.photoUrl!)
                         : null,
-                    child: user.photoURL == null
+                    child: user.photoUrl == null
                         ? const Icon(Icons.person, size: 30)
                         : null,
                   ),
@@ -89,25 +93,28 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             error: (_, __) => const ListTile(
               title: Text('Errore nel caricamento'),
             ),
-            data: (plan) => Column(
-              children: [
-                _SettingsTile(
-                  title: 'Iniezioni settimanali',
-                  trailing: Text('${plan.injectionsPerWeek}'),
-                  onTap: () => _editInjectionsPerWeek(context, plan),
-                ),
-                _SettingsTile(
-                  title: 'Giorni',
-                  trailing: Text(plan.weekDaysString),
-                  onTap: () => _editWeekDays(context, plan),
-                ),
-                _SettingsTile(
-                  title: 'Orario preferito',
-                  trailing: Text(plan.preferredTime),
-                  onTap: () => _editPreferredTime(context, plan),
-                ),
-              ],
-            ),
+            data: (plan) {
+              final therapyPlan = plan ?? TherapyPlan.defaults;
+              return Column(
+                children: [
+                  _SettingsTile(
+                    title: 'Iniezioni settimanali',
+                    trailing: Text('${therapyPlan.injectionsPerWeek}'),
+                    onTap: () => _editInjectionsPerWeek(context, therapyPlan),
+                  ),
+                  _SettingsTile(
+                    title: 'Giorni',
+                    trailing: Text(therapyPlan.weekDaysString),
+                    onTap: () => _editWeekDays(context, therapyPlan),
+                  ),
+                  _SettingsTile(
+                    title: 'Orario preferito',
+                    trailing: Text(therapyPlan.preferredTime),
+                    onTap: () => _editPreferredTime(context, therapyPlan),
+                  ),
+                ],
+              );
+            },
           ),
 
           _SectionHeader(title: 'ZONE E PUNTI'),
@@ -151,6 +158,60 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             onChanged: (value) => setState(() => _googleCalendarSync = value),
           ),
 
+          // BACKUP SECTION - NEW
+          _SectionHeader(title: 'BACKUP E RIPRISTINO'),
+          _BackupSection(
+            backupState: backupState,
+            isDark: isDark,
+            onBackup: () async {
+              final notifier = ref.read(backupNotifierProvider.notifier);
+              final result = await notifier.backup();
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(result.success
+                        ? 'Backup completato'
+                        : result.error ?? 'Errore'),
+                    backgroundColor: result.success
+                        ? (isDark ? AppColors.darkPine : AppColors.dawnPine)
+                        : (isDark ? AppColors.darkLove : AppColors.dawnLove),
+                  ),
+                );
+              }
+            },
+            onRestore: () async {
+              final confirmed = await _showRestoreConfirmation(context);
+              if (confirmed == true) {
+                final notifier = ref.read(backupNotifierProvider.notifier);
+                final result = await notifier.restore();
+                if (mounted) {
+                  if (result.success) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Text('Ripristino completato. Riavvia l\'app.'),
+                        backgroundColor: isDark ? AppColors.darkPine : AppColors.dawnPine,
+                      ),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(result.error ?? 'Errore'),
+                        backgroundColor: isDark ? AppColors.darkLove : AppColors.dawnLove,
+                      ),
+                    );
+                  }
+                }
+              }
+            },
+            onSignIn: () async {
+              final notifier = ref.read(backupNotifierProvider.notifier);
+              final success = await notifier.signIn();
+              if (success) {
+                await notifier.checkBackup();
+              }
+            },
+          ),
+
           _SectionHeader(title: 'ASPETTO'),
           ListTile(
             title: const Text('Tema'),
@@ -164,7 +225,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             value: _biometricEnabled,
             onChanged: (value) async {
               final repository = ref.read(authRepositoryProvider);
-              await repository.setBiometricEnabled(value);
+              final db = ref.read(databaseProvider);
+              await repository.setBiometricEnabled(db, value);
               setState(() => _biometricEnabled = value);
             },
           ),
@@ -180,7 +242,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   onTap: injections.isNotEmpty
                       ? () async {
                           try {
-                            await ExportService.instance.exportToPdf(injections);
+                            await ExportService.instance.exportToPdf(
+                              _convertInjections(injections),
+                            );
                           } catch (e) {
                             if (mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
@@ -196,7 +260,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   onTap: injections.isNotEmpty
                       ? () async {
                           try {
-                            await ExportService.instance.exportToCsv(injections);
+                            await ExportService.instance.exportToCsv(
+                              _convertInjections(injections),
+                            );
                           } catch (e) {
                             if (mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
@@ -225,10 +291,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               style: theme.textTheme.bodySmall,
             ),
           ),
+          Center(
+            child: Text(
+              'Privacy-first · Offline-first',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+              ),
+            ),
+          ),
           const SizedBox(height: 16),
         ],
       ),
     );
+  }
+
+  // Convert Drift Injection to model for export
+  List<dynamic> _convertInjections(List<Injection> injections) {
+    // ExportService needs to be updated to work with Drift types
+    // For now, pass the raw list
+    return injections;
   }
 
   String get _themeModeLabel => switch (_themeMode) {
@@ -238,15 +319,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   };
 
   Future<void> _signOut(BuildContext context) async {
-    final repository = ref.read(authRepositoryProvider);
-    await repository.signOut();
+    final authNotifier = ref.read(authNotifierProvider.notifier);
+    await authNotifier.signOut();
     if (mounted) {
       context.go(AppRoutes.login);
     }
   }
 
   void _editInjectionsPerWeek(BuildContext context, TherapyPlan plan) {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) {
         int value = plan.injectionsPerWeek;
@@ -255,7 +336,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           content: StatefulBuilder(
             builder: (context, setState) => Column(
               mainAxisSize: MainAxisSize.min,
-              children: [1, 2, 3, 4, 5].map((n) => RadioListTile(
+              children: [1, 2, 3, 4, 5].map((n) => RadioListTile<int>(
                 title: Text('$n'),
                 value: n,
                 groupValue: value,
@@ -282,7 +363,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   void _editWeekDays(BuildContext context, TherapyPlan plan) {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) {
         final selected = Set<int>.from(plan.weekDays);
@@ -349,20 +430,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _updateTherapyPlan(TherapyPlan plan) async {
-    final user = ref.read(currentUserProvider);
-    if (user == null) return;
-
     final repository = ref.read(injectionRepositoryProvider);
-    await repository.updateTherapyPlan(user.uid, plan);
+    await repository.saveTherapyPlan(plan);
   }
 
   void _showThemeSelector(BuildContext context) {
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       builder: (context) => Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          RadioListTile(
+          RadioListTile<String>(
             title: const Text('Chiaro (Dawn)'),
             value: 'light',
             groupValue: _themeMode,
@@ -371,7 +449,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               Navigator.pop(context);
             },
           ),
-          RadioListTile(
+          RadioListTile<String>(
             title: const Text('Scuro (Rosé Pine)'),
             value: 'dark',
             groupValue: _themeMode,
@@ -380,7 +458,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               Navigator.pop(context);
             },
           ),
-          RadioListTile(
+          RadioListTile<String>(
             title: const Text('Automatico (sistema)'),
             value: 'system',
             groupValue: _themeMode,
@@ -398,7 +476,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   void _showBlacklistedPoints(BuildContext context, List<BlacklistedPoint> blacklist) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       builder: (context) => DraggableScrollableSheet(
@@ -475,7 +553,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 children: [
                                   Text(bp.pointLabel),
                                   Text(
-                                    'Motivo: ${bp.reasonLabel}',
+                                    'Motivo: ${bp.reason}',
                                     style: Theme.of(context).textTheme.bodySmall,
                                   ),
                                 ],
@@ -483,10 +561,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             ),
                             TextButton(
                               onPressed: () async {
-                                final user = ref.read(currentUserProvider);
-                                if (user == null || bp.id == null) return;
                                 final repository = ref.read(injectionRepositoryProvider);
-                                await repository.unblacklistPoint(user.uid, bp.id!);
+                                await repository.unblacklistPoint(bp.pointCode);
                               },
                               child: const Text('Riabilita'),
                             ),
@@ -513,8 +589,32 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
+  Future<bool?> _showRestoreConfirmation(BuildContext context) {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Ripristina backup'),
+        content: const Text(
+          'I dati attuali verranno sostituiti con quelli del backup. Vuoi continuare?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Annulla'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Ripristina'),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showDeleteConfirmation(BuildContext context) {
-    showDialog(
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Elimina tutti i dati'),
@@ -527,7 +627,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             child: const Text('Annulla'),
           ),
           ElevatedButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () async {
+              Navigator.pop(context);
+              final db = ref.read(databaseProvider);
+              await db.deleteAllData();
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text('Dati eliminati'),
+                    backgroundColor: isDark ? AppColors.darkPine : AppColors.dawnPine,
+                  ),
+                );
+              }
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.error,
             ),
@@ -536,6 +648,101 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ],
       ),
     );
+  }
+}
+
+/// Backup section widget
+class _BackupSection extends StatelessWidget {
+  const _BackupSection({
+    required this.backupState,
+    required this.isDark,
+    required this.onBackup,
+    required this.onRestore,
+    required this.onSignIn,
+  });
+
+  final BackupState backupState;
+  final bool isDark;
+  final VoidCallback onBackup;
+  final VoidCallback onRestore;
+  final VoidCallback onSignIn;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    if (backupState.isLoading) {
+      return const ListTile(
+        leading: SizedBox(
+          width: 24,
+          height: 24,
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+        title: Text('Operazione in corso...'),
+      );
+    }
+
+    return Column(
+      children: [
+        // Backup info card
+        if (backupState.backupInfo != null)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.cloud_done,
+                      color: isDark ? AppColors.darkPine : AppColors.dawnPine,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Ultimo backup'),
+                          Text(
+                            _formatDate(backupState.backupInfo!.modifiedTime),
+                            style: theme.textTheme.bodySmall,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+        _SettingsTile(
+          icon: Icons.cloud_upload_outlined,
+          title: 'Backup su Google Drive',
+          onTap: onBackup,
+        ),
+        _SettingsTile(
+          icon: Icons.cloud_download_outlined,
+          title: 'Ripristina da backup',
+          onTap: backupState.backupInfo != null ? onRestore : () {},
+        ),
+
+        // Info text
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Text(
+            'I tuoi dati sono cifrati prima del backup. Solo tu puoi decifrarli.',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    return DateFormat('dd/MM/yyyy HH:mm').format(date);
   }
 }
 

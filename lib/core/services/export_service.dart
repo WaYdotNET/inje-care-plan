@@ -5,7 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
 
-import '../../models/injection_record.dart';
+import '../database/app_database.dart';
 
 /// Export service for PDF and CSV generation
 class ExportService {
@@ -13,8 +13,17 @@ class ExportService {
 
   static final instance = ExportService._();
 
-  /// Export injections to PDF
-  Future<void> exportToPdf(List<InjectionRecord> injections) async {
+  /// Get zone name from zoneId
+  String _getZoneName(int zoneId) => switch (zoneId) {
+    1 => 'Coscia Dx', 2 => 'Coscia Sx',
+    3 => 'Braccio Dx', 4 => 'Braccio Sx',
+    5 => 'Addome Dx', 6 => 'Addome Sx',
+    7 => 'Gluteo Dx', 8 => 'Gluteo Sx',
+    _ => 'Sconosciuto',
+  };
+
+  /// Export injections to PDF (accepts Drift Injection type)
+  Future<void> exportToPdf(List<dynamic> injections) async {
     final pdf = pw.Document();
     final dateFormat = DateFormat('dd/MM/yyyy HH:mm', 'it_IT');
 
@@ -74,13 +83,16 @@ class ExportService {
             headerPadding: const pw.EdgeInsets.all(8),
             headers: ['Data', 'Punto', 'Stato', 'Note'],
             data: injections.map((inj) {
-              final date = inj.completedAt ?? inj.scheduledAt;
-              return [
-                dateFormat.format(date),
-                inj.pointLabel,
-                _statusLabel(inj.status),
-                inj.notes ?? '-',
-              ];
+              if (inj is Injection) {
+                final date = inj.completedAt ?? inj.scheduledAt;
+                return [
+                  dateFormat.format(date),
+                  inj.pointLabel,
+                  _statusLabel(inj.status),
+                  inj.notes.isEmpty ? '-' : inj.notes,
+                ];
+              }
+              return ['', '', '', ''];
             }).toList(),
           ),
           pw.SizedBox(height: 24),
@@ -94,10 +106,10 @@ class ExportService {
           pw.SizedBox(height: 8),
           pw.Text('Totale iniezioni: ${injections.length}'),
           pw.Text(
-            'Completate: ${injections.where((i) => i.status == InjectionStatus.completed).length}',
+            'Completate: ${_countByStatus(injections, 'completed')}',
           ),
           pw.Text(
-            'Saltate: ${injections.where((i) => i.status == InjectionStatus.skipped).length}',
+            'Saltate: ${_countByStatus(injections, 'skipped')}',
           ),
         ],
       ),
@@ -116,8 +128,8 @@ class ExportService {
     );
   }
 
-  /// Export injections to CSV
-  Future<void> exportToCsv(List<InjectionRecord> injections) async {
+  /// Export injections to CSV (accepts Drift Injection type)
+  Future<void> exportToCsv(List<dynamic> injections) async {
     final buffer = StringBuffer();
 
     // Header
@@ -125,17 +137,19 @@ class ExportService {
 
     // Data rows
     for (final inj in injections) {
-      final date = inj.completedAt ?? inj.scheduledAt;
-      buffer.writeln([
-        DateFormat('dd/MM/yyyy').format(date),
-        DateFormat('HH:mm').format(date),
-        inj.zoneName,
-        inj.pointNumber,
-        inj.pointCode,
-        _statusLabel(inj.status),
-        '"${inj.notes?.replaceAll('"', '""') ?? ''}"',
-        '"${inj.sideEffects.join(', ')}"',
-      ].join(','));
+      if (inj is Injection) {
+        final date = inj.completedAt ?? inj.scheduledAt;
+        buffer.writeln([
+          DateFormat('dd/MM/yyyy').format(date),
+          DateFormat('HH:mm').format(date),
+          _getZoneName(inj.zoneId),
+          inj.pointNumber,
+          inj.pointCode,
+          _statusLabel(inj.status),
+          '"${inj.notes.replaceAll('"', '""')}"',
+          '"${inj.sideEffects}"',
+        ].join(','));
+      }
     }
 
     // Save and share
@@ -151,10 +165,15 @@ class ExportService {
     );
   }
 
-  String _statusLabel(InjectionStatus status) => switch (status) {
-    InjectionStatus.completed => 'Completata',
-    InjectionStatus.scheduled => 'Programmata',
-    InjectionStatus.delayed => 'In ritardo',
-    InjectionStatus.skipped => 'Saltata',
+  int _countByStatus(List<dynamic> injections, String status) {
+    return injections.where((i) => i is Injection && i.status == status).length;
+  }
+
+  String _statusLabel(String status) => switch (status) {
+    'completed' => 'Completata',
+    'scheduled' => 'Programmata',
+    'delayed' => 'In ritardo',
+    'skipped' => 'Saltata',
+    _ => status,
   };
 }

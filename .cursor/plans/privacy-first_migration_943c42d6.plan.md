@@ -19,10 +19,10 @@ todos:
     status: completed
   - id: update-repositories
     content: Aggiornare repository per usare Drift invece di Firestore + commit
-    status: in_progress
+    status: completed
   - id: backup-ui
     content: Aggiungere UI backup/restore in Settings + commit finale
-    status: pending
+    status: in_progress
 ---
 
 # Migrazione Privacy-First: Firebase to Drift + Google Drive

@@ -4,7 +4,7 @@ overview: Migrazione da Firebase a architettura offline-first con Drift (SQLite)
 todos:
   - id: drift-setup
     content: "Setup Drift: schema tabelle, DAO, migrazioni + commit"
-    status: pending
+    status: in_progress
   - id: crypto-service
     content: Implementare CryptoService con chiave biometrica + AES-256 + commit
     status: pending
@@ -56,21 +56,11 @@ flowchart TB
     GAuth[Google Sign-in] -->|"solo Drive scope"| DriveAPI
 ```
 
+
+
 ## Cosa Cambia
 
-| Componente | Prima (Firebase) | Dopo (Privacy-First) |
-
-|------------|-----------------|----------------------|
-
-| Database | Firestore (cloud) | Drift/SQLite (locale) |
-
-| Auth | Firebase Auth | Google Sign-in (solo per Drive) |
-
-| Backup | Automatico su Firebase | Google Drive utente (cifrato) |
-
-| Chiave cifratura | Gestita da Google | Derivata da biometrico utente |
-
-| Accesso dati | Tu + Google | Solo utente |
+| Componente | Prima (Firebase) | Dopo (Privacy-First) ||------------|-----------------|----------------------|| Database | Firestore (cloud) | Drift/SQLite (locale) || Auth | Firebase Auth | Google Sign-in (solo per Drive) || Backup | Automatico su Firebase | Google Drive utente (cifrato) || Chiave cifratura | Gestita da Google | Derivata da biometrico utente || Accesso dati | Tu + Google | Solo utente |
 
 ## File da Modificare/Creare
 
@@ -112,6 +102,8 @@ class AppDatabase extends _$AppDatabase {
 }
 ```
 
+
+
 ### Fase 2: Crypto Service
 
 Implementare cifratura AES-256 con chiave derivata da biometrico in [`lib/core/services/crypto_service.dart`](lib/core/services/crypto_service.dart):
@@ -143,6 +135,8 @@ flowchart TD
     AskUser -->|Salta| FirstRun
     Import --> Normal
 ```
+
+
 
 - All'avvio: controlla se esiste DB locale
 - Se non esiste: verifica se c'e' backup su Google Drive
@@ -210,6 +204,8 @@ dev_dependencies:
   build_runner: ^2.4.15  # gia presente
 ```
 
+
+
 ## Dipendenze da Rimuovere
 
 ```yaml
@@ -218,5 +214,6 @@ firebase_core: ...
 firebase_auth: ...
 cloud_firestore: ...
 firebase_messaging: ...
+
 
 ```

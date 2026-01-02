@@ -11,6 +11,7 @@ import '../../models/therapy_plan.dart';
 import '../../core/services/notification_service.dart';
 import '../../core/services/notification_settings_provider.dart';
 import 'injection_provider.dart';
+import 'zone_provider.dart';
 
 /// Record injection screen
 class RecordInjectionScreen extends ConsumerStatefulWidget {
@@ -32,10 +33,10 @@ class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
   final Set<String> _selectedSideEffects = {};
   bool _isLoading = false;
 
-  BodyZone get _zone => BodyZone.defaults.firstWhere(
-    (z) => z.id == widget.zoneId,
-    orElse: () => BodyZone.defaults.first,
-  );
+  BodyZone? _getZone(List<BodyZone> zones) {
+    final zone = zones.where((z) => z.id == widget.zoneId).firstOrNull;
+    return zone ?? zones.firstOrNull;
+  }
 
   @override
   void dispose() {
@@ -49,6 +50,7 @@ class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
     final isDark = theme.brightness == Brightness.dark;
     final now = DateTime.now();
     final dateFormat = DateFormat('d MMMM yyyy, HH:mm', 'it_IT');
+    final zonesAsync = ref.watch(zonesProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -58,59 +60,82 @@ class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
           onPressed: () => context.pop(),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Date/time
-            Row(
-              children: [
-                Icon(
-                  Icons.calendar_today,
-                  color: isDark ? AppColors.darkSubtle : AppColors.dawnSubtle,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  dateFormat.format(now),
-                  style: theme.textTheme.bodyLarge,
-                ),
-              ],
-            ),
+      body: zonesAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Center(child: Text('Errore: $e')),
+        data: (zones) {
+          final zone = _getZone(zones);
+          if (zone == null) {
+            return const Center(child: Text('Zona non trovata'));
+          }
+          return _buildContent(context, theme, isDark, now, dateFormat, zone, zones);
+        },
+      ),
+    );
+  }
 
-            const SizedBox(height: 24),
+  Widget _buildContent(
+    BuildContext context,
+    ThemeData theme,
+    bool isDark,
+    DateTime now,
+    DateFormat dateFormat,
+    BodyZone zone,
+    List<BodyZone> zones,
+  ) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Date/time
+          Row(
+            children: [
+              Icon(
+                Icons.calendar_today,
+                color: isDark ? AppColors.darkSubtle : AppColors.dawnSubtle,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                dateFormat.format(now),
+                style: theme.textTheme.bodyLarge,
+              ),
+            ],
+          ),
 
-            // Selected point
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    Text(_zone.emoji, style: const TextStyle(fontSize: 32)),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            _zone.pointLabel(widget.pointNumber),
-                            style: theme.textTheme.titleMedium,
-                          ),
-                          Text(
-                            _zone.pointCode(widget.pointNumber),
-                            style: theme.textTheme.bodySmall,
-                          ),
-                        ],
-                      ),
+          const SizedBox(height: 24),
+
+          // Selected point
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Text(zone.emoji, style: const TextStyle(fontSize: 32)),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          zone.pointLabel(widget.pointNumber),
+                          style: theme.textTheme.titleMedium,
+                        ),
+                        Text(
+                          zone.pointCode(widget.pointNumber),
+                          style: theme.textTheme.bodySmall,
+                        ),
+                      ],
                     ),
-                    TextButton(
-                      onPressed: () => context.pop(),
-                      child: const Text('Cambia'),
-                    ),
-                  ],
-                ),
+                  ),
+                  TextButton(
+                    onPressed: () => context.pop(),
+                    child: const Text('Cambia'),
+                  ),
+                ],
               ),
             ),
+          ),
 
             const SizedBox(height: 24),
 
@@ -165,7 +190,7 @@ class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: _isLoading ? null : _confirmInjection,
+                onPressed: _isLoading ? null : () => _confirmInjection(zone, zones),
                 icon: _isLoading
                     ? const SizedBox(
                         width: 20,
@@ -181,11 +206,10 @@ class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
             ),
           ],
         ),
-      ),
-    );
+      );
   }
 
-  Future<void> _confirmInjection() async {
+  Future<void> _confirmInjection(BodyZone zone, List<BodyZone> zones) async {
     setState(() => _isLoading = true);
 
     try {
@@ -217,9 +241,9 @@ class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
         final suggestedPoint = await repository.getSuggestedNextPoint();
 
         if (suggestedPoint != null) {
-          final nextZone = BodyZone.defaults.firstWhere(
+          final nextZone = zones.firstWhere(
             (z) => z.id == suggestedPoint.zoneId,
-            orElse: () => BodyZone.defaults.first,
+            orElse: () => zones.first,
           );
 
           // Schedule notification for next injection
@@ -235,7 +259,7 @@ class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${_zone.pointLabel(widget.pointNumber)} registrata'),
+            content: Text('${zone.pointLabel(widget.pointNumber)} registrata'),
             backgroundColor: Theme.of(context).colorScheme.primary,
           ),
         );

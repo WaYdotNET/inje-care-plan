@@ -9,6 +9,7 @@ import '../../models/body_zone.dart';
 import '../../models/therapy_plan.dart';
 import '../auth/auth_provider.dart';
 import '../injection/injection_provider.dart';
+import '../injection/zone_provider.dart';
 
 /// Home dashboard screen
 class HomeScreen extends ConsumerWidget {
@@ -155,33 +156,12 @@ class HomeScreen extends ConsumerWidget {
               const SizedBox(height: 24),
 
               // Next injection card
-              therapyPlanAsync.when(
-                loading: () => const _LoadingCard(),
-                error: (_, __) => const _ErrorCard(),
-                data: (plan) {
-                  final therapyPlan = plan ?? TherapyPlan.defaults;
-                  final nextDate = therapyPlan.getNextInjectionDate(DateTime.now());
-                  return suggestedAsync.when(
-                    loading: () => _NextInjectionCard(
-                      nextDate: nextDate,
-                      suggestedZoneId: null,
-                      suggestedPointNumber: null,
-                      isDark: isDark,
-                    ),
-                    error: (_, __) => _NextInjectionCard(
-                      nextDate: nextDate,
-                      suggestedZoneId: null,
-                      suggestedPointNumber: null,
-                      isDark: isDark,
-                    ),
-                    data: (suggested) => _NextInjectionCard(
-                      nextDate: nextDate,
-                      suggestedZoneId: suggested?.zoneId,
-                      suggestedPointNumber: suggested?.pointNumber,
-                      isDark: isDark,
-                    ),
-                  );
-                },
+              _buildNextInjectionCard(
+                context,
+                ref,
+                therapyPlanAsync,
+                suggestedAsync,
+                isDark,
               ),
 
               const SizedBox(height: 16),
@@ -228,6 +208,67 @@ class HomeScreen extends ConsumerWidget {
       ),
     );
   }
+
+  Widget _buildNextInjectionCard(
+    BuildContext context,
+    WidgetRef ref,
+    AsyncValue<TherapyPlan?> therapyPlanAsync,
+    AsyncValue<({int zoneId, int pointNumber})?> suggestedAsync,
+    bool isDark,
+  ) {
+    final zonesAsync = ref.watch(zonesProvider);
+
+    return therapyPlanAsync.when(
+      loading: () => const _LoadingCard(),
+      error: (_, __) => const _ErrorCard(),
+      data: (plan) {
+        final therapyPlan = plan ?? TherapyPlan.defaults;
+        final nextDate = therapyPlan.getNextInjectionDate(DateTime.now());
+
+        return zonesAsync.when(
+          loading: () => _NextInjectionCard(
+            nextDate: nextDate,
+            zone: null,
+            suggestedPointNumber: null,
+            isDark: isDark,
+          ),
+          error: (_, __) => _NextInjectionCard(
+            nextDate: nextDate,
+            zone: null,
+            suggestedPointNumber: null,
+            isDark: isDark,
+          ),
+          data: (zones) {
+            return suggestedAsync.when(
+              loading: () => _NextInjectionCard(
+                nextDate: nextDate,
+                zone: null,
+                suggestedPointNumber: null,
+                isDark: isDark,
+              ),
+              error: (_, __) => _NextInjectionCard(
+                nextDate: nextDate,
+                zone: null,
+                suggestedPointNumber: null,
+                isDark: isDark,
+              ),
+              data: (suggested) {
+                final zone = suggested != null
+                    ? zones.where((z) => z.id == suggested.zoneId).firstOrNull
+                    : null;
+                return _NextInjectionCard(
+                  nextDate: nextDate,
+                  zone: zone,
+                  suggestedPointNumber: suggested?.pointNumber,
+                  isDark: isDark,
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
 }
 
 class _LoadingCard extends StatelessWidget {
@@ -266,22 +307,15 @@ class _ErrorCard extends StatelessWidget {
 class _NextInjectionCard extends StatelessWidget {
   const _NextInjectionCard({
     required this.nextDate,
-    required this.suggestedZoneId,
+    required this.zone,
     required this.suggestedPointNumber,
     required this.isDark,
   });
 
   final DateTime nextDate;
-  final int? suggestedZoneId;
+  final BodyZone? zone;
   final int? suggestedPointNumber;
   final bool isDark;
-
-  BodyZone? get _zone => suggestedZoneId != null
-      ? BodyZone.defaults.firstWhere(
-          (z) => z.id == suggestedZoneId,
-          orElse: () => BodyZone.defaults.first,
-        )
-      : null;
 
   @override
   Widget build(BuildContext context) {
@@ -324,7 +358,7 @@ class _NextInjectionCard extends StatelessWidget {
               ],
             ),
 
-            if (_zone != null && suggestedPointNumber != null) ...[
+            if (zone != null && suggestedPointNumber != null) ...[
               const SizedBox(height: 12),
 
               Row(
@@ -337,14 +371,14 @@ class _NextInjectionCard extends StatelessWidget {
                           : AppColors.dawnHighlightLow,
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Text(_zone!.emoji),
+                    child: Text(zone!.emoji),
                   ),
                   const SizedBox(width: 12),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        _zone!.pointLabel(suggestedPointNumber!),
+                        zone!.pointLabel(suggestedPointNumber!),
                         style: theme.textTheme.titleMedium,
                       ),
                       Text(

@@ -9,13 +9,17 @@ class BodyZone {
     required this.numberOfPoints,
     required this.isEnabled,
     required this.sortOrder,
+    this.customName,
+    this.icon,
   });
 
   final int id;
   final String code;
   final String name;
-  final String type; // thigh, arm, abdomen, buttock
-  final String side; // left, right
+  final String? customName; // User-customizable name
+  final String? icon; // User-customizable emoji/icon
+  final String type; // thigh, arm, abdomen, buttock, custom
+  final String side; // left, right, none
   final int numberOfPoints;
   final bool isEnabled;
   final int sortOrder;
@@ -23,21 +27,20 @@ class BodyZone {
   /// Alias for numberOfPoints
   int get pointCount => numberOfPoints;
 
-  /// Get emoji for zone type
-  String get emoji => switch (type) {
+  /// Get display name (customName if set, otherwise name)
+  String get displayName => customName?.isNotEmpty == true ? customName! : name;
+
+  /// Get emoji for zone (custom icon if set, otherwise based on type)
+  String get emoji => icon ?? switch (type) {
     'thigh' => '🦵',
     'arm' => '💪',
-    'abdomen' => '💧', // Drop icon representing injection
+    'abdomen' => '💧',
     'buttock' => '🍑',
     _ => '📍',
   };
 
-  /// Whether this zone uses the app logo instead of emoji
-  /// (Currently disabled - logo file not yet added)
-  bool get usesLogoIcon => false; // Was: type == 'abdomen'
-
   /// Get full label (e.g., "Coscia Dx · 3")
-  String pointLabel(int pointNumber) => '$name · $pointNumber';
+  String pointLabel(int pointNumber) => '$displayName · $pointNumber';
 
   /// Get point code (e.g., "CD-3")
   String pointCode(int pointNumber) => '$code-$pointNumber';
@@ -48,13 +51,17 @@ class BodyZone {
     'BD' || 'BS' => 'arm',
     'AD' || 'AS' => 'abdomen',
     'GD' || 'GS' => 'buttock',
-    _ => 'unknown',
+    _ => 'custom',
   };
 
   /// Get side from code
-  static String sideFromCode(String code) => code.endsWith('D') ? 'right' : 'left';
+  static String sideFromCode(String code) {
+    if (code.endsWith('D')) return 'right';
+    if (code.endsWith('S')) return 'left';
+    return 'none';
+  }
 
-  /// Default body zones configuration
+  /// Default body zones configuration (used for seeding database)
   static List<BodyZone> get defaults => const [
     BodyZone(
       id: 1, code: 'CD', name: 'Coscia Dx',
@@ -104,8 +111,10 @@ class BodyZone {
       id: json['id'] as int,
       code: json['code'] as String,
       name: json['name'] as String,
-      type: json['type'] as String,
-      side: json['side'] as String,
+      customName: json['customName'] as String?,
+      icon: json['icon'] as String?,
+      type: json['type'] as String? ?? 'custom',
+      side: json['side'] as String? ?? 'none',
       numberOfPoints: json['numberOfPoints'] as int,
       isEnabled: json['isEnabled'] as bool? ?? true,
       sortOrder: json['sortOrder'] as int? ?? 0,
@@ -117,6 +126,8 @@ class BodyZone {
     'id': id,
     'code': code,
     'name': name,
+    'customName': customName,
+    'icon': icon,
     'type': type,
     'side': side,
     'numberOfPoints': numberOfPoints,
@@ -129,6 +140,8 @@ class BodyZone {
     int? id,
     String? code,
     String? name,
+    String? customName,
+    String? icon,
     String? type,
     String? side,
     int? numberOfPoints,
@@ -138,10 +151,22 @@ class BodyZone {
     id: id ?? this.id,
     code: code ?? this.code,
     name: name ?? this.name,
+    customName: customName ?? this.customName,
+    icon: icon ?? this.icon,
     type: type ?? this.type,
     side: side ?? this.side,
     numberOfPoints: numberOfPoints ?? this.numberOfPoints,
     isEnabled: isEnabled ?? this.isEnabled,
     sortOrder: sortOrder ?? this.sortOrder,
   );
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is BodyZone &&
+          runtimeType == other.runtimeType &&
+          id == other.id;
+
+  @override
+  int get hashCode => id.hashCode;
 }

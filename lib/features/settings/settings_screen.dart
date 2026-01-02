@@ -85,7 +85,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
 
           _SectionHeader(title: 'ZONE E PUNTI'),
-          _SettingsTile(title: 'Configura zone', onTap: () {}),
+          _SettingsTile(
+            icon: Icons.edit_location_alt,
+            title: 'Gestisci zone',
+            onTap: () => context.push(AppRoutes.zoneManagement),
+          ),
           blacklistAsync.when(
             loading: () => const SizedBox(),
             error: (_, __) => const SizedBox(),

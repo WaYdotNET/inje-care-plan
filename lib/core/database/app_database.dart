@@ -24,7 +24,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -34,7 +34,32 @@ class AppDatabase extends _$AppDatabase {
           await _seedDefaultZones();
         },
         onUpgrade: (m, from, to) async {
-          // Future migrations
+          if (from < 2) {
+            // Aggiungi nuove colonne alla tabella BodyZones
+            await m.addColumn(bodyZones, bodyZones.customName);
+            await m.addColumn(bodyZones, bodyZones.icon);
+            await m.addColumn(bodyZones, bodyZones.type);
+            await m.addColumn(bodyZones, bodyZones.side);
+            await m.addColumn(bodyZones, bodyZones.sortOrder);
+
+            // Aggiorna le zone esistenti con i valori corretti
+            await customStatement('''
+              UPDATE body_zones SET
+                type = CASE code
+                  WHEN 'CD' THEN 'thigh' WHEN 'CS' THEN 'thigh'
+                  WHEN 'BD' THEN 'arm' WHEN 'BS' THEN 'arm'
+                  WHEN 'AD' THEN 'abdomen' WHEN 'AS' THEN 'abdomen'
+                  WHEN 'GD' THEN 'buttock' WHEN 'GS' THEN 'buttock'
+                  ELSE 'custom'
+                END,
+                side = CASE
+                  WHEN code LIKE '%D' THEN 'right'
+                  WHEN code LIKE '%S' THEN 'left'
+                  ELSE 'none'
+                END,
+                sort_order = id
+            ''');
+          }
         },
       );
 
@@ -44,42 +69,66 @@ class AppDatabase extends _$AppDatabase {
       BodyZonesCompanion.insert(
         code: 'CD',
         name: 'Coscia Dx',
+        type: const Value('thigh'),
+        side: const Value('right'),
         numberOfPoints: const Value(6),
+        sortOrder: const Value(1),
       ),
       BodyZonesCompanion.insert(
         code: 'CS',
         name: 'Coscia Sx',
+        type: const Value('thigh'),
+        side: const Value('left'),
         numberOfPoints: const Value(6),
+        sortOrder: const Value(2),
       ),
       BodyZonesCompanion.insert(
         code: 'BD',
         name: 'Braccio Dx',
+        type: const Value('arm'),
+        side: const Value('right'),
         numberOfPoints: const Value(4),
+        sortOrder: const Value(3),
       ),
       BodyZonesCompanion.insert(
         code: 'BS',
         name: 'Braccio Sx',
+        type: const Value('arm'),
+        side: const Value('left'),
         numberOfPoints: const Value(4),
+        sortOrder: const Value(4),
       ),
       BodyZonesCompanion.insert(
         code: 'AD',
         name: 'Addome Dx',
+        type: const Value('abdomen'),
+        side: const Value('right'),
         numberOfPoints: const Value(4),
+        sortOrder: const Value(5),
       ),
       BodyZonesCompanion.insert(
         code: 'AS',
         name: 'Addome Sx',
+        type: const Value('abdomen'),
+        side: const Value('left'),
         numberOfPoints: const Value(4),
+        sortOrder: const Value(6),
       ),
       BodyZonesCompanion.insert(
         code: 'GD',
         name: 'Gluteo Dx',
+        type: const Value('buttock'),
+        side: const Value('right'),
         numberOfPoints: const Value(4),
+        sortOrder: const Value(7),
       ),
       BodyZonesCompanion.insert(
         code: 'GS',
         name: 'Gluteo Sx',
+        type: const Value('buttock'),
+        side: const Value('left'),
         numberOfPoints: const Value(4),
+        sortOrder: const Value(8),
       ),
     ];
 
@@ -91,10 +140,23 @@ class AppDatabase extends _$AppDatabase {
   // ============ DAO Methods ============
 
   // --- Body Zones ---
-  Future<List<BodyZone>> getAllZones() => select(bodyZones).get();
+  Future<List<BodyZone>> getAllZones() =>
+      (select(bodyZones)..orderBy([(z) => OrderingTerm.asc(z.sortOrder)])).get();
+
+  Stream<List<BodyZone>> watchAllZones() =>
+      (select(bodyZones)..orderBy([(z) => OrderingTerm.asc(z.sortOrder)])).watch();
 
   Future<List<BodyZone>> getEnabledZones() =>
-      (select(bodyZones)..where((z) => z.isEnabled)).get();
+      (select(bodyZones)
+            ..where((z) => z.isEnabled)
+            ..orderBy([(z) => OrderingTerm.asc(z.sortOrder)]))
+          .get();
+
+  Stream<List<BodyZone>> watchEnabledZones() =>
+      (select(bodyZones)
+            ..where((z) => z.isEnabled)
+            ..orderBy([(z) => OrderingTerm.asc(z.sortOrder)]))
+          .watch();
 
   Future<BodyZone?> getZoneById(int id) =>
       (select(bodyZones)..where((z) => z.id.equals(id))).getSingleOrNull();
@@ -102,9 +164,58 @@ class AppDatabase extends _$AppDatabase {
   Future<BodyZone?> getZoneByCode(String code) =>
       (select(bodyZones)..where((z) => z.code.equals(code))).getSingleOrNull();
 
+  Future<int> insertZone(BodyZonesCompanion zone) =>
+      into(bodyZones).insert(zone);
+
   Future<int> updateZone(BodyZonesCompanion zone) =>
       (update(bodyZones)..where((z) => z.id.equals(zone.id.value)))
           .write(zone);
+
+  Future<int> deleteZone(int id) =>
+      (delete(bodyZones)..where((z) => z.id.equals(id))).go();
+
+  Future<void> updateZonePointCount(int zoneId, int count) =>
+      (update(bodyZones)..where((z) => z.id.equals(zoneId)))
+          .write(BodyZonesCompanion(
+            numberOfPoints: Value(count),
+            updatedAt: Value(DateTime.now()),
+          ));
+
+  Future<void> updateZoneCustomName(int zoneId, String? customName) =>
+      (update(bodyZones)..where((z) => z.id.equals(zoneId)))
+          .write(BodyZonesCompanion(
+            customName: Value(customName),
+            updatedAt: Value(DateTime.now()),
+          ));
+
+  Future<void> updateZoneIcon(int zoneId, String? icon) =>
+      (update(bodyZones)..where((z) => z.id.equals(zoneId)))
+          .write(BodyZonesCompanion(
+            icon: Value(icon),
+            updatedAt: Value(DateTime.now()),
+          ));
+
+  Future<void> toggleZoneEnabled(int zoneId, bool enabled) =>
+      (update(bodyZones)..where((z) => z.id.equals(zoneId)))
+          .write(BodyZonesCompanion(
+            isEnabled: Value(enabled),
+            updatedAt: Value(DateTime.now()),
+          ));
+
+  Future<void> reorderZones(List<int> zoneIdsInOrder) async {
+    await batch((b) {
+      for (var i = 0; i < zoneIdsInOrder.length; i++) {
+        b.update(
+          bodyZones,
+          BodyZonesCompanion(
+            sortOrder: Value(i + 1),
+            updatedAt: Value(DateTime.now()),
+          ),
+          where: (z) => z.id.equals(zoneIdsInOrder[i]),
+        );
+      }
+    });
+  }
 
   // --- Therapy Plans ---
   Future<TherapyPlan?> getCurrentTherapyPlan() =>
@@ -208,6 +319,9 @@ class AppDatabase extends _$AppDatabase {
   // --- Blacklisted Points ---
   Future<List<BlacklistedPoint>> getAllBlacklistedPoints() =>
       select(blacklistedPoints).get();
+
+  Stream<List<BlacklistedPoint>> watchAllBlacklistedPoints() =>
+      select(blacklistedPoints).watch();
 
   Future<List<BlacklistedPoint>> getBlacklistedPointsForZone(int zoneId) =>
       (select(blacklistedPoints)..where((b) => b.zoneId.equals(zoneId))).get();

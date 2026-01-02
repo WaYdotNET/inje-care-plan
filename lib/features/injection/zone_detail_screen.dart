@@ -9,6 +9,7 @@ import '../../app/router.dart';
 import '../../models/body_zone.dart';
 import '../../models/blacklisted_point.dart';
 import 'injection_provider.dart';
+import 'zone_provider.dart';
 
 /// Zone detail screen with point history
 class ZoneDetailScreen extends ConsumerWidget {
@@ -16,42 +17,51 @@ class ZoneDetailScreen extends ConsumerWidget {
 
   final int zoneId;
 
-  BodyZone get _zone => BodyZone.defaults.firstWhere(
-    (z) => z.id == zoneId,
-    orElse: () => BodyZone.defaults.first,
-  );
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final zonesAsync = ref.watch(zonesProvider);
     final injectionsAsync = ref.watch(injectionsByZoneProvider(zoneId));
     final blacklistAsync = ref.watch(blacklistedPointsByZoneProvider(zoneId));
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(_zone.name),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
-        ),
+    return zonesAsync.when(
+      loading: () => const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
       ),
-      body: injectionsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('Errore: $error')),
-        data: (injections) => blacklistAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => Center(child: Text('Errore: $error')),
-          data: (blacklist) => _buildContent(
-            context,
-            ref,
-            theme,
-            isDark,
-            injections,
-            blacklist,
+      error: (e, _) => Scaffold(
+        appBar: AppBar(title: const Text('Errore')),
+        body: Center(child: Text('Errore: $e')),
+      ),
+      data: (zones) {
+        final zone = zones.where((z) => z.id == zoneId).firstOrNull ?? zones.first;
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(zone.displayName),
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => context.pop(),
+            ),
           ),
-        ),
-      ),
+          body: injectionsAsync.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (error, _) => Center(child: Text('Errore: $error')),
+            data: (injections) => blacklistAsync.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (error, _) => Center(child: Text('Errore: $error')),
+              data: (blacklist) => _buildContent(
+                context,
+                ref,
+                theme,
+                isDark,
+                zone,
+                injections,
+                blacklist,
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -60,10 +70,11 @@ class ZoneDetailScreen extends ConsumerWidget {
     WidgetRef ref,
     ThemeData theme,
     bool isDark,
+    BodyZone zone,
     List<db.Injection> injections,
     List<db.BlacklistedPoint> blacklist,
   ) {
-    final availablePoints = _zone.numberOfPoints - blacklist.length;
+    final availablePoints = zone.numberOfPoints - blacklist.length;
 
     // Group injections by point and get the most recent for each
     final pointHistory = <int, db.Injection>{};
@@ -77,7 +88,7 @@ class ZoneDetailScreen extends ConsumerWidget {
 
     // Sort points by last usage (oldest first)
     final sortedPoints = <int>[];
-    for (var i = 1; i <= _zone.numberOfPoints; i++) {
+    for (var i = 1; i <= zone.numberOfPoints; i++) {
       if (!blacklist.any((bp) => bp.pointNumber == i)) {
         sortedPoints.add(i);
       }
@@ -96,14 +107,14 @@ class ZoneDetailScreen extends ConsumerWidget {
           // Zone header
           Row(
             children: [
-              Text(_zone.emoji, style: const TextStyle(fontSize: 40)),
+              Text(zone.emoji, style: const TextStyle(fontSize: 40)),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      _zone.name,
+                      zone.displayName,
                       style: theme.textTheme.headlineSmall,
                     ),
                     Text(
@@ -123,7 +134,7 @@ class ZoneDetailScreen extends ConsumerWidget {
           // Suggested point
           if (sortedPoints.isNotEmpty)
             _SuggestedCard(
-              zone: _zone,
+              zone: zone,
               pointNumber: sortedPoints.first,
               lastUsed: pointHistory[sortedPoints.first]?.completedAt,
               isDark: isDark,
@@ -143,12 +154,12 @@ class ZoneDetailScreen extends ConsumerWidget {
           ...sortedPoints.map((pointNumber) => Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: _PointCard(
-              zone: _zone,
+              zone: zone,
               pointNumber: pointNumber,
               lastInjection: pointHistory[pointNumber],
               isDark: isDark,
               onTap: () => _goToRecord(context, pointNumber),
-              onMenu: () => _showMenu(context, ref, pointNumber),
+              onMenu: () => _showMenu(context, ref, zone, pointNumber),
             ),
           )),
 
@@ -185,8 +196,8 @@ class ZoneDetailScreen extends ConsumerWidget {
     );
   }
 
-  void _showMenu(BuildContext context, WidgetRef ref, int pointNumber) {
-    showModalBottomSheet(
+  void _showMenu(BuildContext context, WidgetRef ref, BodyZone zone, int pointNumber) {
+    showModalBottomSheet<void>(
       context: context,
       builder: (context) => Column(
         mainAxisSize: MainAxisSize.min,
@@ -209,7 +220,7 @@ class ZoneDetailScreen extends ConsumerWidget {
             title: const Text('Escludi punto'),
             onTap: () {
               Navigator.pop(context);
-              _showExcludeDialog(context, ref, pointNumber);
+              _showExcludeDialog(context, ref, zone, pointNumber);
             },
           ),
           const SizedBox(height: 16),
@@ -218,11 +229,11 @@ class ZoneDetailScreen extends ConsumerWidget {
     );
   }
 
-  void _showExcludeDialog(BuildContext context, WidgetRef ref, int pointNumber) {
+  void _showExcludeDialog(BuildContext context, WidgetRef ref, BodyZone zone, int pointNumber) {
     BlacklistReason? selectedReason;
     final notesController = TextEditingController();
 
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
@@ -231,7 +242,7 @@ class ZoneDetailScreen extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Stai per escludere: ${_zone.name} · $pointNumber'),
+              Text('Stai per escludere: ${zone.displayName} · $pointNumber'),
               const SizedBox(height: 16),
               const Text('Motivo (opzionale):'),
               const SizedBox(height: 8),
@@ -271,6 +282,7 @@ class ZoneDetailScreen extends ConsumerWidget {
                 await _blacklistPoint(
                   context,
                   ref,
+                  zone,
                   pointNumber,
                   selectedReason ?? BlacklistReason.other,
                   notesController.text,
@@ -287,6 +299,7 @@ class ZoneDetailScreen extends ConsumerWidget {
   Future<void> _blacklistPoint(
     BuildContext context,
     WidgetRef ref,
+    BodyZone zone,
     int pointNumber,
     BlacklistReason reason,
     String? notes,
@@ -304,7 +317,7 @@ class ZoneDetailScreen extends ConsumerWidget {
 
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${_zone.pointLabel(pointNumber)} escluso')),
+        SnackBar(content: Text('${zone.pointLabel(pointNumber)} escluso')),
       );
     }
   }

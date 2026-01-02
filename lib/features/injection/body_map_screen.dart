@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../models/body_zone.dart';
 import 'injection_provider.dart';
+import 'zone_provider.dart';
 
 /// Body map screen for zone selection
 class BodyMapScreen extends ConsumerWidget {
@@ -15,11 +16,17 @@ class BodyMapScreen extends ConsumerWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final suggestedAsync = ref.watch(suggestedNextPointProvider);
+    final zonesAsync = ref.watch(enabledZonesProvider);
 
-    // Use predefined zones (they are static)
-    final displayZones = BodyZone.defaults;
-
-    return Scaffold(
+    return zonesAsync.when(
+      loading: () => const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      ),
+      error: (e, _) => Scaffold(
+        appBar: AppBar(title: const Text('Errore')),
+        body: Center(child: Text('Errore: $e')),
+      ),
+      data: (displayZones) => Scaffold(
       appBar: AppBar(
         title: const Text('Seleziona zona'),
         leading: IconButton(
@@ -86,6 +93,7 @@ class BodyMapScreen extends ConsumerWidget {
           ],
         ),
       ),
+    ),
     );
   }
 }

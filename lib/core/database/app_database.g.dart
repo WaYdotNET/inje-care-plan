@@ -30,7 +30,7 @@ class $BodyZonesTable extends BodyZones
     false,
     additionalChecks: GeneratedColumn.checkTextLength(
       minTextLength: 2,
-      maxTextLength: 4,
+      maxTextLength: 10,
     ),
     type: DriftSqlType.string,
     requiredDuringInsert: true,
@@ -45,6 +45,46 @@ class $BodyZonesTable extends BodyZones
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _customNameMeta = const VerificationMeta(
+    'customName',
+  );
+  @override
+  late final GeneratedColumn<String> customName = GeneratedColumn<String>(
+    'custom_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _iconMeta = const VerificationMeta('icon');
+  @override
+  late final GeneratedColumn<String> icon = GeneratedColumn<String>(
+    'icon',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _typeMeta = const VerificationMeta('type');
+  @override
+  late final GeneratedColumn<String> type = GeneratedColumn<String>(
+    'type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('custom'),
+  );
+  static const VerificationMeta _sideMeta = const VerificationMeta('side');
+  @override
+  late final GeneratedColumn<String> side = GeneratedColumn<String>(
+    'side',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('none'),
+  );
   static const VerificationMeta _numberOfPointsMeta = const VerificationMeta(
     'numberOfPoints',
   );
@@ -55,7 +95,7 @@ class $BodyZonesTable extends BodyZones
     false,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
-    defaultValue: const Constant(6),
+    defaultValue: const Constant(4),
   );
   static const VerificationMeta _isEnabledMeta = const VerificationMeta(
     'isEnabled',
@@ -71,6 +111,18 @@ class $BodyZonesTable extends BodyZones
       'CHECK ("is_enabled" IN (0, 1))',
     ),
     defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _sortOrderMeta = const VerificationMeta(
+    'sortOrder',
+  );
+  @override
+  late final GeneratedColumn<int> sortOrder = GeneratedColumn<int>(
+    'sort_order',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
   );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
@@ -101,8 +153,13 @@ class $BodyZonesTable extends BodyZones
     id,
     code,
     name,
+    customName,
+    icon,
+    type,
+    side,
     numberOfPoints,
     isEnabled,
+    sortOrder,
     createdAt,
     updatedAt,
   ];
@@ -137,6 +194,30 @@ class $BodyZonesTable extends BodyZones
     } else if (isInserting) {
       context.missing(_nameMeta);
     }
+    if (data.containsKey('custom_name')) {
+      context.handle(
+        _customNameMeta,
+        customName.isAcceptableOrUnknown(data['custom_name']!, _customNameMeta),
+      );
+    }
+    if (data.containsKey('icon')) {
+      context.handle(
+        _iconMeta,
+        icon.isAcceptableOrUnknown(data['icon']!, _iconMeta),
+      );
+    }
+    if (data.containsKey('type')) {
+      context.handle(
+        _typeMeta,
+        type.isAcceptableOrUnknown(data['type']!, _typeMeta),
+      );
+    }
+    if (data.containsKey('side')) {
+      context.handle(
+        _sideMeta,
+        side.isAcceptableOrUnknown(data['side']!, _sideMeta),
+      );
+    }
     if (data.containsKey('number_of_points')) {
       context.handle(
         _numberOfPointsMeta,
@@ -150,6 +231,12 @@ class $BodyZonesTable extends BodyZones
       context.handle(
         _isEnabledMeta,
         isEnabled.isAcceptableOrUnknown(data['is_enabled']!, _isEnabledMeta),
+      );
+    }
+    if (data.containsKey('sort_order')) {
+      context.handle(
+        _sortOrderMeta,
+        sortOrder.isAcceptableOrUnknown(data['sort_order']!, _sortOrderMeta),
       );
     }
     if (data.containsKey('created_at')) {
@@ -185,6 +272,22 @@ class $BodyZonesTable extends BodyZones
         DriftSqlType.string,
         data['${effectivePrefix}name'],
       )!,
+      customName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}custom_name'],
+      ),
+      icon: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}icon'],
+      ),
+      type: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}type'],
+      )!,
+      side: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}side'],
+      )!,
       numberOfPoints: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}number_of_points'],
@@ -192,6 +295,10 @@ class $BodyZonesTable extends BodyZones
       isEnabled: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}is_enabled'],
+      )!,
+      sortOrder: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}sort_order'],
       )!,
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
@@ -214,16 +321,26 @@ class BodyZone extends DataClass implements Insertable<BodyZone> {
   final int id;
   final String code;
   final String name;
+  final String? customName;
+  final String? icon;
+  final String type;
+  final String side;
   final int numberOfPoints;
   final bool isEnabled;
+  final int sortOrder;
   final DateTime createdAt;
   final DateTime updatedAt;
   const BodyZone({
     required this.id,
     required this.code,
     required this.name,
+    this.customName,
+    this.icon,
+    required this.type,
+    required this.side,
     required this.numberOfPoints,
     required this.isEnabled,
+    required this.sortOrder,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -233,8 +350,17 @@ class BodyZone extends DataClass implements Insertable<BodyZone> {
     map['id'] = Variable<int>(id);
     map['code'] = Variable<String>(code);
     map['name'] = Variable<String>(name);
+    if (!nullToAbsent || customName != null) {
+      map['custom_name'] = Variable<String>(customName);
+    }
+    if (!nullToAbsent || icon != null) {
+      map['icon'] = Variable<String>(icon);
+    }
+    map['type'] = Variable<String>(type);
+    map['side'] = Variable<String>(side);
     map['number_of_points'] = Variable<int>(numberOfPoints);
     map['is_enabled'] = Variable<bool>(isEnabled);
+    map['sort_order'] = Variable<int>(sortOrder);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     return map;
@@ -245,8 +371,15 @@ class BodyZone extends DataClass implements Insertable<BodyZone> {
       id: Value(id),
       code: Value(code),
       name: Value(name),
+      customName: customName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(customName),
+      icon: icon == null && nullToAbsent ? const Value.absent() : Value(icon),
+      type: Value(type),
+      side: Value(side),
       numberOfPoints: Value(numberOfPoints),
       isEnabled: Value(isEnabled),
+      sortOrder: Value(sortOrder),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
@@ -261,8 +394,13 @@ class BodyZone extends DataClass implements Insertable<BodyZone> {
       id: serializer.fromJson<int>(json['id']),
       code: serializer.fromJson<String>(json['code']),
       name: serializer.fromJson<String>(json['name']),
+      customName: serializer.fromJson<String?>(json['customName']),
+      icon: serializer.fromJson<String?>(json['icon']),
+      type: serializer.fromJson<String>(json['type']),
+      side: serializer.fromJson<String>(json['side']),
       numberOfPoints: serializer.fromJson<int>(json['numberOfPoints']),
       isEnabled: serializer.fromJson<bool>(json['isEnabled']),
+      sortOrder: serializer.fromJson<int>(json['sortOrder']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
@@ -274,8 +412,13 @@ class BodyZone extends DataClass implements Insertable<BodyZone> {
       'id': serializer.toJson<int>(id),
       'code': serializer.toJson<String>(code),
       'name': serializer.toJson<String>(name),
+      'customName': serializer.toJson<String?>(customName),
+      'icon': serializer.toJson<String?>(icon),
+      'type': serializer.toJson<String>(type),
+      'side': serializer.toJson<String>(side),
       'numberOfPoints': serializer.toJson<int>(numberOfPoints),
       'isEnabled': serializer.toJson<bool>(isEnabled),
+      'sortOrder': serializer.toJson<int>(sortOrder),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
@@ -285,16 +428,26 @@ class BodyZone extends DataClass implements Insertable<BodyZone> {
     int? id,
     String? code,
     String? name,
+    Value<String?> customName = const Value.absent(),
+    Value<String?> icon = const Value.absent(),
+    String? type,
+    String? side,
     int? numberOfPoints,
     bool? isEnabled,
+    int? sortOrder,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) => BodyZone(
     id: id ?? this.id,
     code: code ?? this.code,
     name: name ?? this.name,
+    customName: customName.present ? customName.value : this.customName,
+    icon: icon.present ? icon.value : this.icon,
+    type: type ?? this.type,
+    side: side ?? this.side,
     numberOfPoints: numberOfPoints ?? this.numberOfPoints,
     isEnabled: isEnabled ?? this.isEnabled,
+    sortOrder: sortOrder ?? this.sortOrder,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
@@ -303,10 +456,17 @@ class BodyZone extends DataClass implements Insertable<BodyZone> {
       id: data.id.present ? data.id.value : this.id,
       code: data.code.present ? data.code.value : this.code,
       name: data.name.present ? data.name.value : this.name,
+      customName: data.customName.present
+          ? data.customName.value
+          : this.customName,
+      icon: data.icon.present ? data.icon.value : this.icon,
+      type: data.type.present ? data.type.value : this.type,
+      side: data.side.present ? data.side.value : this.side,
       numberOfPoints: data.numberOfPoints.present
           ? data.numberOfPoints.value
           : this.numberOfPoints,
       isEnabled: data.isEnabled.present ? data.isEnabled.value : this.isEnabled,
+      sortOrder: data.sortOrder.present ? data.sortOrder.value : this.sortOrder,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -318,8 +478,13 @@ class BodyZone extends DataClass implements Insertable<BodyZone> {
           ..write('id: $id, ')
           ..write('code: $code, ')
           ..write('name: $name, ')
+          ..write('customName: $customName, ')
+          ..write('icon: $icon, ')
+          ..write('type: $type, ')
+          ..write('side: $side, ')
           ..write('numberOfPoints: $numberOfPoints, ')
           ..write('isEnabled: $isEnabled, ')
+          ..write('sortOrder: $sortOrder, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -331,8 +496,13 @@ class BodyZone extends DataClass implements Insertable<BodyZone> {
     id,
     code,
     name,
+    customName,
+    icon,
+    type,
+    side,
     numberOfPoints,
     isEnabled,
+    sortOrder,
     createdAt,
     updatedAt,
   );
@@ -343,8 +513,13 @@ class BodyZone extends DataClass implements Insertable<BodyZone> {
           other.id == this.id &&
           other.code == this.code &&
           other.name == this.name &&
+          other.customName == this.customName &&
+          other.icon == this.icon &&
+          other.type == this.type &&
+          other.side == this.side &&
           other.numberOfPoints == this.numberOfPoints &&
           other.isEnabled == this.isEnabled &&
+          other.sortOrder == this.sortOrder &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -353,16 +528,26 @@ class BodyZonesCompanion extends UpdateCompanion<BodyZone> {
   final Value<int> id;
   final Value<String> code;
   final Value<String> name;
+  final Value<String?> customName;
+  final Value<String?> icon;
+  final Value<String> type;
+  final Value<String> side;
   final Value<int> numberOfPoints;
   final Value<bool> isEnabled;
+  final Value<int> sortOrder;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   const BodyZonesCompanion({
     this.id = const Value.absent(),
     this.code = const Value.absent(),
     this.name = const Value.absent(),
+    this.customName = const Value.absent(),
+    this.icon = const Value.absent(),
+    this.type = const Value.absent(),
+    this.side = const Value.absent(),
     this.numberOfPoints = const Value.absent(),
     this.isEnabled = const Value.absent(),
+    this.sortOrder = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
   });
@@ -370,8 +555,13 @@ class BodyZonesCompanion extends UpdateCompanion<BodyZone> {
     this.id = const Value.absent(),
     required String code,
     required String name,
+    this.customName = const Value.absent(),
+    this.icon = const Value.absent(),
+    this.type = const Value.absent(),
+    this.side = const Value.absent(),
     this.numberOfPoints = const Value.absent(),
     this.isEnabled = const Value.absent(),
+    this.sortOrder = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
   }) : code = Value(code),
@@ -380,8 +570,13 @@ class BodyZonesCompanion extends UpdateCompanion<BodyZone> {
     Expression<int>? id,
     Expression<String>? code,
     Expression<String>? name,
+    Expression<String>? customName,
+    Expression<String>? icon,
+    Expression<String>? type,
+    Expression<String>? side,
     Expression<int>? numberOfPoints,
     Expression<bool>? isEnabled,
+    Expression<int>? sortOrder,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
   }) {
@@ -389,8 +584,13 @@ class BodyZonesCompanion extends UpdateCompanion<BodyZone> {
       if (id != null) 'id': id,
       if (code != null) 'code': code,
       if (name != null) 'name': name,
+      if (customName != null) 'custom_name': customName,
+      if (icon != null) 'icon': icon,
+      if (type != null) 'type': type,
+      if (side != null) 'side': side,
       if (numberOfPoints != null) 'number_of_points': numberOfPoints,
       if (isEnabled != null) 'is_enabled': isEnabled,
+      if (sortOrder != null) 'sort_order': sortOrder,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
     });
@@ -400,8 +600,13 @@ class BodyZonesCompanion extends UpdateCompanion<BodyZone> {
     Value<int>? id,
     Value<String>? code,
     Value<String>? name,
+    Value<String?>? customName,
+    Value<String?>? icon,
+    Value<String>? type,
+    Value<String>? side,
     Value<int>? numberOfPoints,
     Value<bool>? isEnabled,
+    Value<int>? sortOrder,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
   }) {
@@ -409,8 +614,13 @@ class BodyZonesCompanion extends UpdateCompanion<BodyZone> {
       id: id ?? this.id,
       code: code ?? this.code,
       name: name ?? this.name,
+      customName: customName ?? this.customName,
+      icon: icon ?? this.icon,
+      type: type ?? this.type,
+      side: side ?? this.side,
       numberOfPoints: numberOfPoints ?? this.numberOfPoints,
       isEnabled: isEnabled ?? this.isEnabled,
+      sortOrder: sortOrder ?? this.sortOrder,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -428,11 +638,26 @@ class BodyZonesCompanion extends UpdateCompanion<BodyZone> {
     if (name.present) {
       map['name'] = Variable<String>(name.value);
     }
+    if (customName.present) {
+      map['custom_name'] = Variable<String>(customName.value);
+    }
+    if (icon.present) {
+      map['icon'] = Variable<String>(icon.value);
+    }
+    if (type.present) {
+      map['type'] = Variable<String>(type.value);
+    }
+    if (side.present) {
+      map['side'] = Variable<String>(side.value);
+    }
     if (numberOfPoints.present) {
       map['number_of_points'] = Variable<int>(numberOfPoints.value);
     }
     if (isEnabled.present) {
       map['is_enabled'] = Variable<bool>(isEnabled.value);
+    }
+    if (sortOrder.present) {
+      map['sort_order'] = Variable<int>(sortOrder.value);
     }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
@@ -449,8 +674,13 @@ class BodyZonesCompanion extends UpdateCompanion<BodyZone> {
           ..write('id: $id, ')
           ..write('code: $code, ')
           ..write('name: $name, ')
+          ..write('customName: $customName, ')
+          ..write('icon: $icon, ')
+          ..write('type: $type, ')
+          ..write('side: $side, ')
           ..write('numberOfPoints: $numberOfPoints, ')
           ..write('isEnabled: $isEnabled, ')
+          ..write('sortOrder: $sortOrder, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -3215,8 +3445,13 @@ typedef $$BodyZonesTableCreateCompanionBuilder =
       Value<int> id,
       required String code,
       required String name,
+      Value<String?> customName,
+      Value<String?> icon,
+      Value<String> type,
+      Value<String> side,
       Value<int> numberOfPoints,
       Value<bool> isEnabled,
+      Value<int> sortOrder,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
     });
@@ -3225,8 +3460,13 @@ typedef $$BodyZonesTableUpdateCompanionBuilder =
       Value<int> id,
       Value<String> code,
       Value<String> name,
+      Value<String?> customName,
+      Value<String?> icon,
+      Value<String> type,
+      Value<String> side,
       Value<int> numberOfPoints,
       Value<bool> isEnabled,
+      Value<int> sortOrder,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
     });
@@ -3302,6 +3542,26 @@ class $$BodyZonesTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get customName => $composableBuilder(
+    column: $table.customName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get icon => $composableBuilder(
+    column: $table.icon,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get side => $composableBuilder(
+    column: $table.side,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<int> get numberOfPoints => $composableBuilder(
     column: $table.numberOfPoints,
     builder: (column) => ColumnFilters(column),
@@ -3309,6 +3569,11 @@ class $$BodyZonesTableFilterComposer
 
   ColumnFilters<bool> get isEnabled => $composableBuilder(
     column: $table.isEnabled,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get sortOrder => $composableBuilder(
+    column: $table.sortOrder,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3397,6 +3662,26 @@ class $$BodyZonesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get customName => $composableBuilder(
+    column: $table.customName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get icon => $composableBuilder(
+    column: $table.icon,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get side => $composableBuilder(
+    column: $table.side,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get numberOfPoints => $composableBuilder(
     column: $table.numberOfPoints,
     builder: (column) => ColumnOrderings(column),
@@ -3404,6 +3689,11 @@ class $$BodyZonesTableOrderingComposer
 
   ColumnOrderings<bool> get isEnabled => $composableBuilder(
     column: $table.isEnabled,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get sortOrder => $composableBuilder(
+    column: $table.sortOrder,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -3436,6 +3726,20 @@ class $$BodyZonesTableAnnotationComposer
   GeneratedColumn<String> get name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
 
+  GeneratedColumn<String> get customName => $composableBuilder(
+    column: $table.customName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get icon =>
+      $composableBuilder(column: $table.icon, builder: (column) => column);
+
+  GeneratedColumn<String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
+
+  GeneratedColumn<String> get side =>
+      $composableBuilder(column: $table.side, builder: (column) => column);
+
   GeneratedColumn<int> get numberOfPoints => $composableBuilder(
     column: $table.numberOfPoints,
     builder: (column) => column,
@@ -3443,6 +3747,9 @@ class $$BodyZonesTableAnnotationComposer
 
   GeneratedColumn<bool> get isEnabled =>
       $composableBuilder(column: $table.isEnabled, builder: (column) => column);
+
+  GeneratedColumn<int> get sortOrder =>
+      $composableBuilder(column: $table.sortOrder, builder: (column) => column);
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -3536,16 +3843,26 @@ class $$BodyZonesTableTableManager
                 Value<int> id = const Value.absent(),
                 Value<String> code = const Value.absent(),
                 Value<String> name = const Value.absent(),
+                Value<String?> customName = const Value.absent(),
+                Value<String?> icon = const Value.absent(),
+                Value<String> type = const Value.absent(),
+                Value<String> side = const Value.absent(),
                 Value<int> numberOfPoints = const Value.absent(),
                 Value<bool> isEnabled = const Value.absent(),
+                Value<int> sortOrder = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
               }) => BodyZonesCompanion(
                 id: id,
                 code: code,
                 name: name,
+                customName: customName,
+                icon: icon,
+                type: type,
+                side: side,
                 numberOfPoints: numberOfPoints,
                 isEnabled: isEnabled,
+                sortOrder: sortOrder,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
               ),
@@ -3554,16 +3871,26 @@ class $$BodyZonesTableTableManager
                 Value<int> id = const Value.absent(),
                 required String code,
                 required String name,
+                Value<String?> customName = const Value.absent(),
+                Value<String?> icon = const Value.absent(),
+                Value<String> type = const Value.absent(),
+                Value<String> side = const Value.absent(),
                 Value<int> numberOfPoints = const Value.absent(),
                 Value<bool> isEnabled = const Value.absent(),
+                Value<int> sortOrder = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
               }) => BodyZonesCompanion.insert(
                 id: id,
                 code: code,
                 name: name,
+                customName: customName,
+                icon: icon,
+                type: type,
+                side: side,
                 numberOfPoints: numberOfPoints,
                 isEnabled: isEnabled,
+                sortOrder: sortOrder,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
               ),

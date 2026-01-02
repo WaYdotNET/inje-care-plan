@@ -1,13 +1,18 @@
 import 'package:drift/drift.dart';
 
 /// Tabella zone del corpo per iniezioni
-/// 8 zone predefinite: Coscia Dx/Sx, Braccio Dx/Sx, Addome Dx/Sx, Gluteo Dx/Sx
+/// Zone predefinite + zone custom create dall'utente
 class BodyZones extends Table {
   IntColumn get id => integer().autoIncrement()();
-  TextColumn get code => text().withLength(min: 2, max: 4)();
+  TextColumn get code => text().withLength(min: 2, max: 10)();
   TextColumn get name => text().withLength(max: 50)();
-  IntColumn get numberOfPoints => integer().withDefault(const Constant(6))();
+  TextColumn get customName => text().nullable()(); // Nome personalizzato dall'utente
+  TextColumn get icon => text().nullable()(); // Emoji/icona personalizzata
+  TextColumn get type => text().withDefault(const Constant('custom'))(); // thigh, arm, abdomen, buttock, custom
+  TextColumn get side => text().withDefault(const Constant('none'))(); // left, right, none
+  IntColumn get numberOfPoints => integer().withDefault(const Constant(4))();
   BoolColumn get isEnabled => boolean().withDefault(const Constant(true))();
+  IntColumn get sortOrder => integer().withDefault(const Constant(0))();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
 }

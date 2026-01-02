@@ -14,6 +14,7 @@ import '../features/settings/settings_screen.dart';
 import '../features/info/info_screen.dart';
 import '../features/help/help_screen.dart';
 import '../features/injection/point_selection_screen.dart';
+import '../features/settings/zone_management_screen.dart';
 
 /// App routes
 sealed class AppRoutes {
@@ -29,6 +30,7 @@ sealed class AppRoutes {
   static const help = '/help';
   static const blacklist = '/blacklist';
   static const selectPoint = '/select-point';
+  static const zoneManagement = '/zone-management';
 }
 
 /// Router provider
@@ -144,6 +146,11 @@ final routerProvider = Provider<GoRouter>((ref) {
             initialZoneId: initialZoneId,
           );
         },
+      ),
+      GoRoute(
+        path: AppRoutes.zoneManagement,
+        name: 'zoneManagement',
+        builder: (context, state) => const ZoneManagementScreen(),
       ),
     ],
   );

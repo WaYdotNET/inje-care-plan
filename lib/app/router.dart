@@ -13,6 +13,7 @@ import '../features/history/history_screen.dart';
 import '../features/settings/settings_screen.dart';
 import '../features/info/info_screen.dart';
 import '../features/help/help_screen.dart';
+import '../features/settings/blacklist_screen.dart';
 
 /// App routes
 sealed class AppRoutes {
@@ -26,6 +27,7 @@ sealed class AppRoutes {
   static const settings = '/settings';
   static const info = '/info';
   static const help = '/help';
+  static const blacklist = '/blacklist';
 }
 
 /// Router provider
@@ -120,6 +122,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.help,
         name: 'help',
         builder: (context, state) => const HelpScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.blacklist,
+        name: 'blacklist',
+        builder: (context, state) => const BlacklistScreen(),
       ),
     ],
   );

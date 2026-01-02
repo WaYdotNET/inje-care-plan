@@ -755,7 +755,7 @@ class _PointPositionIllustration extends StatelessWidget {
   Widget build(BuildContext context) {
     // Different layout based on zone type
     return Container(
-      height: 120,
+      height: 100,
       decoration: BoxDecoration(
         color: isDark
             ? AppColors.darkSurface
@@ -801,7 +801,7 @@ class _PointPositionIllustration extends StatelessWidget {
     final rows = (totalPoints / columns).ceil();
 
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       child: Row(
         children: [
           // Zone icon
@@ -824,9 +824,9 @@ class _PointPositionIllustration extends StatelessWidget {
                     return GestureDetector(
                       onTap: isBlacklisted ? null : () => onPointTap(pointNum),
                       child: Container(
-                        width: 40,
-                        height: 40,
-                        margin: const EdgeInsets.all(4),
+                        width: 32,
+                        height: 32,
+                        margin: const EdgeInsets.all(2),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: isBlacklisted

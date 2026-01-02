@@ -1,103 +1,126 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:googleapis/drive/v3.dart' as drive;
 
-import '../../models/body_zone.dart';
-import '../../models/therapy_plan.dart';
+import '../../core/database/app_database.dart';
 
-/// Authentication repository
+/// Rappresentazione locale dell'utente (senza Firebase)
+class LocalUser {
+  final String id;
+  final String? displayName;
+  final String? email;
+  final String? photoUrl;
+
+  LocalUser({
+    required this.id,
+    this.displayName,
+    this.email,
+    this.photoUrl,
+  });
+
+  factory LocalUser.fromGoogleSignIn(GoogleSignInAccount account) {
+    return LocalUser(
+      id: account.id,
+      displayName: account.displayName,
+      email: account.email,
+      photoUrl: account.photoUrl,
+    );
+  }
+}
+
+/// Authentication repository - versione offline-first senza Firebase
 class AuthRepository {
   AuthRepository({
-    FirebaseAuth? auth,
     GoogleSignIn? googleSignIn,
-    FirebaseFirestore? firestore,
     LocalAuthentication? localAuth,
-  })  : _auth = auth ?? FirebaseAuth.instance,
-        _googleSignIn = googleSignIn ?? GoogleSignIn(),
-        _firestore = firestore ?? FirebaseFirestore.instance,
-        _localAuth = localAuth ?? LocalAuthentication();
+    AppDatabase? database,
+  })  : _googleSignIn = googleSignIn ??
+            GoogleSignIn(scopes: [drive.DriveApi.driveFileScope]),
+        _localAuth = localAuth ?? LocalAuthentication(),
+        _database = database;
 
-  final FirebaseAuth _auth;
   final GoogleSignIn _googleSignIn;
-  final FirebaseFirestore _firestore;
   final LocalAuthentication _localAuth;
+  final AppDatabase? _database;
 
-  /// Get current user
-  User? get currentUser => _auth.currentUser;
+  LocalUser? _currentUser;
 
-  /// Get auth state stream
-  Stream<User?> get authStateChanges => _auth.authStateChanges();
+  /// Get current user (locale)
+  LocalUser? get currentUser => _currentUser;
 
-  /// Sign in with Google
-  Future<User?> signInWithGoogle() async {
-    // Trigger the authentication flow
-    final googleUser = await _googleSignIn.signIn();
-    if (googleUser == null) return null;
+  /// Check if user is signed in
+  bool get isSignedIn => _currentUser != null;
 
-    // Obtain the auth details from the request
-    final googleAuth = await googleUser.authentication;
-
-    // Create a new credential
-    final credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth.accessToken,
-      idToken: googleAuth.idToken,
-    );
-
-    // Sign in to Firebase
-    final userCredential = await _auth.signInWithCredential(credential);
-    final user = userCredential.user;
-
-    if (user != null) {
-      await _initializeUserData(user);
+  /// Initialize auth state from stored data
+  Future<void> initialize(AppDatabase db) async {
+    // Prova a recuperare il profilo salvato
+    final profile = await db.getUserProfile();
+    if (profile != null && profile.email.isNotEmpty) {
+      _currentUser = LocalUser(
+        id: profile.id.toString(),
+        displayName: profile.displayName,
+        email: profile.email,
+        photoUrl: profile.photoUrl,
+      );
     }
 
-    return user;
+    // Prova silent sign-in per rinnovare token Google
+    final googleUser = await _googleSignIn.signInSilently();
+    if (googleUser != null && _currentUser == null) {
+      _currentUser = LocalUser.fromGoogleSignIn(googleUser);
+      await _saveUserProfile(db, googleUser);
+    }
   }
 
-  /// Initialize user data in Firestore
-  Future<void> _initializeUserData(User user) async {
-    final userDoc = _firestore.collection('users').doc(user.uid);
+  /// Sign in with Google (solo per Google Drive access)
+  Future<LocalUser?> signInWithGoogle(AppDatabase db) async {
+    try {
+      // Trigger the authentication flow
+      final googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) return null;
 
-    // Check if user document exists
-    final docSnapshot = await userDoc.get();
+      _currentUser = LocalUser.fromGoogleSignIn(googleUser);
+      await _saveUserProfile(db, googleUser);
 
-    if (!docSnapshot.exists) {
-      // Create user profile
-      await userDoc.set({
-        'displayName': user.displayName,
-        'email': user.email,
-        'photoUrl': user.photoURL,
-        'createdAt': FieldValue.serverTimestamp(),
-        'biometricEnabled': false,
-      });
+      return _currentUser;
+    } catch (e) {
+      return null;
+    }
+  }
 
-      // Initialize default therapy plan
-      await userDoc.collection('settings').doc('therapyPlan').set(
-        TherapyPlan.defaults.toFirestore(),
-      );
+  /// Save user profile to local database
+  Future<void> _saveUserProfile(
+      AppDatabase db, GoogleSignInAccount googleUser) async {
+    final existingProfile = await db.getUserProfile();
 
-      // Initialize default body zones
-      final batch = _firestore.batch();
-      for (final zone in BodyZone.defaults) {
-        final zoneRef = userDoc.collection('bodyZones').doc(zone.id.toString());
-        batch.set(zoneRef, zone.toFirestore());
-      }
-      await batch.commit();
+    if (existingProfile != null) {
+      await db.updateUserProfile(UserProfilesCompanion(
+        id: Value(existingProfile.id),
+        displayName: Value(googleUser.displayName ?? ''),
+        email: Value(googleUser.email),
+        photoUrl: Value(googleUser.photoUrl ?? ''),
+        updatedAt: Value(DateTime.now()),
+      ));
+    } else {
+      await db.insertUserProfile(UserProfilesCompanion.insert(
+        displayName: Value(googleUser.displayName ?? ''),
+        email: Value(googleUser.email),
+        photoUrl: Value(googleUser.photoUrl ?? ''),
+      ));
     }
   }
 
   /// Sign out
   Future<void> signOut() async {
     await _googleSignIn.signOut();
-    await _auth.signOut();
+    _currentUser = null;
   }
 
   /// Check if biometric authentication is available
   Future<bool> isBiometricAvailable() async {
     try {
       return await _localAuth.canCheckBiometrics &&
-             await _localAuth.isDeviceSupported();
+          await _localAuth.isDeviceSupported();
     } catch (e) {
       return false;
     }
@@ -118,22 +141,24 @@ class AuthRepository {
     }
   }
 
-  /// Enable biometric authentication
-  Future<void> setBiometricEnabled(bool enabled) async {
-    final user = currentUser;
-    if (user == null) return;
+  /// Enable biometric authentication (saved in local DB)
+  Future<void> setBiometricEnabled(AppDatabase db, bool enabled) async {
+    final profile = await db.getUserProfile();
+    if (profile == null) return;
 
-    await _firestore.collection('users').doc(user.uid).update({
-      'biometricEnabled': enabled,
-    });
+    await db.updateUserProfile(UserProfilesCompanion(
+      id: Value(profile.id),
+      biometricEnabled: Value(enabled),
+      updatedAt: Value(DateTime.now()),
+    ));
   }
 
   /// Check if biometric is enabled for user
-  Future<bool> isBiometricEnabled() async {
-    final user = currentUser;
-    if (user == null) return false;
-
-    final doc = await _firestore.collection('users').doc(user.uid).get();
-    return doc.data()?['biometricEnabled'] as bool? ?? false;
+  Future<bool> isBiometricEnabled(AppDatabase db) async {
+    final profile = await db.getUserProfile();
+    return profile?.biometricEnabled ?? false;
   }
+
+  /// Get Google account for API access (Drive, Calendar)
+  GoogleSignInAccount? get googleAccount => _googleSignIn.currentUser;
 }

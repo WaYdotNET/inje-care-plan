@@ -13,10 +13,10 @@ todos:
     status: completed
   - id: startup-import
     content: Implementare import automatico all'avvio se esiste backup + commit
-    status: in_progress
+    status: completed
   - id: remove-firebase
     content: "Rimuovere Firebase: dipendenze, config, codice + commit"
-    status: pending
+    status: in_progress
   - id: update-repositories
     content: Aggiornare repository per usare Drift invece di Firestore + commit
     status: pending

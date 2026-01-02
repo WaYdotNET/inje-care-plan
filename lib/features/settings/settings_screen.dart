@@ -8,6 +8,7 @@ import '../../core/theme/theme_provider.dart';
 import '../../core/services/export_service.dart';
 import '../../core/services/backup_provider.dart';
 import '../../core/services/startup_service.dart';
+import '../../core/services/notification_settings_provider.dart';
 import '../../core/database/app_database.dart' hide TherapyPlan;
 import '../../core/database/database_provider.dart';
 import '../../app/router.dart';
@@ -25,8 +26,6 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
-  bool _notificationsEnabled = true;
-  bool _missedDoseReminder = true;
   bool _googleCalendarSync = false;
   bool _biometricEnabled = false;
 
@@ -39,6 +38,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final blacklistAsync = ref.watch(blacklistedPointsProvider);
     final injectionsAsync = ref.watch(injectionsProvider);
     final backupState = ref.watch(backupNotifierProvider);
+    final notificationSettings = ref.watch(notificationSettingsProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Impostazioni')),
@@ -99,20 +99,69 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
 
           _SectionHeader(title: 'NOTIFICHE'),
+          if (!notificationSettings.permissionsGranted)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Card(
+                color: isDark ? AppColors.darkOverlay : AppColors.dawnOverlay,
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.notifications_off,
+                        color: isDark ? AppColors.darkGold : AppColors.dawnGold,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Notifiche non abilitate'),
+                            Text(
+                              'Abilita per ricevere promemoria',
+                              style: theme.textTheme.bodySmall,
+                            ),
+                          ],
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () async {
+                          final notifier = ref.read(notificationSettingsProvider.notifier);
+                          final granted = await notifier.requestPermissions();
+                          if (mounted && !granted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Permessi non concessi. Abilitali dalle impostazioni del dispositivo.'),
+                              ),
+                            );
+                          }
+                        },
+                        child: const Text('Abilita'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           SwitchListTile(
             title: const Text('Promemoria iniezione'),
-            value: _notificationsEnabled,
-            onChanged: (value) => setState(() => _notificationsEnabled = value),
+            value: notificationSettings.enabled,
+            onChanged: notificationSettings.permissionsGranted
+                ? (value) => ref.read(notificationSettingsProvider.notifier).setEnabled(value)
+                : null,
           ),
           _SettingsTile(
             title: 'Anticipo',
-            trailing: const Text('30 min'),
-            onTap: () {},
+            trailing: Text('${notificationSettings.minutesBefore} min'),
+            onTap: () => _editNotificationMinutes(context, notificationSettings.minutesBefore),
           ),
           SwitchListTile(
             title: const Text('Reminder dose saltata'),
-            value: _missedDoseReminder,
-            onChanged: (value) => setState(() => _missedDoseReminder = value),
+            value: notificationSettings.missedDoseReminder,
+            onChanged: notificationSettings.permissionsGranted
+                ? (value) => ref.read(notificationSettingsProvider.notifier).setMissedDoseReminder(value)
+                : null,
           ),
 
           _SectionHeader(title: 'SINCRONIZZAZIONE'),
@@ -537,6 +586,46 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Future<void> _updateTherapyPlan(TherapyPlan plan) async {
     final repository = ref.read(injectionRepositoryProvider);
     await repository.saveTherapyPlan(plan);
+  }
+
+  void _editNotificationMinutes(BuildContext context, int currentValue) {
+    showDialog<void>(
+      context: context,
+      builder: (context) {
+        int value = currentValue;
+        return AlertDialog(
+          title: const Text('Anticipo promemoria'),
+          content: StatefulBuilder(
+            builder: (context, setState) => Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [15, 30, 45, 60, 120]
+                  .map(
+                    (n) => RadioListTile<int>(
+                      title: Text(n < 60 ? '$n minuti' : '${n ~/ 60} ${n == 60 ? 'ora' : 'ore'}'),
+                      value: n,
+                      groupValue: value,
+                      onChanged: (v) => setState(() => value = v!),
+                    ),
+                  )
+                  .toList(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Annulla'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+                ref.read(notificationSettingsProvider.notifier).setMinutesBefore(value);
+              },
+              child: const Text('Salva'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _showThemeSelector(BuildContext context) {

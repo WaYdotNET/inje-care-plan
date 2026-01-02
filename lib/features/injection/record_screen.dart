@@ -9,6 +9,7 @@ import '../../models/body_zone.dart';
 import '../../models/injection_record.dart';
 import '../../models/therapy_plan.dart';
 import '../../core/services/notification_service.dart';
+import '../../core/services/notification_settings_provider.dart';
 import 'injection_provider.dart';
 
 /// Record injection screen
@@ -206,24 +207,29 @@ class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
 
       await repository.createInjection(record);
 
-      // Schedule next injection notification using default plan
-      final therapyPlan = TherapyPlan.defaults;
-      final nextDate = therapyPlan.getNextInjectionDate(now.add(const Duration(hours: 1)));
-      final suggestedPoint = await repository.getSuggestedNextPoint();
+      // Schedule next injection notification if enabled
+      final notificationSettings = ref.read(notificationSettingsProvider);
 
-      if (suggestedPoint != null) {
-        final nextZone = BodyZone.defaults.firstWhere(
-          (z) => z.id == suggestedPoint.zoneId,
-          orElse: () => BodyZone.defaults.first,
-        );
+      if (notificationSettings.enabled && notificationSettings.permissionsGranted) {
+        // Schedule next injection notification using default plan
+        final therapyPlan = TherapyPlan.defaults;
+        final nextDate = therapyPlan.getNextInjectionDate(now.add(const Duration(hours: 1)));
+        final suggestedPoint = await repository.getSuggestedNextPoint();
 
-        // Schedule notification for next injection
-        await NotificationService.instance.scheduleInjectionReminder(
-          id: nextDate.millisecondsSinceEpoch ~/ 1000,
-          scheduledTime: nextDate,
-          pointLabel: nextZone.pointLabel(suggestedPoint.pointNumber),
-          minutesBefore: therapyPlan.notificationMinutesBefore,
-        );
+        if (suggestedPoint != null) {
+          final nextZone = BodyZone.defaults.firstWhere(
+            (z) => z.id == suggestedPoint.zoneId,
+            orElse: () => BodyZone.defaults.first,
+          );
+
+          // Schedule notification for next injection
+          await NotificationService.instance.scheduleInjectionReminder(
+            id: nextDate.millisecondsSinceEpoch ~/ 1000,
+            scheduledTime: nextDate,
+            pointLabel: nextZone.pointLabel(suggestedPoint.pointNumber),
+            minutesBefore: notificationSettings.minutesBefore,
+          );
+        }
       }
 
       if (mounted) {

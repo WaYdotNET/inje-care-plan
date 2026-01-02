@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/services/notification_settings_provider.dart';
 import '../../app/router.dart';
 import 'auth_provider.dart';
 
@@ -181,6 +182,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     setState(() => _isLoading = true);
 
     try {
+      // Request notification permissions
+      await _requestNotificationPermissions();
+
       final notifier = ref.read(authNotifierProvider.notifier);
       await notifier.continueWithoutAccount();
 
@@ -203,11 +207,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
+  /// Request notification permissions
+  Future<void> _requestNotificationPermissions() async {
+    final notificationNotifier = ref.read(notificationSettingsProvider.notifier);
+    final shouldRequest = await notificationNotifier.shouldRequestPermissions();
+
+    if (shouldRequest) {
+      await notificationNotifier.requestPermissions();
+    }
+  }
+
   /// Login con Google (opzionale, per backup)
   Future<void> _signInWithGoogle() async {
     setState(() => _isLoading = true);
 
     try {
+      // Request notification permissions
+      await _requestNotificationPermissions();
+
       final notifier = ref.read(authNotifierProvider.notifier);
       final success = await notifier.signInWithGoogle();
 

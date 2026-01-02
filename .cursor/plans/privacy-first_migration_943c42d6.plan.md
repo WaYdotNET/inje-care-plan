@@ -7,10 +7,10 @@ todos:
     status: completed
   - id: crypto-service
     content: Implementare CryptoService con chiave biometrica + AES-256 + commit
-    status: in_progress
+    status: completed
   - id: backup-service
     content: Implementare BackupService per Google Drive sync + commit
-    status: pending
+    status: in_progress
   - id: startup-import
     content: Implementare import automatico all'avvio se esiste backup + commit
     status: pending
@@ -214,6 +214,7 @@ firebase_core: ...
 firebase_auth: ...
 cloud_firestore: ...
 firebase_messaging: ...
+
 
 
 ```

@@ -15,7 +15,7 @@ class BodyMapScreen extends ConsumerWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final suggestedAsync = ref.watch(suggestedNextPointProvider);
-    
+
     // Use predefined zones (they are static)
     final displayZones = BodyZone.defaults;
 

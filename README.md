@@ -10,16 +10,13 @@ Applicazione Flutter per la gestione delle iniezioni di Interferone beta-1a per 
 
 ## Screenshots
 
-> **Nota**: Per generare gli screenshot, vedi [`assets/screenshots/README.md`](assets/screenshots/README.md)
-
-<!--
 <p align="center">
-  <img src="assets/screenshots/home.png" width="200" alt="Home Screen">
-  <img src="assets/screenshots/calendar.png" width="200" alt="Calendar">
-  <img src="assets/screenshots/body_map.png" width="200" alt="Body Map">
-  <img src="assets/screenshots/settings.png" width="200" alt="Settings">
+  <img src="assets/screenshots/onboarding_1.png" width="200" alt="Onboarding 1 - Pianifica">
+  <img src="assets/screenshots/onboarding_2.png" width="200" alt="Onboarding 2 - Rotazione">
+  <img src="assets/screenshots/onboarding_3.png" width="200" alt="Onboarding 3 - Login">
 </p>
--->
+
+> Per generare altri screenshot, vedi [`assets/screenshots/README.md`](assets/screenshots/README.md)
 
 ## Caratteristiche
 

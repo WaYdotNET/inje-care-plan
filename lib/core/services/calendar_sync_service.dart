@@ -36,7 +36,7 @@ class CalendarSyncService {
 
       // Try lightweight auth first
       await signIn.attemptLightweightAuthentication();
-      
+
       // Wait for current user
       await Future<void>.delayed(const Duration(milliseconds: 300));
 

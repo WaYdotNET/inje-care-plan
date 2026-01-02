@@ -14,17 +14,9 @@ class AuthState {
   final bool isLoading;
   final String? error;
 
-  const AuthState({
-    this.user,
-    this.isLoading = false,
-    this.error,
-  });
+  const AuthState({this.user, this.isLoading = false, this.error});
 
-  AuthState copyWith({
-    LocalUser? user,
-    bool? isLoading,
-    String? error,
-  }) {
+  AuthState copyWith({LocalUser? user, bool? isLoading, String? error}) {
     return AuthState(
       user: user ?? this.user,
       isLoading: isLoading ?? this.isLoading,
@@ -86,7 +78,9 @@ class AuthNotifier extends Notifier<AuthState> {
 }
 
 /// Provider per AuthNotifier
-final authNotifierProvider = NotifierProvider<AuthNotifier, AuthState>(AuthNotifier.new);
+final authNotifierProvider = NotifierProvider<AuthNotifier, AuthState>(
+  AuthNotifier.new,
+);
 
 /// Alias per compatibilità
 final authStateProvider = authNotifierProvider;

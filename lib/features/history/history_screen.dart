@@ -205,7 +205,7 @@ class _HistoryCard extends StatelessWidget {
     'scheduled' => 'Programmata',
     _ => 'Sconosciuto',
   };
-  
+
   String get _emoji => switch (injection.zoneId) {
     1 => '🦵', 2 => '🦵',
     3 => '💪', 4 => '💪',

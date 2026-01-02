@@ -398,24 +398,56 @@ class _InjectionAreasIllustration extends StatelessWidget {
                   ),
                 ),
 
-                // Body silhouette
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                // Body silhouette - compact design
+                Container(
+                  width: 60,
+                  padding: const EdgeInsets.symmetric(vertical: 8),
                   child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        Icons.accessibility_new,
-                        size: 120,
-                        color: (isDark ? AppColors.darkMuted : AppColors.dawnMuted)
-                            .withValues(alpha: 0.4),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'VISTA FRONTALE',
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                      Container(
+                        width: 20,
+                        height: 20,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: (isDark ? AppColors.darkMuted : AppColors.dawnMuted)
+                              .withValues(alpha: 0.3),
                         ),
+                      ),
+                      const SizedBox(height: 4),
+                      Container(
+                        width: 30,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          color: (isDark ? AppColors.darkMuted : AppColors.dawnMuted)
+                              .withValues(alpha: 0.2),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: 10,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(4),
+                              color: (isDark ? AppColors.darkMuted : AppColors.dawnMuted)
+                                  .withValues(alpha: 0.2),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            width: 10,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(4),
+                              color: (isDark ? AppColors.darkMuted : AppColors.dawnMuted)
+                                  .withValues(alpha: 0.2),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -771,7 +803,7 @@ class _PointPositionIllustration extends StatelessWidget {
   Widget build(BuildContext context) {
     // Different layout based on zone type
     return Container(
-      height: 100,
+      height: 80,
       decoration: BoxDecoration(
         color: isDark
             ? AppColors.darkSurface
@@ -817,19 +849,19 @@ class _PointPositionIllustration extends StatelessWidget {
     final rows = (totalPoints / columns).ceil();
 
     return Padding(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       child: Row(
         children: [
           // Zone icon
           if (zone.usesLogoIcon)
             Image.asset(
               'assets/images/logo.png',
-              width: 40,
-              height: 40,
+              width: 28,
+              height: 28,
             )
           else
-            Text(zone.emoji ?? '📍', style: const TextStyle(fontSize: 40)),
-          const SizedBox(width: 16),
+            Text(zone.emoji ?? '📍', style: const TextStyle(fontSize: 28)),
+          const SizedBox(width: 12),
           // Point grid
           Expanded(
             child: Column(
@@ -847,9 +879,9 @@ class _PointPositionIllustration extends StatelessWidget {
                     return GestureDetector(
                       onTap: isBlacklisted ? null : () => onPointTap(pointNum),
                       child: Container(
-                        width: 32,
-                        height: 32,
-                        margin: const EdgeInsets.all(2),
+                        width: 26,
+                        height: 26,
+                        margin: const EdgeInsets.all(1),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: isBlacklisted

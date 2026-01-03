@@ -710,7 +710,7 @@ class _ZoneDetailCardState extends ConsumerState<_ZoneDetailCard> {
               const Center(child: CircularProgressIndicator())
             else
               SizedBox(
-                height: 280,
+                height: 420,
                 child: _PointSelectionSilhouette(
                   points: _points,
                   selectedPoint: selectedPoint,

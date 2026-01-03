@@ -171,8 +171,8 @@ class _BodySilhouetteEditorState extends State<BodySilhouetteEditor>
                     ),
                   ),
 
-                  // Highlight zone area based on type
-                  if (widget.zoneType != null)
+                  // Highlight zone area based on type (only in edit mode)
+                  if (widget.zoneType != null && widget.editable)
                     _buildZoneHighlight(constraints, isDark),
 
                   // Draggable points

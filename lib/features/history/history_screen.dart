@@ -99,7 +99,7 @@ class HistoryScreen extends ConsumerWidget {
   }
 
   void _showExportOptions(BuildContext context, List<db.Injection> injections) {
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       builder: (context) => Column(
         mainAxisSize: MainAxisSize.min,
@@ -290,7 +290,7 @@ class _HistoryCard extends StatelessWidget {
                             color: _statusColor,
                           ),
                         ),
-                        if (injection.sideEffects?.isNotEmpty == true) ...[
+                        if (injection.sideEffects.isNotEmpty) ...[
                           const SizedBox(width: 12),
                           Icon(
                             Icons.warning_amber_rounded,
@@ -299,7 +299,7 @@ class _HistoryCard extends StatelessWidget {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            '${injection.sideEffects!.split(',').length}',
+                            '${injection.sideEffects.split(',').length}',
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: isDark ? AppColors.darkGold : AppColors.dawnGold,
                             ),
@@ -328,7 +328,7 @@ class _HistoryCard extends StatelessWidget {
     final date = injection.completedAt ?? injection.scheduledAt;
     final dateFormat = DateFormat('EEEE d MMMM yyyy, HH:mm', 'it_IT');
 
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       builder: (context) => DraggableScrollableSheet(
@@ -373,17 +373,17 @@ class _HistoryCard extends StatelessWidget {
               value: _statusLabel,
               valueColor: _statusColor,
             ),
-            if (injection.notes?.isNotEmpty == true)
+            if (injection.notes.isNotEmpty)
               _DetailRow(
                 icon: Icons.notes,
                 label: 'Note',
-                value: injection.notes!,
+                value: injection.notes,
               ),
-            if (injection.sideEffects?.isNotEmpty == true)
+            if (injection.sideEffects.isNotEmpty)
               _DetailRow(
                 icon: Icons.warning_amber_rounded,
                 label: 'Effetti collaterali',
-                value: injection.sideEffects!,
+                value: injection.sideEffects,
               ),
           ],
         ),

@@ -122,9 +122,11 @@ class ExportService {
     );
     await file.writeAsBytes(await pdf.save());
 
-    await Share.shareXFiles(
-      [XFile(file.path)],
-      subject: 'InjeCare Plan - Storico Iniezioni',
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [XFile(file.path)],
+        subject: 'InjeCare Plan - Storico Iniezioni',
+      ),
     );
   }
 
@@ -159,9 +161,11 @@ class ExportService {
     );
     await file.writeAsString(buffer.toString());
 
-    await Share.shareXFiles(
-      [XFile(file.path)],
-      subject: 'InjeCare Plan - Storico Iniezioni',
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [XFile(file.path)],
+        subject: 'InjeCare Plan - Storico Iniezioni',
+      ),
     );
   }
 

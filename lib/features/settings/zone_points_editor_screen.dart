@@ -129,34 +129,37 @@ class _ZonePointsEditorScreenState
     final isDark = theme.brightness == Brightness.dark;
     final zonesAsync = ref.watch(zonesProvider);
 
-    return WillPopScope(
-      onWillPop: () async {
-        if (_hasChanges) {
-          final shouldSave = await showDialog<bool>(
-            context: context,
-            builder: (ctx) => AlertDialog(
-              title: const Text('Salvare le modifiche?'),
-              content: const Text(
-                'Hai modifiche non salvate. Vuoi salvarle prima di uscire?',
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(ctx, false),
-                  child: const Text('Scarta'),
-                ),
-                ElevatedButton(
-                  onPressed: () async {
-                    await _savePoints();
-                    if (ctx.mounted) Navigator.pop(ctx, true);
-                  },
-                  child: const Text('Salva'),
-                ),
-              ],
+    return PopScope(
+      canPop: !_hasChanges,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        
+        final shouldSave = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('Salvare le modifiche?'),
+            content: const Text(
+              'Hai modifiche non salvate. Vuoi salvarle prima di uscire?',
             ),
-          );
-          return shouldSave ?? true;
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Scarta'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  await _savePoints();
+                  if (ctx.mounted) Navigator.pop(ctx, true);
+                },
+                child: const Text('Salva'),
+              ),
+            ],
+          ),
+        );
+        
+        if (context.mounted && (shouldSave == true || shouldSave == false)) {
+          Navigator.of(context).pop();
         }
-        return true;
       },
       child: Scaffold(
         appBar: AppBar(

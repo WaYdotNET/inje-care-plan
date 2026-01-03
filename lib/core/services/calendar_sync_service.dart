@@ -32,13 +32,9 @@ class CalendarSyncService {
   /// Initialize the calendar API with Google Sign-In credentials
   Future<bool> initialize() async {
     try {
-      // Try silent sign-in first
+      // Try silent sign-in first, then full authentication if needed
       _currentUser = await _googleSignIn.signInSilently();
-
-      if (_currentUser == null) {
-        // Try full authentication
-        _currentUser = await _googleSignIn.signIn();
-      }
+      _currentUser ??= await _googleSignIn.signIn();
 
       if (_currentUser == null) return false;
 

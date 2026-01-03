@@ -10,7 +10,7 @@ sealed class AppTheme {
   static ThemeData get light => ThemeData(
     useMaterial3: true,
     brightness: Brightness.light,
-    colorScheme: ColorScheme.light(
+    colorScheme: const ColorScheme.light(
       primary: AppColors.dawnPine,
       onPrimary: Colors.white,
       primaryContainer: AppColors.dawnFoam,
@@ -32,12 +32,12 @@ sealed class AppTheme {
     scaffoldBackgroundColor: AppColors.dawnBase,
     cardColor: AppColors.dawnSurface,
     dividerColor: AppColors.dawnHighlightMed,
-    appBarTheme: AppBarTheme(
+    appBarTheme: const AppBarTheme(
       backgroundColor: AppColors.dawnSurface,
       foregroundColor: AppColors.dawnText,
       elevation: 0,
       centerTitle: true,
-      titleTextStyle: const TextStyle(
+      titleTextStyle: TextStyle(
         color: AppColors.dawnText,
         fontSize: 18,
         fontWeight: FontWeight.w600,
@@ -146,7 +146,7 @@ sealed class AppTheme {
   static ThemeData get dark => ThemeData(
     useMaterial3: true,
     brightness: Brightness.dark,
-    colorScheme: ColorScheme.dark(
+    colorScheme: const ColorScheme.dark(
       primary: AppColors.darkPine,
       onPrimary: Colors.white,
       primaryContainer: AppColors.darkFoam,
@@ -168,12 +168,12 @@ sealed class AppTheme {
     scaffoldBackgroundColor: AppColors.darkBase,
     cardColor: AppColors.darkSurface,
     dividerColor: AppColors.darkHighlightMed,
-    appBarTheme: AppBarTheme(
+    appBarTheme: const AppBarTheme(
       backgroundColor: AppColors.darkSurface,
       foregroundColor: AppColors.darkText,
       elevation: 0,
       centerTitle: true,
-      titleTextStyle: const TextStyle(
+      titleTextStyle: TextStyle(
         color: AppColors.darkText,
         fontSize: 18,
         fontWeight: FontWeight.w600,

@@ -223,7 +223,7 @@ class _ZoneTile extends StatelessWidget {
             Switch(
               value: zone.isEnabled,
               onChanged: onToggle,
-              activeColor: isDark ? AppColors.darkPine : AppColors.dawnPine,
+              activeTrackColor: isDark ? AppColors.darkPine : AppColors.dawnPine,
             ),
             PopupMenuButton<String>(
               itemBuilder: (context) => [
@@ -402,7 +402,7 @@ class _ZoneEditDialogState extends State<_ZoneEditDialog> {
 
             // Type dropdown
             DropdownButtonFormField<String>(
-              value: _type,
+              initialValue: _type,
               decoration: const InputDecoration(
                 labelText: 'Tipo zona',
                 border: OutlineInputBorder(),
@@ -417,7 +417,7 @@ class _ZoneEditDialogState extends State<_ZoneEditDialog> {
 
             // Side dropdown
             DropdownButtonFormField<String>(
-              value: _side,
+              initialValue: _side,
               decoration: const InputDecoration(
                 labelText: 'Lato',
                 border: OutlineInputBorder(),

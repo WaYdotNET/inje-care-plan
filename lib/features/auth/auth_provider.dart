@@ -139,7 +139,12 @@ class AuthNotifier extends Notifier<AuthState> {
       final db = ref.read(databaseProvider);
       final user = await _repository.signInWithGoogle(db);
       if (user != null) {
-        state = state.copyWith(isLoading: false, user: user);
+        // Forza aggiornamento completo dello stato
+        state = AuthState(
+          user: user,
+          isLoading: false,
+          hasCompletedOnboarding: state.hasCompletedOnboarding,
+        );
         return true;
       } else {
         state = state.copyWith(

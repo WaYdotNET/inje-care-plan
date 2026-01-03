@@ -27,7 +27,7 @@ class _ZonePointsEditorScreenState
   bool _hasChanges = false;
   bool _showGrid = false;
   BodyView _currentView = BodyView.front;
-  
+
   // Per le coordinate in tempo reale durante il drag
   int? _draggingPointNumber;
   double? _dragX;

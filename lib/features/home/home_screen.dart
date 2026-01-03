@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../app/router.dart';
 import '../../models/body_zone.dart';
-import '../../models/therapy_plan.dart';
 import '../auth/auth_provider.dart';
 import '../injection/injection_provider.dart';
 import '../injection/zone_provider.dart';
+import '../../core/services/missed_injection_service.dart';
+import 'widgets/weekly_event_item.dart';
 
 /// Home dashboard screen
 class HomeScreen extends ConsumerWidget {
@@ -20,9 +20,12 @@ class HomeScreen extends ConsumerWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final user = ref.watch(currentUserProvider);
-    final therapyPlanAsync = ref.watch(therapyPlanProvider);
     final adherenceAsync = ref.watch(adherenceStatsProvider);
-    final suggestedAsync = ref.watch(suggestedNextPointProvider);
+    final weeklyEventsAsync = ref.watch(weeklyEventsProvider);
+    final zonesAsync = ref.watch(zonesProvider);
+
+    // Controlla iniezioni mancate all'avvio (eseguito una volta)
+    ref.watch(checkMissedInjectionsProvider);
 
     final displayName = user?.displayName?.split(' ').first ?? 'Utente';
 
@@ -139,7 +142,7 @@ class HomeScreen extends ConsumerWidget {
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(adherenceStatsProvider);
-          ref.invalidate(suggestedNextPointProvider);
+          ref.invalidate(weeklyEventsProvider);
         },
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -155,12 +158,11 @@ class HomeScreen extends ConsumerWidget {
 
               const SizedBox(height: 24),
 
-              // Next injection card
-              _buildNextInjectionCard(
+              // Weekly events card
+              _buildWeeklyEventsCard(
                 context,
-                ref,
-                therapyPlanAsync,
-                suggestedAsync,
+                weeklyEventsAsync,
+                zonesAsync,
                 isDark,
               ),
 
@@ -209,65 +211,61 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildNextInjectionCard(
+  Widget _buildWeeklyEventsCard(
     BuildContext context,
-    WidgetRef ref,
-    AsyncValue<TherapyPlan?> therapyPlanAsync,
-    AsyncValue<({int zoneId, int pointNumber})?> suggestedAsync,
+    AsyncValue<List<WeeklyEventData>> weeklyEventsAsync,
+    AsyncValue<List<BodyZone>> zonesAsync,
     bool isDark,
   ) {
-    final zonesAsync = ref.watch(zonesProvider);
-
-    return therapyPlanAsync.when(
+    return weeklyEventsAsync.when(
       loading: () => const _LoadingCard(),
       error: (_, __) => const _ErrorCard(),
-      data: (plan) {
-        final therapyPlan = plan ?? TherapyPlan.defaults;
-        final nextDate = therapyPlan.getNextInjectionDate(DateTime.now());
-
+      data: (weeklyEventData) {
         return zonesAsync.when(
-          loading: () => _NextInjectionCard(
-            nextDate: nextDate,
-            zone: null,
-            suggestedPointNumber: null,
-            isDark: isDark,
-          ),
-          error: (_, __) => _NextInjectionCard(
-            nextDate: nextDate,
-            zone: null,
-            suggestedPointNumber: null,
-            isDark: isDark,
-          ),
+          loading: () => const _LoadingCard(),
+          error: (_, __) => const _ErrorCard(),
           data: (zones) {
-            return suggestedAsync.when(
-              loading: () => _NextInjectionCard(
-                nextDate: nextDate,
-                zone: null,
-                suggestedPointNumber: null,
-                isDark: isDark,
-              ),
-              error: (_, __) => _NextInjectionCard(
-                nextDate: nextDate,
-                zone: null,
-                suggestedPointNumber: null,
-                isDark: isDark,
-              ),
-              data: (suggested) {
-                final zone = suggested != null
-                    ? zones.where((z) => z.id == suggested.zoneId).firstOrNull
-                    : null;
-                return _NextInjectionCard(
-                  nextDate: nextDate,
-                  zone: zone,
-                  suggestedPointNumber: suggested?.pointNumber,
-                  isDark: isDark,
-                );
-              },
+            // Converti WeeklyEventData in WeeklyEvent con zone
+            final events = weeklyEventData.map((data) {
+              final zone = data.suggestion != null
+                  ? zones.where((z) => z.id == data.suggestion!.zoneId).firstOrNull
+                  : (data.confirmedEvent != null
+                      ? zones.where((z) => z.id == data.confirmedEvent!.zoneId).firstOrNull
+                      : null);
+              return WeeklyEvent(
+                date: data.date,
+                confirmedEvent: data.confirmedEvent,
+                suggestion: data.suggestion,
+                zone: zone,
+              );
+            }).toList();
+
+            return WeeklyEventsCard(
+              events: events,
+              onEventTap: (event) => _handleEventTap(context, event),
+              onViewProposals: () => context.push('/weekly-proposals'),
+              isDark: isDark,
             );
           },
         );
       },
     );
+  }
+
+  void _handleEventTap(BuildContext context, WeeklyEvent event) {
+    if (event.isConfirmed) {
+      // Apri modifica evento
+      context.push(AppRoutes.calendar);
+    } else if (event.isSuggested) {
+      // Naviga alla selezione punto con data preselezionata
+      context.push(
+        AppRoutes.bodyMap,
+        extra: {
+          'scheduledDate': event.date,
+          if (event.suggestion != null) 'zoneId': event.suggestion!.zoneId,
+        },
+      );
+    }
   }
 }
 
@@ -298,109 +296,6 @@ class _ErrorCard extends StatelessWidget {
             'Impossibile caricare i dati',
             style: Theme.of(context).textTheme.bodyMedium,
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _NextInjectionCard extends StatelessWidget {
-  const _NextInjectionCard({
-    required this.nextDate,
-    required this.zone,
-    required this.suggestedPointNumber,
-    required this.isDark,
-  });
-
-  final DateTime nextDate;
-  final BodyZone? zone;
-  final int? suggestedPointNumber;
-  final bool isDark;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final now = DateTime.now();
-    final isToday = nextDate.year == now.year &&
-        nextDate.month == now.month &&
-        nextDate.day == now.day;
-    final dateFormat = DateFormat('EEEE d MMMM', 'it_IT');
-    final timeFormat = DateFormat('HH:mm', 'it_IT');
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'PROSSIMA INIEZIONE',
-              style: theme.textTheme.labelMedium?.copyWith(
-                letterSpacing: 1.2,
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            Row(
-              children: [
-                Icon(
-                  Icons.calendar_today,
-                  color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  isToday
-                      ? 'Oggi, ${timeFormat.format(nextDate)}'
-                      : '${dateFormat.format(nextDate)}, ${timeFormat.format(nextDate)}',
-                  style: theme.textTheme.titleLarge,
-                ),
-              ],
-            ),
-
-            if (zone != null && suggestedPointNumber != null) ...[
-              const SizedBox(height: 12),
-
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? AppColors.darkHighlightLow
-                          : AppColors.dawnHighlightLow,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(zone!.emoji),
-                  ),
-                  const SizedBox(width: 12),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        zone!.pointLabel(suggestedPointNumber!),
-                        style: theme.textTheme.titleMedium,
-                      ),
-                      Text(
-                        '(suggerito)',
-                        style: theme.textTheme.bodySmall,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ],
-
-            const SizedBox(height: 20),
-
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () => context.push(AppRoutes.bodyMap),
-                child: const Text('Registra ora'),
-              ),
-            ),
-          ],
         ),
       ),
     );

@@ -138,7 +138,13 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => context.push(AppRoutes.bodyMap),
+        onPressed: () {
+          final dateToUse = selectedDay ?? focusedDay;
+          context.push(
+            AppRoutes.bodyMap,
+            extra: {'scheduledDate': dateToUse},
+          );
+        },
         child: const Icon(Icons.add),
       ),
     );
@@ -312,7 +318,7 @@ class _DayInjectionsList extends StatelessWidget {
   }
 }
 
-class _InjectionCard extends StatelessWidget {
+class _InjectionCard extends ConsumerWidget {
   const _InjectionCard({
     required this.injection,
     required this.isDark,
@@ -322,7 +328,7 @@ class _InjectionCard extends StatelessWidget {
   final bool isDark;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
 
     Color statusColor;
@@ -353,43 +359,209 @@ class _InjectionCard extends StatelessWidget {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            Icon(statusIcon, color: statusColor),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+      child: InkWell(
+        onTap: () => _showEditOptions(context, ref),
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Icon(statusIcon, color: statusColor),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      injection.pointLabel,
+                      style: theme.textTheme.titleSmall,
+                    ),
+                    Text(
+                      injection.pointCode,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    injection.pointLabel,
+                    DateFormat('HH:mm').format(injection.scheduledAt),
                     style: theme.textTheme.titleSmall,
                   ),
                   Text(
-                    injection.pointCode,
+                    statusLabel,
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                      color: statusColor,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(width: 8),
+              Icon(
+                Icons.chevron_right,
+                color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showEditOptions(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (ctx) => _InjectionEditSheet(
+        injection: injection,
+        isDark: isDark,
+        onComplete: () async {
+          Navigator.pop(ctx);
+          final repository = ref.read(injectionRepositoryProvider);
+          await repository.completeInjection(injection.id);
+          ref.invalidate(injectionsProvider);
+        },
+        onSkip: () async {
+          Navigator.pop(ctx);
+          final repository = ref.read(injectionRepositoryProvider);
+          await repository.skipInjection(injection.id);
+          ref.invalidate(injectionsProvider);
+        },
+        onDelete: () async {
+          Navigator.pop(ctx);
+          final confirm = await showDialog<bool>(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              title: const Text('Elimina iniezione'),
+              content: const Text('Vuoi davvero eliminare questa iniezione?'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: const Text('Annulla'),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                  ),
+                  onPressed: () => Navigator.pop(ctx, true),
+                  child: const Text('Elimina'),
+                ),
+              ],
+            ),
+          );
+          if (confirm == true) {
+            final repository = ref.read(injectionRepositoryProvider);
+            await repository.deleteInjection(injection.id);
+            ref.invalidate(injectionsProvider);
+          }
+        },
+        onChangePoint: () {
+          Navigator.pop(ctx);
+          context.push(
+            AppRoutes.bodyMap,
+            extra: {'scheduledDate': injection.scheduledAt},
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _InjectionEditSheet extends StatelessWidget {
+  const _InjectionEditSheet({
+    required this.injection,
+    required this.isDark,
+    required this.onComplete,
+    required this.onSkip,
+    required this.onDelete,
+    required this.onChangePoint,
+  });
+
+  final db.Injection injection;
+  final bool isDark;
+  final VoidCallback onComplete;
+  final VoidCallback onSkip;
+  final VoidCallback onDelete;
+  final VoidCallback onChangePoint;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isCompleted = injection.status == 'completed';
+    final isSkipped = injection.status == 'skipped';
+
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Header
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          injection.pointLabel,
+                          style: theme.textTheme.titleMedium,
+                        ),
+                        Text(
+                          DateFormat('d MMMM yyyy, HH:mm', 'it_IT')
+                              .format(injection.scheduledAt),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  DateFormat('HH:mm').format(injection.scheduledAt),
-                  style: theme.textTheme.titleSmall,
+            const Divider(height: 24),
+
+            // Actions
+            if (!isCompleted)
+              ListTile(
+                leading: Icon(
+                  Icons.check_circle,
+                  color: isDark ? AppColors.darkPine : AppColors.dawnPine,
                 ),
-                Text(
-                  statusLabel,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: statusColor,
-                  ),
+                title: const Text('Segna come completata'),
+                onTap: onComplete,
+              ),
+            if (!isSkipped)
+              ListTile(
+                leading: Icon(
+                  Icons.cancel,
+                  color: isDark ? AppColors.darkGold : AppColors.dawnGold,
                 ),
-              ],
+                title: const Text('Segna come saltata'),
+                onTap: onSkip,
+              ),
+            ListTile(
+              leading: Icon(
+                Icons.edit,
+                color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
+              ),
+              title: const Text('Cambia punto'),
+              onTap: onChangePoint,
+            ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.delete, color: Colors.red),
+              title: const Text(
+                'Elimina',
+                style: TextStyle(color: Colors.red),
+              ),
+              onTap: onDelete,
             ),
           ],
         ),

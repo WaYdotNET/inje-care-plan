@@ -1,7 +1,6 @@
-import 'dart:io';
-
 import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
+import 'package:drift_flutter/drift_flutter.dart';
+import 'package:flutter/foundation.dart' show debugPrint, kIsWeb;
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
@@ -16,6 +15,7 @@ part 'app_database.g.dart';
   BlacklistedPoints,
   AppSettings,
   UserProfiles,
+  PointConfigs,
 ])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
@@ -24,7 +24,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -59,6 +59,10 @@ class AppDatabase extends _$AppDatabase {
                 END,
                 sort_order = id
             ''');
+          }
+          if (from < 3) {
+            // Crea tabella PointConfigs per configurazione punti
+            await m.createTable(pointConfigs);
           }
         },
       );
@@ -372,6 +376,85 @@ class AppDatabase extends _$AppDatabase {
     }
   }
 
+  // --- Point Configs ---
+  Future<List<PointConfig>> getPointConfigsForZone(int zoneId) =>
+      (select(pointConfigs)
+            ..where((p) => p.zoneId.equals(zoneId))
+            ..orderBy([(p) => OrderingTerm.asc(p.pointNumber)]))
+          .get();
+
+  Stream<List<PointConfig>> watchPointConfigsForZone(int zoneId) =>
+      (select(pointConfigs)
+            ..where((p) => p.zoneId.equals(zoneId))
+            ..orderBy([(p) => OrderingTerm.asc(p.pointNumber)]))
+          .watch();
+
+  Future<PointConfig?> getPointConfig(int zoneId, int pointNumber) =>
+      (select(pointConfigs)
+            ..where((p) =>
+                p.zoneId.equals(zoneId) & p.pointNumber.equals(pointNumber)))
+          .getSingleOrNull();
+
+  Future<int> insertPointConfig(PointConfigsCompanion config) =>
+      into(pointConfigs).insert(config);
+
+  Future<int> upsertPointConfig(PointConfigsCompanion config) =>
+      into(pointConfigs).insertOnConflictUpdate(config);
+
+  Future<int> updatePointConfig(PointConfigsCompanion config) =>
+      (update(pointConfigs)..where((p) => p.id.equals(config.id.value)))
+          .write(config);
+
+  Future<void> updatePointPosition(
+    int zoneId,
+    int pointNumber,
+    double x,
+    double y,
+    String bodyView,
+  ) async {
+    final existing = await getPointConfig(zoneId, pointNumber);
+    if (existing != null) {
+      await (update(pointConfigs)..where((p) => p.id.equals(existing.id)))
+          .write(PointConfigsCompanion(
+            positionX: Value(x),
+            positionY: Value(y),
+            bodyView: Value(bodyView),
+            updatedAt: Value(DateTime.now()),
+          ));
+    } else {
+      await into(pointConfigs).insert(PointConfigsCompanion.insert(
+        zoneId: zoneId,
+        pointNumber: pointNumber,
+        positionX: Value(x),
+        positionY: Value(y),
+        bodyView: Value(bodyView),
+      ));
+    }
+  }
+
+  Future<void> updatePointName(int zoneId, int pointNumber, String name) async {
+    final existing = await getPointConfig(zoneId, pointNumber);
+    if (existing != null) {
+      await (update(pointConfigs)..where((p) => p.id.equals(existing.id)))
+          .write(PointConfigsCompanion(
+            customName: Value(name),
+            updatedAt: Value(DateTime.now()),
+          ));
+    } else {
+      await into(pointConfigs).insert(PointConfigsCompanion.insert(
+        zoneId: zoneId,
+        pointNumber: pointNumber,
+        customName: Value(name),
+      ));
+    }
+  }
+
+  Future<int> deletePointConfig(int id) =>
+      (delete(pointConfigs)..where((p) => p.id.equals(id))).go();
+
+  Future<int> deletePointConfigsForZone(int zoneId) =>
+      (delete(pointConfigs)..where((p) => p.zoneId.equals(zoneId))).go();
+
   // --- Utilities ---
   Future<void> deleteAllData() async {
     await delete(injections).go();
@@ -379,19 +462,38 @@ class AppDatabase extends _$AppDatabase {
     await delete(therapyPlans).go();
     await delete(appSettings).go();
     await delete(userProfiles).go();
+    await delete(pointConfigs).go();
     // Non cancellare bodyZones - sono predefinite
   }
 
-  /// Restituisce il path del database file
+  /// Restituisce il path del database file (solo per mobile/desktop)
   static Future<String> getDatabasePath() async {
+    if (kIsWeb) {
+      // Sul web non usiamo file path
+      return 'injecare.db';
+    }
     final dbFolder = await getApplicationDocumentsDirectory();
     return p.join(dbFolder.path, 'injecare.db');
   }
 }
 
-LazyDatabase _openConnection() {
-  return LazyDatabase(() async {
-    final file = File(await AppDatabase.getDatabasePath());
-    return NativeDatabase.createInBackground(file);
-  });
+/// Crea la connessione al database.
+/// Su mobile/desktop usa SQLite nativo, sul web usa IndexedDB/WASM.
+QueryExecutor _openConnection() {
+  // drift_flutter gestisce automaticamente la piattaforma:
+  // - Mobile/Desktop: SQLite nativo (usando sqlite3_flutter_libs)
+  // - Web: sqlite3 in WASM con persistenza in IndexedDB
+  return driftDatabase(
+    name: 'injecare',
+    web: DriftWebOptions(
+      sqlite3Wasm: Uri.parse('sqlite3.wasm'),
+      driftWorker: Uri.parse('drift_worker.js'),
+      onResult: (result) {
+        if (result.missingFeatures.isNotEmpty) {
+          debugPrint('Using ${result.chosenImplementation} due to missing '
+              'browser features: ${result.missingFeatures}');
+        }
+      },
+    ),
+  );
 }

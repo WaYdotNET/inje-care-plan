@@ -65,7 +65,6 @@ class _AuthenticatedClient extends http.BaseClient {
 class BackupService {
   static const _backupFileName = 'injecare_backup.enc';
   static const _backupFolderName = 'InjeCare Backups';
-  static const _driveScopes = [drive.DriveApi.driveFileScope];
 
   final CryptoService _cryptoService;
   final GoogleSignIn _googleSignIn;
@@ -73,8 +72,9 @@ class BackupService {
 
   BackupService({
     required CryptoService cryptoService,
+    required GoogleSignIn googleSignIn,
   })  : _cryptoService = cryptoService,
-        _googleSignIn = GoogleSignIn(scopes: _driveScopes);
+        _googleSignIn = googleSignIn;
 
   /// Verifica se l'utente è autenticato con Google (con scope Drive)
   Future<bool> isAuthenticated() async {
@@ -100,21 +100,26 @@ class BackupService {
 
   /// Ottiene l'API client per Google Drive
   Future<drive.DriveApi?> _getDriveApi() async {
-    if (_currentUser == null) {
+    // Prima controlla se c'è già un utente connesso nel GoogleSignIn condiviso
+    var account = _googleSignIn.currentUser;
+
+    if (account == null) {
       // Prova a fare sign-in silenzioso
       try {
-        _currentUser = await _googleSignIn.signInSilently();
+        account = await _googleSignIn.signInSilently();
       } catch (_) {
         // Ignora errori
       }
-
-      if (_currentUser == null) {
-        return null;
-      }
     }
 
+    if (account == null) {
+      return null;
+    }
+
+    _currentUser = account;
+
     // Ottieni auth headers per Drive API
-    final authHeaders = await _currentUser!.authHeaders;
+    final authHeaders = await account.authHeaders;
     final authHeader = authHeaders['Authorization'];
     if (authHeader == null) return null;
 

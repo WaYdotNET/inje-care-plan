@@ -3,7 +3,6 @@ import 'package:drift/drift.dart';
 import '../../core/database/app_database.dart';
 import '../../models/injection_record.dart' as models;
 import '../../models/blacklisted_point.dart' as models;
-import '../../models/body_zone.dart' as models;
 import '../../models/therapy_plan.dart' as models;
 
 /// Injection repository per operazioni Drift (offline-first)

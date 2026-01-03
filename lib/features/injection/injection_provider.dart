@@ -100,3 +100,90 @@ class FocusedDayNotifier extends Notifier<DateTime> {
 }
 
 final focusedDayProvider = NotifierProvider<FocusedDayNotifier, DateTime>(FocusedDayNotifier.new);
+
+/// Weekly events provider - combina eventi reali + suggerimenti AI
+final weeklyEventsProvider = FutureProvider<List<WeeklyEventData>>((ref) async {
+  final repository = ref.watch(injectionRepositoryProvider);
+  final therapyPlanAsync = ref.watch(therapyPlanProvider);
+
+  final now = DateTime.now();
+  // Inizio settimana (lunedì)
+  final weekStart = now.subtract(Duration(days: now.weekday - 1));
+  final startOfWeek = DateTime(weekStart.year, weekStart.month, weekStart.day);
+  // Fine settimana (domenica)
+  final endOfWeek = startOfWeek.add(const Duration(days: 6, hours: 23, minutes: 59));
+
+  // Ottieni eventi esistenti per la settimana
+  final existingInjections = await repository.getInjectionsInRange(startOfWeek, endOfWeek);
+
+  // Ottieni il piano terapeutico
+  final therapyPlan = therapyPlanAsync.value ?? TherapyPlan.defaults;
+
+  // Genera lista eventi
+  final events = <WeeklyEventData>[];
+
+  for (var i = 0; i < 7; i++) {
+    final day = startOfWeek.add(Duration(days: i));
+    final dayOfWeek = day.weekday; // 1 = Mon, 7 = Sun
+
+    // Controlla se questo giorno è nel piano terapeutico
+    final isTherapyDay = therapyPlan.weekDays.contains(dayOfWeek);
+
+    // Cerca evento esistente per questo giorno
+    final existingEvent = existingInjections.where((inj) {
+      return inj.scheduledAt.year == day.year &&
+             inj.scheduledAt.month == day.month &&
+             inj.scheduledAt.day == day.day;
+    }).firstOrNull;
+
+    if (existingEvent != null) {
+      // Evento confermato
+      events.add(WeeklyEventData(
+        date: day,
+        confirmedEvent: existingEvent,
+        isTherapyDay: isTherapyDay,
+      ));
+    } else if (isTherapyDay) {
+      // Giorno del piano senza evento - genera suggerimento
+      final suggestion = await repository.getSuggestedNextPoint();
+      events.add(WeeklyEventData(
+        date: day,
+        suggestion: suggestion,
+        isTherapyDay: isTherapyDay,
+        preferredTime: therapyPlan.preferredTime,
+      ));
+    }
+  }
+
+  return events;
+});
+
+/// Dati per un evento settimanale
+class WeeklyEventData {
+  final DateTime date;
+  final db.Injection? confirmedEvent;
+  final ({int zoneId, int pointNumber})? suggestion;
+  final bool isTherapyDay;
+  final String? preferredTime;
+
+  WeeklyEventData({
+    required this.date,
+    this.confirmedEvent,
+    this.suggestion,
+    this.isTherapyDay = false,
+    this.preferredTime,
+  });
+
+  bool get isSuggested => confirmedEvent == null && suggestion != null;
+  bool get isConfirmed => confirmedEvent != null;
+  bool get isPast {
+    final now = DateTime.now();
+    return date.isBefore(DateTime(now.year, now.month, now.day));
+  }
+
+  String get status {
+    if (confirmedEvent != null) return confirmedEvent!.status;
+    if (isPast) return 'missed';
+    return 'suggested';
+  }
+}

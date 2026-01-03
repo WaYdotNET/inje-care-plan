@@ -17,10 +17,12 @@ class PointSelectionScreen extends ConsumerStatefulWidget {
     super.key,
     required this.mode,
     this.initialZoneId,
+    this.scheduledDate,
   });
 
   final PointSelectionMode mode;
   final int? initialZoneId;
+  final DateTime? scheduledDate;
 
   @override
   ConsumerState<PointSelectionScreen> createState() =>
@@ -245,7 +247,11 @@ class _PointSelectionScreenState extends ConsumerState<PointSelectionScreen> {
       // Navigate to record screen with selected point
       context.push(
         '/record',
-        extra: {'zoneId': _selectedZoneId, 'pointNumber': _selectedPoint},
+        extra: {
+          'zoneId': _selectedZoneId,
+          'pointNumber': _selectedPoint,
+          if (widget.scheduledDate != null) 'scheduledDate': widget.scheduledDate,
+        },
       );
     } else {
       // Blacklist the point

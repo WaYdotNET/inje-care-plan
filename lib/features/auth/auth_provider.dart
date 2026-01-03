@@ -1,12 +1,23 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/database/database_provider.dart';
 import 'auth_repository.dart';
 
+/// Scopes per Google Drive (condivisi tra auth e backup)
+const googleDriveScopes = [drive.DriveApi.driveFileScope];
+
+/// Provider singleton per GoogleSignIn - condiviso tra AuthRepository e BackupService
+final googleSignInProvider = Provider<GoogleSignIn>((ref) {
+  return GoogleSignIn(scopes: googleDriveScopes);
+});
+
 /// Auth repository provider
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  return AuthRepository();
+  final googleSignIn = ref.watch(googleSignInProvider);
+  return AuthRepository(googleSignIn: googleSignIn);
 });
 
 /// Chiave per salvare lo stato dell'onboarding

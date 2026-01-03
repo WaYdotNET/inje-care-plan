@@ -19,10 +19,12 @@ class RecordInjectionScreen extends ConsumerStatefulWidget {
     super.key,
     required this.zoneId,
     required this.pointNumber,
+    this.scheduledDate,
   });
 
   final int zoneId;
   final int pointNumber;
+  final DateTime? scheduledDate;
 
   @override
   ConsumerState<RecordInjectionScreen> createState() => _RecordInjectionScreenState();
@@ -215,12 +217,13 @@ class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
     try {
       final repository = ref.read(injectionRepositoryProvider);
       final now = DateTime.now();
+      final scheduledAt = widget.scheduledDate ?? now;
 
       // Create completed injection record
       final record = InjectionRecord(
         zoneId: widget.zoneId,
         pointNumber: widget.pointNumber,
-        scheduledAt: now,
+        scheduledAt: scheduledAt,
         completedAt: now,
         status: InjectionStatus.completed,
         notes: _notesController.text.isNotEmpty ? _notesController.text : '',

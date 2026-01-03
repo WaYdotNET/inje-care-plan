@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 400" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Silhouette corpo umano - Vista Frontale -->
+
+  <!-- Testa -->
+  <ellipse cx="100" cy="30" rx="20" ry="25" opacity="0.3"/>
+
+  <!-- Collo -->
+  <path d="M92 55 L92 70 L108 70 L108 55" opacity="0.3"/>
+
+  <!-- Spalle e busto -->
+  <path d="M60 75 C60 70, 92 70, 92 70 L108 70 C108 70, 140 70, 140 75 L140 85" opacity="0.3"/>
+  <path d="M60 75 L60 85" opacity="0.3"/>
+
+  <!-- Braccia -->
+  <!-- Braccio sinistro (left = viewer's right) -->
+  <path d="M60 85 L50 90 L40 120 L35 160" opacity="0.3" id="arm-left"/>
+  <!-- Braccio destro (right = viewer's left) -->
+  <path d="M140 85 L150 90 L160 120 L165 160" opacity="0.3" id="arm-right"/>
+
+  <!-- Torso -->
+  <path d="M60 85 L55 180 L70 200" opacity="0.3"/>
+  <path d="M140 85 L145 180 L130 200" opacity="0.3"/>
+
+  <!-- Addome - zona iniezione -->
+  <rect x="70" y="130" width="60" height="60" rx="5" opacity="0.15" fill="currentColor" id="abdomen-area"/>
+
+  <!-- Bacino -->
+  <path d="M70 200 L70 210 L100 220 L130 210 L130 200" opacity="0.3"/>
+
+  <!-- Gambe -->
+  <!-- Coscia sinistra -->
+  <path d="M70 210 L65 280 L75 320" opacity="0.3" id="thigh-left"/>
+  <rect x="65" y="220" width="30" height="80" rx="10" opacity="0.15" fill="currentColor"/>
+
+  <!-- Coscia destra -->
+  <path d="M130 210 L135 280 L125 320" opacity="0.3" id="thigh-right"/>
+  <rect x="105" y="220" width="30" height="80" rx="10" opacity="0.15" fill="currentColor"/>
+
+  <!-- Ginocchia -->
+  <ellipse cx="75" cy="320" rx="10" ry="8" opacity="0.2"/>
+  <ellipse cx="125" cy="320" rx="10" ry="8" opacity="0.2"/>
+
+  <!-- Polpacci -->
+  <path d="M75 328 L70 380" opacity="0.3"/>
+  <path d="M125 328 L130 380" opacity="0.3"/>
+
+  <!-- Piedi -->
+  <ellipse cx="70" cy="390" rx="15" ry="8" opacity="0.2"/>
+  <ellipse cx="130" cy="390" rx="15" ry="8" opacity="0.2"/>
+
+  <!-- Zone di iniezione evidenziate -->
+  <!-- Braccio sx zona -->
+  <rect x="30" y="100" width="20" height="40" rx="8" opacity="0.1" fill="currentColor" id="zone-arm-left"/>
+  <!-- Braccio dx zona -->
+  <rect x="150" y="100" width="20" height="40" rx="8" opacity="0.1" fill="currentColor" id="zone-arm-right"/>
+</svg>

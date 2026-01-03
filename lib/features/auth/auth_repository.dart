@@ -1,7 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:googleapis/drive/v3.dart' as drive;
 
 import '../../core/database/app_database.dart';
 
@@ -26,11 +25,11 @@ class LocalUser {
 
 /// Authentication repository - versione offline-first senza Firebase
 class AuthRepository {
-  AuthRepository({LocalAuthentication? localAuth})
-    : _localAuth = localAuth ?? LocalAuthentication(),
-      _googleSignIn = GoogleSignIn(scopes: _driveScopes);
-
-  static const _driveScopes = [drive.DriveApi.driveFileScope];
+  AuthRepository({
+    LocalAuthentication? localAuth,
+    required GoogleSignIn googleSignIn,
+  })  : _localAuth = localAuth ?? LocalAuthentication(),
+        _googleSignIn = googleSignIn;
 
   final LocalAuthentication _localAuth;
   final GoogleSignIn _googleSignIn;

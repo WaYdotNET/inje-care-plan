@@ -46,9 +46,11 @@ dependencies:
   share_plus: ^12.0.1
   path_provider: ^2.1.4
 
-  # Database (Drift - offline first)
+  # Database (Drift - offline first, multi-platform)
   drift: ^2.26.0
-  sqlite3_flutter_libs: ^0.5.28
+  drift_flutter: ^0.2.4          # Semplifica setup multi-piattaforma (mobile/desktop/web)
+  sqlite3_flutter_libs: ^0.5.28  # SQLite nativo per mobile/desktop
+  sqlite3: ^2.7.0                # Core SQLite (usato anche per WASM su web)
   path: ^1.9.0
 
   # Crypto (E2E encryption)

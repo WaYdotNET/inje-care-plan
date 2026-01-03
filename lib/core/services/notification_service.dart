@@ -18,7 +18,9 @@ class NotificationService {
     tz_data.initializeTimeZones();
 
     // Android initialization
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings = AndroidInitializationSettings(
+      '@mipmap/ic_launcher',
+    );
 
     // iOS initialization
     const iosSettings = DarwinInitializationSettings(
@@ -43,17 +45,15 @@ class NotificationService {
     // Request iOS permissions
     final iosResult = await _notifications
         .resolvePlatformSpecificImplementation<
-            IOSFlutterLocalNotificationsPlugin>()
-        ?.requestPermissions(
-          alert: true,
-          badge: true,
-          sound: true,
-        );
+          IOSFlutterLocalNotificationsPlugin
+        >()
+        ?.requestPermissions(alert: true, badge: true, sound: true);
 
     // Request Android permissions
     final androidResult = await _notifications
         .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
+          AndroidFlutterLocalNotificationsPlugin
+        >()
         ?.requestNotificationsPermission();
 
     return (iosResult ?? true) && (androidResult ?? true);
@@ -72,7 +72,9 @@ class NotificationService {
     required String pointLabel,
     int minutesBefore = 30,
   }) async {
-    final reminderTime = scheduledTime.subtract(Duration(minutes: minutesBefore));
+    final reminderTime = scheduledTime.subtract(
+      Duration(minutes: minutesBefore),
+    );
 
     // Don't schedule if reminder time is in the past
     if (reminderTime.isBefore(DateTime.now())) return;
@@ -214,5 +216,77 @@ class NotificationService {
         pointLabel: injection.pointLabel,
       );
     }
+  }
+
+  /// Schedule weekly reminder for Sunday to approve proposals
+  /// Called every Sunday at the specified time
+  Future<void> scheduleWeeklyProposalsReminder({
+    int hour = 10,
+    int minute = 0,
+  }) async {
+    // ID fisso per la notifica domenicale
+    const id = 99999;
+
+    // Cancel existing weekly reminder
+    await _notifications.cancel(id);
+
+    // Calculate next Sunday at the specified time
+    final now = DateTime.now();
+    var nextSunday = now;
+
+    // Find next Sunday
+    while (nextSunday.weekday != DateTime.sunday) {
+      nextSunday = nextSunday.add(const Duration(days: 1));
+    }
+    nextSunday = DateTime(
+      nextSunday.year,
+      nextSunday.month,
+      nextSunday.day,
+      hour,
+      minute,
+    );
+
+    // If it's already past today's Sunday time, schedule for next week
+    if (nextSunday.isBefore(now)) {
+      nextSunday = nextSunday.add(const Duration(days: 7));
+    }
+
+    const androidDetails = AndroidNotificationDetails(
+      'weekly_proposals',
+      'Proposte settimanali',
+      channelDescription:
+          'Promemoria domenicale per confermare le iniezioni della settimana',
+      importance: Importance.high,
+      priority: Priority.high,
+      icon: '@mipmap/ic_launcher',
+    );
+
+    const iosDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
+
+    const details = NotificationDetails(
+      android: androidDetails,
+      iOS: iosDetails,
+    );
+
+    // Schedule weekly notification (repeating)
+    await _notifications.zonedSchedule(
+      id,
+      'Pianifica la tua settimana',
+      'Hai proposte di iniezione da confermare. Tocca per approvare.',
+      tz.TZDateTime.from(nextSunday, tz.local),
+      details,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
+      payload: 'weekly_proposals',
+    );
+  }
+
+  /// Cancel the weekly proposals reminder
+  Future<void> cancelWeeklyProposalsReminder() async {
+    await _notifications.cancel(99999);
   }
 }

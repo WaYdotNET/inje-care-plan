@@ -2,11 +2,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'backup_service.dart';
 import 'crypto_provider.dart';
+import '../../features/auth/auth_provider.dart';
 
 /// Provider singleton per BackupService
 final backupServiceProvider = Provider<BackupService>((ref) {
   final cryptoService = ref.watch(cryptoServiceProvider);
-  return BackupService(cryptoService: cryptoService);
+  final googleSignIn = ref.watch(googleSignInProvider);
+  return BackupService(
+    cryptoService: cryptoService,
+    googleSignIn: googleSignIn,
+  );
 });
 
 /// Provider per verificare se esiste un backup su Google Drive

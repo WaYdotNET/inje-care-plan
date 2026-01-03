@@ -238,6 +238,16 @@ class _ZoneTile extends StatelessWidget {
                   ),
                 ),
                 const PopupMenuItem(
+                  value: 'points',
+                  child: Row(
+                    children: [
+                      Icon(Icons.grid_on, size: 20),
+                      SizedBox(width: 8),
+                      Text('Posiziona punti'),
+                    ],
+                  ),
+                ),
+                const PopupMenuItem(
                   value: 'delete',
                   child: Row(
                     children: [
@@ -250,6 +260,9 @@ class _ZoneTile extends StatelessWidget {
               ],
               onSelected: (value) {
                 if (value == 'edit') onEdit();
+                if (value == 'points') {
+                  context.push('/zone-points-editor/${zone.id}');
+                }
                 if (value == 'delete') onDelete();
               },
             ),

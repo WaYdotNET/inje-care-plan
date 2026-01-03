@@ -72,6 +72,23 @@ class AppSettings extends Table {
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
 }
 
+/// Configurazione singoli punti per zona
+/// Permette di definire nome e posizione visuale per ogni punto
+class PointConfigs extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get zoneId => integer().references(BodyZones, #id)();
+  IntColumn get pointNumber => integer()();
+  TextColumn get customName => text().withDefault(const Constant(''))(); // Nome personalizzato del punto
+  RealColumn get positionX => real().withDefault(const Constant(0.5))(); // Posizione X normalizzata (0-1)
+  RealColumn get positionY => real().withDefault(const Constant(0.5))(); // Posizione Y normalizzata (0-1)
+  TextColumn get bodyView => text().withDefault(const Constant('front'))(); // front, back
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+
+  @override
+  List<Set<Column>> get uniqueKeys => [{zoneId, pointNumber}];
+}
+
 /// Profilo utente (locale)
 class UserProfiles extends Table {
   IntColumn get id => integer().autoIncrement()();

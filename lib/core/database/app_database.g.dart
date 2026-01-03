@@ -3416,6 +3416,556 @@ class UserProfilesCompanion extends UpdateCompanion<UserProfile> {
   }
 }
 
+class $PointConfigsTable extends PointConfigs
+    with TableInfo<$PointConfigsTable, PointConfig> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PointConfigsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _zoneIdMeta = const VerificationMeta('zoneId');
+  @override
+  late final GeneratedColumn<int> zoneId = GeneratedColumn<int>(
+    'zone_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES body_zones (id)',
+    ),
+  );
+  static const VerificationMeta _pointNumberMeta = const VerificationMeta(
+    'pointNumber',
+  );
+  @override
+  late final GeneratedColumn<int> pointNumber = GeneratedColumn<int>(
+    'point_number',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _customNameMeta = const VerificationMeta(
+    'customName',
+  );
+  @override
+  late final GeneratedColumn<String> customName = GeneratedColumn<String>(
+    'custom_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _positionXMeta = const VerificationMeta(
+    'positionX',
+  );
+  @override
+  late final GeneratedColumn<double> positionX = GeneratedColumn<double>(
+    'position_x',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0.5),
+  );
+  static const VerificationMeta _positionYMeta = const VerificationMeta(
+    'positionY',
+  );
+  @override
+  late final GeneratedColumn<double> positionY = GeneratedColumn<double>(
+    'position_y',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0.5),
+  );
+  static const VerificationMeta _bodyViewMeta = const VerificationMeta(
+    'bodyView',
+  );
+  @override
+  late final GeneratedColumn<String> bodyView = GeneratedColumn<String>(
+    'body_view',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('front'),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    zoneId,
+    pointNumber,
+    customName,
+    positionX,
+    positionY,
+    bodyView,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'point_configs';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PointConfig> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('zone_id')) {
+      context.handle(
+        _zoneIdMeta,
+        zoneId.isAcceptableOrUnknown(data['zone_id']!, _zoneIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_zoneIdMeta);
+    }
+    if (data.containsKey('point_number')) {
+      context.handle(
+        _pointNumberMeta,
+        pointNumber.isAcceptableOrUnknown(
+          data['point_number']!,
+          _pointNumberMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_pointNumberMeta);
+    }
+    if (data.containsKey('custom_name')) {
+      context.handle(
+        _customNameMeta,
+        customName.isAcceptableOrUnknown(data['custom_name']!, _customNameMeta),
+      );
+    }
+    if (data.containsKey('position_x')) {
+      context.handle(
+        _positionXMeta,
+        positionX.isAcceptableOrUnknown(data['position_x']!, _positionXMeta),
+      );
+    }
+    if (data.containsKey('position_y')) {
+      context.handle(
+        _positionYMeta,
+        positionY.isAcceptableOrUnknown(data['position_y']!, _positionYMeta),
+      );
+    }
+    if (data.containsKey('body_view')) {
+      context.handle(
+        _bodyViewMeta,
+        bodyView.isAcceptableOrUnknown(data['body_view']!, _bodyViewMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {zoneId, pointNumber},
+  ];
+  @override
+  PointConfig map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PointConfig(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      zoneId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}zone_id'],
+      )!,
+      pointNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}point_number'],
+      )!,
+      customName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}custom_name'],
+      )!,
+      positionX: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}position_x'],
+      )!,
+      positionY: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}position_y'],
+      )!,
+      bodyView: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}body_view'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $PointConfigsTable createAlias(String alias) {
+    return $PointConfigsTable(attachedDatabase, alias);
+  }
+}
+
+class PointConfig extends DataClass implements Insertable<PointConfig> {
+  final int id;
+  final int zoneId;
+  final int pointNumber;
+  final String customName;
+  final double positionX;
+  final double positionY;
+  final String bodyView;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const PointConfig({
+    required this.id,
+    required this.zoneId,
+    required this.pointNumber,
+    required this.customName,
+    required this.positionX,
+    required this.positionY,
+    required this.bodyView,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['zone_id'] = Variable<int>(zoneId);
+    map['point_number'] = Variable<int>(pointNumber);
+    map['custom_name'] = Variable<String>(customName);
+    map['position_x'] = Variable<double>(positionX);
+    map['position_y'] = Variable<double>(positionY);
+    map['body_view'] = Variable<String>(bodyView);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  PointConfigsCompanion toCompanion(bool nullToAbsent) {
+    return PointConfigsCompanion(
+      id: Value(id),
+      zoneId: Value(zoneId),
+      pointNumber: Value(pointNumber),
+      customName: Value(customName),
+      positionX: Value(positionX),
+      positionY: Value(positionY),
+      bodyView: Value(bodyView),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory PointConfig.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PointConfig(
+      id: serializer.fromJson<int>(json['id']),
+      zoneId: serializer.fromJson<int>(json['zoneId']),
+      pointNumber: serializer.fromJson<int>(json['pointNumber']),
+      customName: serializer.fromJson<String>(json['customName']),
+      positionX: serializer.fromJson<double>(json['positionX']),
+      positionY: serializer.fromJson<double>(json['positionY']),
+      bodyView: serializer.fromJson<String>(json['bodyView']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'zoneId': serializer.toJson<int>(zoneId),
+      'pointNumber': serializer.toJson<int>(pointNumber),
+      'customName': serializer.toJson<String>(customName),
+      'positionX': serializer.toJson<double>(positionX),
+      'positionY': serializer.toJson<double>(positionY),
+      'bodyView': serializer.toJson<String>(bodyView),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  PointConfig copyWith({
+    int? id,
+    int? zoneId,
+    int? pointNumber,
+    String? customName,
+    double? positionX,
+    double? positionY,
+    String? bodyView,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => PointConfig(
+    id: id ?? this.id,
+    zoneId: zoneId ?? this.zoneId,
+    pointNumber: pointNumber ?? this.pointNumber,
+    customName: customName ?? this.customName,
+    positionX: positionX ?? this.positionX,
+    positionY: positionY ?? this.positionY,
+    bodyView: bodyView ?? this.bodyView,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  PointConfig copyWithCompanion(PointConfigsCompanion data) {
+    return PointConfig(
+      id: data.id.present ? data.id.value : this.id,
+      zoneId: data.zoneId.present ? data.zoneId.value : this.zoneId,
+      pointNumber: data.pointNumber.present
+          ? data.pointNumber.value
+          : this.pointNumber,
+      customName: data.customName.present
+          ? data.customName.value
+          : this.customName,
+      positionX: data.positionX.present ? data.positionX.value : this.positionX,
+      positionY: data.positionY.present ? data.positionY.value : this.positionY,
+      bodyView: data.bodyView.present ? data.bodyView.value : this.bodyView,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PointConfig(')
+          ..write('id: $id, ')
+          ..write('zoneId: $zoneId, ')
+          ..write('pointNumber: $pointNumber, ')
+          ..write('customName: $customName, ')
+          ..write('positionX: $positionX, ')
+          ..write('positionY: $positionY, ')
+          ..write('bodyView: $bodyView, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    zoneId,
+    pointNumber,
+    customName,
+    positionX,
+    positionY,
+    bodyView,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PointConfig &&
+          other.id == this.id &&
+          other.zoneId == this.zoneId &&
+          other.pointNumber == this.pointNumber &&
+          other.customName == this.customName &&
+          other.positionX == this.positionX &&
+          other.positionY == this.positionY &&
+          other.bodyView == this.bodyView &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class PointConfigsCompanion extends UpdateCompanion<PointConfig> {
+  final Value<int> id;
+  final Value<int> zoneId;
+  final Value<int> pointNumber;
+  final Value<String> customName;
+  final Value<double> positionX;
+  final Value<double> positionY;
+  final Value<String> bodyView;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  const PointConfigsCompanion({
+    this.id = const Value.absent(),
+    this.zoneId = const Value.absent(),
+    this.pointNumber = const Value.absent(),
+    this.customName = const Value.absent(),
+    this.positionX = const Value.absent(),
+    this.positionY = const Value.absent(),
+    this.bodyView = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  PointConfigsCompanion.insert({
+    this.id = const Value.absent(),
+    required int zoneId,
+    required int pointNumber,
+    this.customName = const Value.absent(),
+    this.positionX = const Value.absent(),
+    this.positionY = const Value.absent(),
+    this.bodyView = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  }) : zoneId = Value(zoneId),
+       pointNumber = Value(pointNumber);
+  static Insertable<PointConfig> custom({
+    Expression<int>? id,
+    Expression<int>? zoneId,
+    Expression<int>? pointNumber,
+    Expression<String>? customName,
+    Expression<double>? positionX,
+    Expression<double>? positionY,
+    Expression<String>? bodyView,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (zoneId != null) 'zone_id': zoneId,
+      if (pointNumber != null) 'point_number': pointNumber,
+      if (customName != null) 'custom_name': customName,
+      if (positionX != null) 'position_x': positionX,
+      if (positionY != null) 'position_y': positionY,
+      if (bodyView != null) 'body_view': bodyView,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  PointConfigsCompanion copyWith({
+    Value<int>? id,
+    Value<int>? zoneId,
+    Value<int>? pointNumber,
+    Value<String>? customName,
+    Value<double>? positionX,
+    Value<double>? positionY,
+    Value<String>? bodyView,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+  }) {
+    return PointConfigsCompanion(
+      id: id ?? this.id,
+      zoneId: zoneId ?? this.zoneId,
+      pointNumber: pointNumber ?? this.pointNumber,
+      customName: customName ?? this.customName,
+      positionX: positionX ?? this.positionX,
+      positionY: positionY ?? this.positionY,
+      bodyView: bodyView ?? this.bodyView,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (zoneId.present) {
+      map['zone_id'] = Variable<int>(zoneId.value);
+    }
+    if (pointNumber.present) {
+      map['point_number'] = Variable<int>(pointNumber.value);
+    }
+    if (customName.present) {
+      map['custom_name'] = Variable<String>(customName.value);
+    }
+    if (positionX.present) {
+      map['position_x'] = Variable<double>(positionX.value);
+    }
+    if (positionY.present) {
+      map['position_y'] = Variable<double>(positionY.value);
+    }
+    if (bodyView.present) {
+      map['body_view'] = Variable<String>(bodyView.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PointConfigsCompanion(')
+          ..write('id: $id, ')
+          ..write('zoneId: $zoneId, ')
+          ..write('pointNumber: $pointNumber, ')
+          ..write('customName: $customName, ')
+          ..write('positionX: $positionX, ')
+          ..write('positionY: $positionY, ')
+          ..write('bodyView: $bodyView, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -3426,6 +3976,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $BlacklistedPointsTable(this);
   late final $AppSettingsTable appSettings = $AppSettingsTable(this);
   late final $UserProfilesTable userProfiles = $UserProfilesTable(this);
+  late final $PointConfigsTable pointConfigs = $PointConfigsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3437,6 +3988,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     blacklistedPoints,
     appSettings,
     userProfiles,
+    pointConfigs,
   ];
 }
 
@@ -3512,6 +4064,24 @@ final class $$BodyZonesTableReferences
     final cache = $_typedResult.readTableOrNull(
       _blacklistedPointsRefsTable($_db),
     );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$PointConfigsTable, List<PointConfig>>
+  _pointConfigsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.pointConfigs,
+    aliasName: $_aliasNameGenerator(db.bodyZones.id, db.pointConfigs.zoneId),
+  );
+
+  $$PointConfigsTableProcessedTableManager get pointConfigsRefs {
+    final manager = $$PointConfigsTableTableManager(
+      $_db,
+      $_db.pointConfigs,
+    ).filter((f) => f.zoneId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_pointConfigsRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -3628,6 +4198,31 @@ class $$BodyZonesTableFilterComposer
           }) => $$BlacklistedPointsTableFilterComposer(
             $db: $db,
             $table: $db.blacklistedPoints,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> pointConfigsRefs(
+    Expression<bool> Function($$PointConfigsTableFilterComposer f) f,
+  ) {
+    final $$PointConfigsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.pointConfigs,
+      getReferencedColumn: (t) => t.zoneId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PointConfigsTableFilterComposer(
+            $db: $db,
+            $table: $db.pointConfigs,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -3807,6 +4402,31 @@ class $$BodyZonesTableAnnotationComposer
         );
     return f(composer);
   }
+
+  Expression<T> pointConfigsRefs<T extends Object>(
+    Expression<T> Function($$PointConfigsTableAnnotationComposer a) f,
+  ) {
+    final $$PointConfigsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.pointConfigs,
+      getReferencedColumn: (t) => t.zoneId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PointConfigsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.pointConfigs,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$BodyZonesTableTableManager
@@ -3825,6 +4445,7 @@ class $$BodyZonesTableTableManager
           PrefetchHooks Function({
             bool injectionsRefs,
             bool blacklistedPointsRefs,
+            bool pointConfigsRefs,
           })
         > {
   $$BodyZonesTableTableManager(_$AppDatabase db, $BodyZonesTable table)
@@ -3903,12 +4524,17 @@ class $$BodyZonesTableTableManager
               )
               .toList(),
           prefetchHooksCallback:
-              ({injectionsRefs = false, blacklistedPointsRefs = false}) {
+              ({
+                injectionsRefs = false,
+                blacklistedPointsRefs = false,
+                pointConfigsRefs = false,
+              }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
                     if (injectionsRefs) db.injections,
                     if (blacklistedPointsRefs) db.blacklistedPoints,
+                    if (pointConfigsRefs) db.pointConfigs,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -3955,6 +4581,27 @@ class $$BodyZonesTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (pointConfigsRefs)
+                        await $_getPrefetchedData<
+                          BodyZone,
+                          $BodyZonesTable,
+                          PointConfig
+                        >(
+                          currentTable: table,
+                          referencedTable: $$BodyZonesTableReferences
+                              ._pointConfigsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$BodyZonesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).pointConfigsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.zoneId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -3975,7 +4622,11 @@ typedef $$BodyZonesTableProcessedTableManager =
       $$BodyZonesTableUpdateCompanionBuilder,
       (BodyZone, $$BodyZonesTableReferences),
       BodyZone,
-      PrefetchHooks Function({bool injectionsRefs, bool blacklistedPointsRefs})
+      PrefetchHooks Function({
+        bool injectionsRefs,
+        bool blacklistedPointsRefs,
+        bool pointConfigsRefs,
+      })
     >;
 typedef $$TherapyPlansTableCreateCompanionBuilder =
     TherapyPlansCompanion Function({
@@ -5592,6 +6243,399 @@ typedef $$UserProfilesTableProcessedTableManager =
       UserProfile,
       PrefetchHooks Function()
     >;
+typedef $$PointConfigsTableCreateCompanionBuilder =
+    PointConfigsCompanion Function({
+      Value<int> id,
+      required int zoneId,
+      required int pointNumber,
+      Value<String> customName,
+      Value<double> positionX,
+      Value<double> positionY,
+      Value<String> bodyView,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+    });
+typedef $$PointConfigsTableUpdateCompanionBuilder =
+    PointConfigsCompanion Function({
+      Value<int> id,
+      Value<int> zoneId,
+      Value<int> pointNumber,
+      Value<String> customName,
+      Value<double> positionX,
+      Value<double> positionY,
+      Value<String> bodyView,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+    });
+
+final class $$PointConfigsTableReferences
+    extends BaseReferences<_$AppDatabase, $PointConfigsTable, PointConfig> {
+  $$PointConfigsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $BodyZonesTable _zoneIdTable(_$AppDatabase db) =>
+      db.bodyZones.createAlias(
+        $_aliasNameGenerator(db.pointConfigs.zoneId, db.bodyZones.id),
+      );
+
+  $$BodyZonesTableProcessedTableManager get zoneId {
+    final $_column = $_itemColumn<int>('zone_id')!;
+
+    final manager = $$BodyZonesTableTableManager(
+      $_db,
+      $_db.bodyZones,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_zoneIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$PointConfigsTableFilterComposer
+    extends Composer<_$AppDatabase, $PointConfigsTable> {
+  $$PointConfigsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get pointNumber => $composableBuilder(
+    column: $table.pointNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get customName => $composableBuilder(
+    column: $table.customName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get positionX => $composableBuilder(
+    column: $table.positionX,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get positionY => $composableBuilder(
+    column: $table.positionY,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get bodyView => $composableBuilder(
+    column: $table.bodyView,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$BodyZonesTableFilterComposer get zoneId {
+    final $$BodyZonesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.zoneId,
+      referencedTable: $db.bodyZones,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$BodyZonesTableFilterComposer(
+            $db: $db,
+            $table: $db.bodyZones,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PointConfigsTableOrderingComposer
+    extends Composer<_$AppDatabase, $PointConfigsTable> {
+  $$PointConfigsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get pointNumber => $composableBuilder(
+    column: $table.pointNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get customName => $composableBuilder(
+    column: $table.customName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get positionX => $composableBuilder(
+    column: $table.positionX,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get positionY => $composableBuilder(
+    column: $table.positionY,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get bodyView => $composableBuilder(
+    column: $table.bodyView,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$BodyZonesTableOrderingComposer get zoneId {
+    final $$BodyZonesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.zoneId,
+      referencedTable: $db.bodyZones,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$BodyZonesTableOrderingComposer(
+            $db: $db,
+            $table: $db.bodyZones,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PointConfigsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PointConfigsTable> {
+  $$PointConfigsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get pointNumber => $composableBuilder(
+    column: $table.pointNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get customName => $composableBuilder(
+    column: $table.customName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get positionX =>
+      $composableBuilder(column: $table.positionX, builder: (column) => column);
+
+  GeneratedColumn<double> get positionY =>
+      $composableBuilder(column: $table.positionY, builder: (column) => column);
+
+  GeneratedColumn<String> get bodyView =>
+      $composableBuilder(column: $table.bodyView, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$BodyZonesTableAnnotationComposer get zoneId {
+    final $$BodyZonesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.zoneId,
+      referencedTable: $db.bodyZones,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$BodyZonesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.bodyZones,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PointConfigsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $PointConfigsTable,
+          PointConfig,
+          $$PointConfigsTableFilterComposer,
+          $$PointConfigsTableOrderingComposer,
+          $$PointConfigsTableAnnotationComposer,
+          $$PointConfigsTableCreateCompanionBuilder,
+          $$PointConfigsTableUpdateCompanionBuilder,
+          (PointConfig, $$PointConfigsTableReferences),
+          PointConfig,
+          PrefetchHooks Function({bool zoneId})
+        > {
+  $$PointConfigsTableTableManager(_$AppDatabase db, $PointConfigsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PointConfigsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PointConfigsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PointConfigsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> zoneId = const Value.absent(),
+                Value<int> pointNumber = const Value.absent(),
+                Value<String> customName = const Value.absent(),
+                Value<double> positionX = const Value.absent(),
+                Value<double> positionY = const Value.absent(),
+                Value<String> bodyView = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+              }) => PointConfigsCompanion(
+                id: id,
+                zoneId: zoneId,
+                pointNumber: pointNumber,
+                customName: customName,
+                positionX: positionX,
+                positionY: positionY,
+                bodyView: bodyView,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int zoneId,
+                required int pointNumber,
+                Value<String> customName = const Value.absent(),
+                Value<double> positionX = const Value.absent(),
+                Value<double> positionY = const Value.absent(),
+                Value<String> bodyView = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+              }) => PointConfigsCompanion.insert(
+                id: id,
+                zoneId: zoneId,
+                pointNumber: pointNumber,
+                customName: customName,
+                positionX: positionX,
+                positionY: positionY,
+                bodyView: bodyView,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$PointConfigsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({zoneId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (zoneId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.zoneId,
+                                referencedTable: $$PointConfigsTableReferences
+                                    ._zoneIdTable(db),
+                                referencedColumn: $$PointConfigsTableReferences
+                                    ._zoneIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$PointConfigsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PointConfigsTable,
+      PointConfig,
+      $$PointConfigsTableFilterComposer,
+      $$PointConfigsTableOrderingComposer,
+      $$PointConfigsTableAnnotationComposer,
+      $$PointConfigsTableCreateCompanionBuilder,
+      $$PointConfigsTableUpdateCompanionBuilder,
+      (PointConfig, $$PointConfigsTableReferences),
+      PointConfig,
+      PrefetchHooks Function({bool zoneId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -5608,4 +6652,6 @@ class $AppDatabaseManager {
       $$AppSettingsTableTableManager(_db, _db.appSettings);
   $$UserProfilesTableTableManager get userProfiles =>
       $$UserProfilesTableTableManager(_db, _db.userProfiles);
+  $$PointConfigsTableTableManager get pointConfigs =>
+      $$PointConfigsTableTableManager(_db, _db.pointConfigs);
 }

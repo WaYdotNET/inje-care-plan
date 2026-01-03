@@ -6,7 +6,7 @@ import '../features/auth/login_screen.dart';
 import '../features/auth/auth_provider.dart';
 import '../features/home/home_screen.dart';
 import '../features/calendar/calendar_screen.dart';
-import '../features/injection/body_map_screen.dart';
+// Note: BodyMapScreen deprecated, using PointSelectionScreen instead
 import '../features/injection/zone_detail_screen.dart';
 import '../features/injection/record_screen.dart';
 import '../features/history/history_screen.dart';
@@ -15,6 +15,8 @@ import '../features/info/info_screen.dart';
 import '../features/help/help_screen.dart';
 import '../features/injection/point_selection_screen.dart';
 import '../features/settings/zone_management_screen.dart';
+import '../features/settings/zone_points_editor_screen.dart';
+import '../features/home/weekly_proposals_screen.dart';
 
 /// App routes
 sealed class AppRoutes {
@@ -31,6 +33,8 @@ sealed class AppRoutes {
   static const blacklist = '/blacklist';
   static const selectPoint = '/select-point';
   static const zoneManagement = '/zone-management';
+  static const zonePointsEditor = '/zone-points-editor/:zoneId';
+  static const weeklyProposals = '/weekly-proposals';
 }
 
 /// Router provider
@@ -95,7 +99,16 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.bodyMap,
         name: 'bodyMap',
-        builder: (context, state) => const BodyMapScreen(),
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          final scheduledDate = extra?['scheduledDate'] as DateTime?;
+          final initialZoneId = extra?['zoneId'] as int?;
+          return PointSelectionScreen(
+            mode: PointSelectionMode.injection,
+            initialZoneId: initialZoneId,
+            scheduledDate: scheduledDate,
+          );
+        },
       ),
       GoRoute(
         path: AppRoutes.zoneDetail,
@@ -113,6 +126,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           return RecordInjectionScreen(
             zoneId: extra?['zoneId'] as int? ?? 1,
             pointNumber: extra?['pointNumber'] as int? ?? 1,
+            scheduledDate: extra?['scheduledDate'] as DateTime?,
           );
         },
       ),
@@ -151,6 +165,19 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.zoneManagement,
         name: 'zoneManagement',
         builder: (context, state) => const ZoneManagementScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.zonePointsEditor,
+        name: 'zonePointsEditor',
+        builder: (context, state) {
+          final zoneId = int.parse(state.pathParameters['zoneId'] ?? '1');
+          return ZonePointsEditorScreen(zoneId: zoneId);
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.weeklyProposals,
+        name: 'weeklyProposals',
+        builder: (context, state) => const WeeklyProposalsScreen(),
       ),
     ],
   );

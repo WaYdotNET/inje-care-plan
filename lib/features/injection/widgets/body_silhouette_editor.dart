@@ -180,7 +180,7 @@ class _BodySilhouetteEditorState extends State<BodySilhouetteEditor>
                     final isSelected =
                         point.pointNumber == widget.selectedPointNumber;
                     final isDragging = point.pointNumber == _draggingPoint;
-                    
+
                     // Colori per i pallini
                     final primaryColor = isDark
                         ? AppColors.darkPine
@@ -198,7 +198,7 @@ class _BodySilhouetteEditorState extends State<BodySilhouetteEditor>
                         final scale = isSelected && !widget.editable
                             ? _pulseAnimation.value
                             : 1.0;
-                        
+
                         return Positioned(
                           left: point.x * constraints.maxWidth - 20,
                           top: point.y * constraints.maxHeight - 20,
@@ -281,7 +281,7 @@ class _BodySilhouetteEditorState extends State<BodySilhouetteEditor>
                                           ? Colors.white
                                           : textColor,
                                       fontWeight: FontWeight.bold,
-                                      fontSize: point.customName != null && 
+                                      fontSize: point.customName != null &&
                                               point.customName!.isNotEmpty
                                           ? 12
                                           : 14,

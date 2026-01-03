@@ -488,18 +488,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         return AlertDialog(
           title: const Text('Iniezioni settimanali'),
           content: StatefulBuilder(
-            builder: (context, setState) => Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [1, 2, 3, 4, 5]
-                  .map(
-                    (n) => RadioListTile<int>(
-                      title: Text('$n'),
-                      value: n,
-                      groupValue: value,
-                      onChanged: (v) => setState(() => value = v!),
-                    ),
-                  )
-                  .toList(),
+            builder: (context, setState) => RadioGroup<int>(
+              groupValue: value,
+              onChanged: (v) => setState(() => value = v!),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [1, 2, 3, 4, 5]
+                    .map(
+                      (n) => RadioListTile<int>(
+                        title: Text('$n'),
+                        value: n,
+                      ),
+                    )
+                    .toList(),
+              ),
             ),
           ),
           actions: [
@@ -600,18 +602,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         return AlertDialog(
           title: const Text('Anticipo promemoria'),
           content: StatefulBuilder(
-            builder: (context, setState) => Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [15, 30, 45, 60, 120]
-                  .map(
-                    (n) => RadioListTile<int>(
-                      title: Text(n < 60 ? '$n minuti' : '${n ~/ 60} ${n == 60 ? 'ora' : 'ore'}'),
-                      value: n,
-                      groupValue: value,
-                      onChanged: (v) => setState(() => value = v!),
-                    ),
-                  )
-                  .toList(),
+            builder: (context, setState) => RadioGroup<int>(
+              groupValue: value,
+              onChanged: (v) => setState(() => value = v!),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [15, 30, 45, 60, 120]
+                    .map(
+                      (n) => RadioListTile<int>(
+                        title: Text(n < 60 ? '$n minuti' : '${n ~/ 60} ${n == 60 ? 'ora' : 'ore'}'),
+                        value: n,
+                      ),
+                    )
+                    .toList(),
+              ),
             ),
           ),
           actions: [
@@ -637,38 +641,30 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     showModalBottomSheet<void>(
       context: context,
-      builder: (ctx) => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          RadioListTile<ThemeMode>(
-            title: const Text('Chiaro (Dawn)'),
-            value: ThemeMode.light,
-            groupValue: currentMode,
-            onChanged: (value) {
-              ref.read(themeModeProvider.notifier).setThemeMode(value!);
-              Navigator.pop(ctx);
-            },
-          ),
-          RadioListTile<ThemeMode>(
-            title: const Text('Scuro (Rosé Pine)'),
-            value: ThemeMode.dark,
-            groupValue: currentMode,
-            onChanged: (value) {
-              ref.read(themeModeProvider.notifier).setThemeMode(value!);
-              Navigator.pop(ctx);
-            },
-          ),
-          RadioListTile<ThemeMode>(
-            title: const Text('Automatico (sistema)'),
-            value: ThemeMode.system,
-            groupValue: currentMode,
-            onChanged: (value) {
-              ref.read(themeModeProvider.notifier).setThemeMode(value!);
-              Navigator.pop(ctx);
-            },
-          ),
-          const SizedBox(height: 16),
-        ],
+      builder: (ctx) => RadioGroup<ThemeMode>(
+        groupValue: currentMode,
+        onChanged: (value) {
+          ref.read(themeModeProvider.notifier).setThemeMode(value!);
+          Navigator.pop(ctx);
+        },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const RadioListTile<ThemeMode>(
+              title: Text('Chiaro (Dawn)'),
+              value: ThemeMode.light,
+            ),
+            const RadioListTile<ThemeMode>(
+              title: Text('Scuro (Rosé Pine)'),
+              value: ThemeMode.dark,
+            ),
+            const RadioListTile<ThemeMode>(
+              title: Text('Automatico (sistema)'),
+              value: ThemeMode.system,
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
       ),
     );
   }

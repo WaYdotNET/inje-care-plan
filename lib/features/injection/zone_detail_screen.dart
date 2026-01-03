@@ -246,21 +246,26 @@ class ZoneDetailScreen extends ConsumerWidget {
               const SizedBox(height: 16),
               const Text('Motivo (opzionale):'),
               const SizedBox(height: 8),
-              ...BlacklistReason.values.map((reason) {
-                final label = switch (reason) {
-                  BlacklistReason.skinReaction => 'Reazione cutanea',
-                  BlacklistReason.scar => 'Cicatrice / lesione',
-                  BlacklistReason.hardToReach => 'Difficile da raggiungere',
-                  BlacklistReason.other => 'Altro',
-                };
-                return RadioListTile<BlacklistReason>(
-                  title: Text(label),
-                  value: reason,
-                  groupValue: selectedReason,
-                  dense: true,
-                  onChanged: (value) => setState(() => selectedReason = value),
-                );
-              }),
+              RadioGroup<BlacklistReason>(
+                groupValue: selectedReason,
+                onChanged: (value) => setState(() => selectedReason = value),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: BlacklistReason.values.map((reason) {
+                    final label = switch (reason) {
+                      BlacklistReason.skinReaction => 'Reazione cutanea',
+                      BlacklistReason.scar => 'Cicatrice / lesione',
+                      BlacklistReason.hardToReach => 'Difficile da raggiungere',
+                      BlacklistReason.other => 'Altro',
+                    };
+                    return RadioListTile<BlacklistReason>(
+                      title: Text(label),
+                      value: reason,
+                      dense: true,
+                    );
+                  }).toList(),
+                ),
+              ),
               const SizedBox(height: 8),
               TextField(
                 controller: notesController,

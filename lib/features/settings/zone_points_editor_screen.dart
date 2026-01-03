@@ -133,7 +133,7 @@ class _ZonePointsEditorScreenState
       canPop: !_hasChanges,
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
-        
+
         final shouldSave = await showDialog<bool>(
           context: context,
           builder: (ctx) => AlertDialog(
@@ -156,7 +156,7 @@ class _ZonePointsEditorScreenState
             ],
           ),
         );
-        
+
         if (context.mounted && (shouldSave == true || shouldSave == false)) {
           Navigator.of(context).pop();
         }

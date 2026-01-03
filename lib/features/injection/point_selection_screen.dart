@@ -115,7 +115,7 @@ class _PointSelectionScreenState extends ConsumerState<PointSelectionScreen> {
               if (widget.mode == PointSelectionMode.injection)
                 suggestedAsync.when(
                   loading: () => const SizedBox(),
-                  error: (_, __) => const SizedBox(),
+                  error: (e, st) => const SizedBox(),
                   data: (suggested) {
                     if (suggested == null) return const SizedBox();
                     final zone = zones.firstWhere(
@@ -801,7 +801,7 @@ class _PointSelectionSilhouette extends StatelessWidget {
       selectedPointNumber: selectedPoint,
       zoneType: zoneType,
       editable: false, // Non trascinabili, solo cliccabili
-      onPointMoved: (_, __, ___, ____) {}, // Non usato
+      onPointMoved: (p1, p2, p3, p4) {}, // Non usato
       onPointTapped: (pointNumber) {
         // Non permettere tap su punti blacklisted
         if (!blacklistedNumbers.contains(pointNumber)) {

@@ -55,10 +55,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
           const Divider(),
 
-          _SectionHeader(title: 'PIANO TERAPEUTICO'),
+          const _SectionHeader(title: 'PIANO TERAPEUTICO'),
           therapyPlanAsync.when(
             loading: () => const ListTile(title: Text('Caricamento...')),
-            error: (_, __) =>
+            error: (e, st) =>
                 const ListTile(title: Text('Errore nel caricamento')),
             data: (plan) {
               final therapyPlan = plan ?? TherapyPlan.defaults;
@@ -84,7 +84,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             },
           ),
 
-          _SectionHeader(title: 'ZONE E PUNTI'),
+          const _SectionHeader(title: 'ZONE E PUNTI'),
           _SettingsTile(
             icon: Icons.edit_location_alt,
             title: 'Gestisci zone',
@@ -92,7 +92,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
           blacklistAsync.when(
             loading: () => const SizedBox(),
-            error: (_, __) => const SizedBox(),
+            error: (e, st) => const SizedBox(),
             data: (blacklist) => _SettingsTile(
               icon: Icons.block,
               iconColor: isDark ? AppColors.darkLove : AppColors.dawnLove,
@@ -102,7 +102,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
           ),
 
-          _SectionHeader(title: 'NOTIFICHE'),
+          const _SectionHeader(title: 'NOTIFICHE'),
           if (!notificationSettings.permissionsGranted)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -131,10 +131,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ),
                       TextButton(
                         onPressed: () async {
+                          final messenger = ScaffoldMessenger.of(context);
                           final notifier = ref.read(notificationSettingsProvider.notifier);
                           final granted = await notifier.requestPermissions();
                           if (mounted && !granted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
+                            messenger.showSnackBar(
                               const SnackBar(
                                 content: Text('Permessi non concessi. Abilitali dalle impostazioni del dispositivo.'),
                               ),
@@ -168,7 +169,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 : null,
           ),
 
-          _SectionHeader(title: 'SINCRONIZZAZIONE'),
+          const _SectionHeader(title: 'SINCRONIZZAZIONE'),
           SwitchListTile(
             title: const Text('Google Calendar'),
             value: _googleCalendarSync,
@@ -176,15 +177,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
 
           // BACKUP SECTION
-          _SectionHeader(title: 'BACKUP E RIPRISTINO'),
+          const _SectionHeader(title: 'BACKUP E RIPRISTINO'),
           _BackupSection(
             backupState: backupState,
             isDark: isDark,
             onBackup: () async {
+              final messenger = ScaffoldMessenger.of(context);
               // Mostra dialog per inserire password
               final password = await showDialog<String>(
                 context: context,
-                builder: (context) => const BackupPasswordDialog(
+                builder: (ctx) => const BackupPasswordDialog(
                   title: 'Password backup',
                   confirmButtonText: 'Crea backup',
                   isRestore: false,
@@ -196,7 +198,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               final notifier = ref.read(backupNotifierProvider.notifier);
               final result = await notifier.backup(password);
               if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
+                messenger.showSnackBar(
                   SnackBar(
                     content: Text(
                       result.success
@@ -211,10 +213,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               }
             },
             onRestore: () async {
+              final messenger = ScaffoldMessenger.of(context);
               // Mostra dialog per inserire password
               final password = await showDialog<String>(
                 context: context,
-                builder: (context) => const BackupPasswordDialog(
+                builder: (ctx) => const BackupPasswordDialog(
                   title: 'Password ripristino',
                   confirmButtonText: 'Ripristina',
                   isRestore: true,
@@ -227,7 +230,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               final result = await notifier.restore(password);
               if (mounted) {
                 if (result.success) {
-                  ScaffoldMessenger.of(context).showSnackBar(
+                  messenger.showSnackBar(
                     SnackBar(
                       content: const Text(
                         'Ripristino completato. Riavvia l\'app.',
@@ -238,7 +241,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ),
                   );
                 } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
+                  messenger.showSnackBar(
                     SnackBar(
                       content: Text(result.error ?? 'Errore'),
                       backgroundColor: isDark
@@ -258,14 +261,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             },
           ),
 
-          _SectionHeader(title: 'ASPETTO'),
+          const _SectionHeader(title: 'ASPETTO'),
           ListTile(
             title: const Text('Tema'),
             subtitle: Text(_themeModeLabel),
             onTap: () => _showThemeSelector(context),
           ),
 
-          _SectionHeader(title: 'SICUREZZA'),
+          const _SectionHeader(title: 'SICUREZZA'),
           SwitchListTile(
             title: const Text('Sblocco biometrico'),
             value: _biometricEnabled,
@@ -277,23 +280,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             },
           ),
 
-          _SectionHeader(title: 'DATI'),
+          const _SectionHeader(title: 'DATI'),
           injectionsAsync.when(
             loading: () => const SizedBox(),
-            error: (_, __) => const SizedBox(),
+            error: (e, st) => const SizedBox(),
             data: (injections) => Column(
               children: [
                 _SettingsTile(
                   title: 'Esporta storico (PDF)',
                   onTap: injections.isNotEmpty
                       ? () async {
+                          final messenger = ScaffoldMessenger.of(context);
                           try {
                             await ExportService.instance.exportToPdf(
                               _convertInjections(injections),
                             );
                           } catch (e) {
                             if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
+                              messenger.showSnackBar(
                                 SnackBar(content: Text('Errore: $e')),
                               );
                             }
@@ -305,13 +309,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   title: 'Esporta storico (CSV)',
                   onTap: injections.isNotEmpty
                       ? () async {
+                          final messenger = ScaffoldMessenger.of(context);
                           try {
                             await ExportService.instance.exportToCsv(
                               _convertInjections(injections),
                             );
                           } catch (e) {
                             if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
+                              messenger.showSnackBar(
                                 SnackBar(content: Text('Errore: $e')),
                               );
                             }
@@ -328,7 +333,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             onTap: () => _showDeleteConfirmation(context),
           ),
 
-          _SectionHeader(title: 'AIUTO'),
+          const _SectionHeader(title: 'AIUTO'),
           _SettingsTile(
             title: 'Guida all\'uso',
             icon: Icons.help_outline,
@@ -385,19 +390,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _signOut(BuildContext context) async {
+    final router = GoRouter.of(context);
     final authNotifier = ref.read(authNotifierProvider.notifier);
     await authNotifier.signOut();
     if (mounted) {
-      context.go(AppRoutes.login);
+      router.go(AppRoutes.login);
     }
   }
 
   Future<void> _linkGoogleAccount(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final authNotifier = ref.read(authNotifierProvider.notifier);
     final success = await authNotifier.linkGoogleAccount();
     if (mounted) {
-      final isDark = Theme.of(context).brightness == Brightness.dark;
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         SnackBar(
           content: Text(
             success
@@ -413,9 +420,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _unlinkGoogleAccount(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (ctx) => AlertDialog(
         title: const Text('Scollega account Google'),
         content: const Text(
           'Scollegando l\'account non potrai più eseguire backup su Google Drive. '
@@ -423,11 +431,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
+            onPressed: () => Navigator.pop(ctx, false),
             child: const Text('Annulla'),
           ),
           ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => Navigator.pop(ctx, true),
             child: const Text('Scollega'),
           ),
         ],
@@ -438,7 +446,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       final authNotifier = ref.read(authNotifierProvider.notifier);
       await authNotifier.unlinkGoogleAccount();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           const SnackBar(content: Text('Account Google scollegato')),
         );
       }
@@ -446,9 +454,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _showOnboardingConfirmation(BuildContext context) async {
+    final router = GoRouter.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (ctx) => AlertDialog(
         title: const Text('Rivedi introduzione'),
         content: const Text(
           'Vuoi rivedere la schermata di introduzione? '
@@ -456,11 +465,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
+            onPressed: () => Navigator.pop(ctx, false),
             child: const Text('Annulla'),
           ),
           ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => Navigator.pop(ctx, true),
             child: const Text('Rivedi'),
           ),
         ],
@@ -472,10 +481,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       await authNotifier.resetOnboarding();
       if (mounted) {
         // Forza la navigazione con sostituzione completa dello stack
-        while (context.canPop()) {
-          context.pop();
+        while (router.canPop()) {
+          router.pop();
         }
-        context.go(AppRoutes.login);
+        router.go(AppRoutes.login);
       }
     }
   }
@@ -647,22 +656,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ref.read(themeModeProvider.notifier).setThemeMode(value!);
           Navigator.pop(ctx);
         },
-        child: Column(
+        child: const Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const RadioListTile<ThemeMode>(
+            RadioListTile<ThemeMode>(
               title: Text('Chiaro (Dawn)'),
               value: ThemeMode.light,
             ),
-            const RadioListTile<ThemeMode>(
+            RadioListTile<ThemeMode>(
               title: Text('Scuro (Rosé Pine)'),
               value: ThemeMode.dark,
             ),
-            const RadioListTile<ThemeMode>(
+            RadioListTile<ThemeMode>(
               title: Text('Automatico (sistema)'),
               value: ThemeMode.system,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
           ],
         ),
       ),
@@ -671,6 +680,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   void _showDeleteConfirmation(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final messenger = ScaffoldMessenger.of(context);
+    final errorColor = Theme.of(context).colorScheme.error;
 
     showDialog<void>(
       context: context,
@@ -698,7 +709,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ref.invalidate(suggestedNextPointProvider);
 
               if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
+                messenger.showSnackBar(
                   SnackBar(
                     content: const Text('Tutti i dati sono stati eliminati'),
                     backgroundColor: isDark
@@ -709,7 +720,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
+              backgroundColor: errorColor,
             ),
             child: const Text('Elimina'),
           ),

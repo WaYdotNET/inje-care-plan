@@ -171,7 +171,7 @@ class HomeScreen extends ConsumerWidget {
               // Adherence stats
               adherenceAsync.when(
                 loading: () => const _LoadingCard(),
-                error: (_, __) => const _ErrorCard(),
+                error: (e, st) => const _ErrorCard(),
                 data: (stats) => _AdherenceCard(
                   completed: stats.completed,
                   total: stats.total,
@@ -219,11 +219,11 @@ class HomeScreen extends ConsumerWidget {
   ) {
     return weeklyEventsAsync.when(
       loading: () => const _LoadingCard(),
-      error: (_, __) => const _ErrorCard(),
+      error: (e, st) => const _ErrorCard(),
       data: (weeklyEventData) {
         return zonesAsync.when(
           loading: () => const _LoadingCard(),
-          error: (_, __) => const _ErrorCard(),
+          error: (e, st) => const _ErrorCard(),
           data: (zones) {
             // Converti WeeklyEventData in WeeklyEvent con zone
             final events = weeklyEventData.map((data) {

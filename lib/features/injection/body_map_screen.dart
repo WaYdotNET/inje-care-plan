@@ -41,7 +41,7 @@ class BodyMapScreen extends ConsumerWidget {
             // Suggested point card
             suggestedAsync.when(
               loading: () => const SizedBox(),
-              error: (_, __) => const SizedBox(),
+              error: (e, st) => const SizedBox(),
               data: (suggested) {
                 if (suggested == null) return const SizedBox();
                 final zone = displayZones.firstWhere(

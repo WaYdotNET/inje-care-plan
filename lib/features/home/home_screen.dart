@@ -10,6 +10,7 @@ import '../injection/injection_provider.dart';
 import '../injection/zone_provider.dart';
 import '../../core/services/missed_injection_service.dart';
 import 'widgets/weekly_event_item.dart';
+import 'widgets/smart_suggestion_card.dart';
 
 /// Home dashboard screen
 class HomeScreen extends ConsumerWidget {
@@ -158,7 +159,12 @@ class HomeScreen extends ConsumerWidget {
               // Greeting
               Text('Ciao, $displayName', style: theme.textTheme.headlineMedium),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
+
+              // Smart AI Suggestion
+              const SmartSuggestionCard(),
+
+              const SizedBox(height: 16),
 
               // Weekly events card
               _buildWeeklyEventsCard(

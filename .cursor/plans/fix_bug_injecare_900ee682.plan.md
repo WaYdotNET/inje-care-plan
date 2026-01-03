@@ -250,5 +250,3 @@ final googleSignInProvider = Provider<GoogleSignIn>((ref) {
 ---
 
 ## File principali da modificare
-
-| File | Modifiche ||------|-----------|| `lib/app/router.dart` | Aggiornare rotte, aggiungere WeeklyProposalsScreen || `lib/features/home/home_screen.dart` | Nuova WeeklyEventsCard con lista eventi settimanali || `lib/features/home/weekly_proposals_screen.dart` | **NUOVO** - Schermata approvazione proposte || `lib/features/home/widgets/weekly_event_item.dart` | **NUOVO** - Widget evento con badge AI || `lib/features/injection/injection_provider.dart` | Provider weeklyEventsProvider || `lib/core/services/missed_injection_service.dart` | **NUOVO** - Servizio auto-skip mancati || `lib/core/services/notification_service.dart` | Notifica domenicale || `lib/features/calendar/calendar_screen.dart` | Passare data selezionata, modifica eventi || `lib/features/settings/zone_management_screen.dart` | Editor punti con silhouette || `lib/features/auth/auth_provider.dart` | Condividere GoogleSignIn || `lib/core/services/backup_service.dart` | Usare GoogleSignIn condiviso |

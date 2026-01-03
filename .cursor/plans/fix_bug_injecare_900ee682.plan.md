@@ -248,5 +248,3 @@ final googleSignInProvider = Provider<GoogleSignIn>((ref) {
 
 
 ---
-
-## File principali da modificare

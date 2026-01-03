@@ -74,14 +74,30 @@ class BodySilhouetteEditor extends StatefulWidget {
   State<BodySilhouetteEditor> createState() => _BodySilhouetteEditorState();
 }
 
-class _BodySilhouetteEditorState extends State<BodySilhouetteEditor> {
+class _BodySilhouetteEditorState extends State<BodySilhouetteEditor>
+    with SingleTickerProviderStateMixin {
   late BodyView _currentView;
   int? _draggingPoint;
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnimation;
 
   @override
   void initState() {
     super.initState();
     _currentView = widget.initialView;
+    _pulseController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    )..repeat(reverse: true);
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.15).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
   }
 
   String get _svgAsset => _currentView == BodyView.front
@@ -149,7 +165,7 @@ class _BodySilhouetteEditorState extends State<BodySilhouetteEditor> {
                       _svgAsset,
                       fit: BoxFit.contain,
                       colorFilter: ColorFilter.mode(
-                        color.withValues(alpha: 0.5),
+                        color.withValues(alpha: 0.7),
                         BlendMode.srcIn,
                       ),
                     ),
@@ -164,82 +180,128 @@ class _BodySilhouetteEditorState extends State<BodySilhouetteEditor> {
                     final isSelected =
                         point.pointNumber == widget.selectedPointNumber;
                     final isDragging = point.pointNumber == _draggingPoint;
+                    
+                    // Colori per i pallini
+                    final primaryColor = isDark
+                        ? AppColors.darkPine
+                        : AppColors.dawnPine;
+                    final secondaryColor = isDark
+                        ? AppColors.darkFoam
+                        : AppColors.dawnFoam;
+                    final textColor = isDark
+                        ? AppColors.darkBase
+                        : AppColors.dawnBase;
 
-                    return Positioned(
-                      left: point.x * constraints.maxWidth - 16,
-                      top: point.y * constraints.maxHeight - 16,
-                      child: GestureDetector(
-                        onTap: () => widget.onPointTapped(point.pointNumber),
-                        onPanStart: widget.editable
-                            ? (_) =>
-                                setState(() => _draggingPoint = point.pointNumber)
-                            : null,
-                        onPanUpdate: widget.editable
-                            ? (details) {
-                                final newX = (point.x * constraints.maxWidth +
-                                        details.delta.dx) /
-                                    constraints.maxWidth;
-                                final newY = (point.y * constraints.maxHeight +
-                                        details.delta.dy) /
-                                    constraints.maxHeight;
-                                widget.onPointMoved(
-                                  point.pointNumber,
-                                  newX.clamp(0.05, 0.95),
-                                  newY.clamp(0.05, 0.95),
-                                  _currentView,
-                                );
-                              }
-                            : null,
-                        onPanEnd: widget.editable
-                            ? (_) => setState(() => _draggingPoint = null)
-                            : null,
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 150),
-                          width: isSelected || isDragging ? 36 : 32,
-                          height: isSelected || isDragging ? 36 : 32,
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? (isDark
-                                    ? AppColors.darkPine
-                                    : AppColors.dawnPine)
-                                : (isDark
-                                    ? AppColors.darkFoam
-                                    : AppColors.dawnFoam),
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: isDark
-                                  ? AppColors.darkBase
-                                  : AppColors.dawnBase,
-                              width: 2,
-                            ),
-                            boxShadow: isDragging
-                                ? [
-                                    BoxShadow(
-                                      color: (isDark
-                                              ? AppColors.darkPine
-                                              : AppColors.dawnPine)
-                                          .withValues(alpha: 0.4),
-                                      blurRadius: 8,
-                                      spreadRadius: 2,
-                                    ),
-                                  ]
+                    return AnimatedBuilder(
+                      animation: _pulseAnimation,
+                      builder: (context, child) {
+                        final scale = isSelected && !widget.editable
+                            ? _pulseAnimation.value
+                            : 1.0;
+                        
+                        return Positioned(
+                          left: point.x * constraints.maxWidth - 20,
+                          top: point.y * constraints.maxHeight - 20,
+                          child: GestureDetector(
+                            onTap: () => widget.onPointTapped(point.pointNumber),
+                            onPanStart: widget.editable
+                                ? (_) =>
+                                    setState(() => _draggingPoint = point.pointNumber)
                                 : null,
-                          ),
-                          child: Center(
-                            child: Text(
-                              _getPointLabel(point),
-                              style: TextStyle(
-                                color: isDark
-                                    ? AppColors.darkBase
-                                    : AppColors.dawnBase,
-                                fontWeight: FontWeight.bold,
-                                fontSize: point.customName != null && point.customName!.isNotEmpty
-                                    ? 10 : 12,
+                            onPanUpdate: widget.editable
+                                ? (details) {
+                                    final newX = (point.x * constraints.maxWidth +
+                                            details.delta.dx) /
+                                        constraints.maxWidth;
+                                    final newY = (point.y * constraints.maxHeight +
+                                            details.delta.dy) /
+                                        constraints.maxHeight;
+                                    widget.onPointMoved(
+                                      point.pointNumber,
+                                      newX.clamp(0.05, 0.95),
+                                      newY.clamp(0.05, 0.95),
+                                      _currentView,
+                                    );
+                                  }
+                                : null,
+                            onPanEnd: widget.editable
+                                ? (_) => setState(() => _draggingPoint = null)
+                                : null,
+                            child: Transform.scale(
+                              scale: scale,
+                              child: Container(
+                                width: isSelected || isDragging ? 44 : 40,
+                                height: isSelected || isDragging ? 44 : 40,
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: isSelected
+                                        ? [
+                                            primaryColor,
+                                            primaryColor.withValues(alpha: 0.8),
+                                          ]
+                                        : [
+                                            secondaryColor,
+                                            secondaryColor.withValues(alpha: 0.7),
+                                          ],
+                                  ),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: isSelected
+                                        ? Colors.white.withValues(alpha: 0.8)
+                                        : textColor.withValues(alpha: 0.5),
+                                    width: isSelected ? 3 : 2,
+                                  ),
+                                  boxShadow: [
+                                    // Ombra esterna principale
+                                    BoxShadow(
+                                      color: isSelected
+                                          ? primaryColor.withValues(alpha: 0.5)
+                                          : Colors.black.withValues(alpha: 0.2),
+                                      blurRadius: isSelected || isDragging ? 12 : 6,
+                                      spreadRadius: isSelected || isDragging ? 2 : 1,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                    // Glow interno per effetto 3D
+                                    if (isSelected)
+                                      BoxShadow(
+                                        color: Colors.white.withValues(alpha: 0.3),
+                                        blurRadius: 4,
+                                        spreadRadius: -2,
+                                        offset: const Offset(-2, -2),
+                                      ),
+                                  ],
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    _getPointLabel(point),
+                                    style: TextStyle(
+                                      color: isSelected
+                                          ? Colors.white
+                                          : textColor,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: point.customName != null && 
+                                              point.customName!.isNotEmpty
+                                          ? 12
+                                          : 14,
+                                      shadows: isSelected
+                                          ? [
+                                              Shadow(
+                                                color: Colors.black.withValues(alpha: 0.3),
+                                                blurRadius: 2,
+                                                offset: const Offset(0, 1),
+                                              ),
+                                            ]
+                                          : null,
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      ),
+                        );
+                      },
                     );
                   }),
 
@@ -277,14 +339,16 @@ class _BodySilhouetteEditorState extends State<BodySilhouetteEditor> {
   Widget _buildZoneHighlight(BoxConstraints constraints, bool isDark) {
     // Posizioni predefinite per ogni tipo di zona
     final zoneAreas = <String, ({double x, double y, double w, double h})>{
-      'thigh': (x: 0.25, y: 0.55, w: 0.5, h: 0.2),
-      'arm': (x: 0.1, y: 0.22, w: 0.8, h: 0.15),
-      'abdomen': (x: 0.3, y: 0.32, w: 0.4, h: 0.15),
-      'buttock': (x: 0.3, y: 0.5, w: 0.4, h: 0.12),
+      'thigh': (x: 0.22, y: 0.52, w: 0.56, h: 0.25),
+      'arm': (x: 0.08, y: 0.20, w: 0.84, h: 0.18),
+      'abdomen': (x: 0.28, y: 0.30, w: 0.44, h: 0.18),
+      'buttock': (x: 0.28, y: 0.48, w: 0.44, h: 0.15),
     };
 
     final area = zoneAreas[widget.zoneType];
     if (area == null) return const SizedBox();
+
+    final highlightColor = isDark ? AppColors.darkPine : AppColors.dawnPine;
 
     return Positioned(
       left: area.x * constraints.maxWidth,
@@ -293,14 +357,24 @@ class _BodySilhouetteEditorState extends State<BodySilhouetteEditor> {
       height: area.h * constraints.maxHeight,
       child: Container(
         decoration: BoxDecoration(
-          color: (isDark ? AppColors.darkPine : AppColors.dawnPine)
-              .withValues(alpha: 0.1),
-          border: Border.all(
-            color: (isDark ? AppColors.darkPine : AppColors.dawnPine)
-                .withValues(alpha: 0.3),
-            width: 1,
+          gradient: RadialGradient(
+            colors: [
+              highlightColor.withValues(alpha: 0.15),
+              highlightColor.withValues(alpha: 0.05),
+            ],
           ),
-          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: highlightColor.withValues(alpha: 0.4),
+            width: 2,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: highlightColor.withValues(alpha: 0.2),
+              blurRadius: 12,
+              spreadRadius: 2,
+            ),
+          ],
         ),
       ),
     );

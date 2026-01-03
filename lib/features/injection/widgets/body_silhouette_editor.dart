@@ -92,8 +92,8 @@ class _BodySilhouetteEditorState extends State<BodySilhouetteEditor> {
   String _getPointLabel(PositionedPoint point) {
     if (point.customName != null && point.customName!.isNotEmpty) {
       // Limita a 3 caratteri per stare nel cerchio
-      return point.customName!.length > 3 
-          ? point.customName!.substring(0, 3) 
+      return point.customName!.length > 3
+          ? point.customName!.substring(0, 3)
           : point.customName!;
     }
     return '${point.pointNumber}';
@@ -233,7 +233,7 @@ class _BodySilhouetteEditorState extends State<BodySilhouetteEditor> {
                                     ? AppColors.darkBase
                                     : AppColors.dawnBase,
                                 fontWeight: FontWeight.bold,
-                                fontSize: point.customName != null && point.customName!.isNotEmpty 
+                                fontSize: point.customName != null && point.customName!.isNotEmpty
                                     ? 10 : 12,
                               ),
                             ),
@@ -354,9 +354,9 @@ class _PointNameEditorState extends State<PointNameEditor> {
   void _validateAndUpdate(String value) {
     // Limita a 3 caratteri e uppercase
     final trimmed = value.toUpperCase().substring(0, value.length > 3 ? 3 : value.length);
-    
+
     // Controlla unicità (ignora se vuoto o uguale al nome corrente)
-    if (trimmed.isNotEmpty && 
+    if (trimmed.isNotEmpty &&
         trimmed != widget.currentName.toUpperCase() &&
         widget.existingNames.map((n) => n.toUpperCase()).contains(trimmed)) {
       setState(() => _errorText = 'Nome già usato');
@@ -364,7 +364,7 @@ class _PointNameEditorState extends State<PointNameEditor> {
       setState(() => _errorText = null);
       widget.onNameChanged(trimmed);
     }
-    
+
     // Aggiorna il controller se il testo è stato troncato
     if (trimmed != value) {
       _controller.text = trimmed;

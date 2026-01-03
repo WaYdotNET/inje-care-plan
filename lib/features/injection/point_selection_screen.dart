@@ -4,9 +4,11 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/database/app_database.dart' as db;
+import '../../core/database/database_provider.dart';
 import '../../models/body_zone.dart';
 import 'zone_provider.dart';
 import 'injection_provider.dart' hide blacklistedPointsProvider;
+import 'widgets/body_silhouette_editor.dart';
 
 /// Unified screen for selecting injection points
 /// Can be used for: recording injections, blacklisting points
@@ -567,8 +569,8 @@ class _ZoneButton extends StatelessWidget {
   }
 }
 
-/// Zone detail with point selection
-class _ZoneDetailCard extends StatelessWidget {
+/// Zone detail with point selection using body silhouette
+class _ZoneDetailCard extends ConsumerStatefulWidget {
   const _ZoneDetailCard({
     required this.zone,
     required this.selectedPoint,
@@ -583,15 +585,72 @@ class _ZoneDetailCard extends StatelessWidget {
   final void Function(int) onPointTap;
   final List<db.BlacklistedPoint> blacklistedPoints;
 
+  @override
+  ConsumerState<_ZoneDetailCard> createState() => _ZoneDetailCardState();
+}
+
+class _ZoneDetailCardState extends ConsumerState<_ZoneDetailCard> {
+  List<PositionedPoint> _points = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPoints();
+  }
+
+  @override
+  void didUpdateWidget(_ZoneDetailCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.zone.id != widget.zone.id) {
+      _loadPoints();
+    }
+  }
+
+  Future<void> _loadPoints() async {
+    final database = ref.read(databaseProvider);
+    final configs = await database.getPointConfigsForZone(widget.zone.id);
+
+    if (configs.isEmpty) {
+      // Genera posizioni predefinite
+      _points = generateDefaultPointPositions(
+        widget.zone.numberOfPoints,
+        widget.zone.type,
+        widget.zone.side,
+      );
+    } else {
+      _points = configs.map((c) => c.toPositionedPoint()).toList();
+      // Aggiungi punti mancanti
+      for (var i = configs.length + 1; i <= widget.zone.numberOfPoints; i++) {
+        final defaults = generateDefaultPointPositions(
+          widget.zone.numberOfPoints,
+          widget.zone.type,
+          widget.zone.side,
+        );
+        final defaultPoint = defaults.firstWhere(
+          (p) => p.pointNumber == i,
+          orElse: () => PositionedPoint(pointNumber: i, x: 0.5, y: 0.5),
+        );
+        _points.add(defaultPoint);
+      }
+    }
+
+    if (mounted) setState(() => _isLoading = false);
+  }
+
   Set<int> get _blacklistedNumbers {
-    return blacklistedPoints
-        .where((bp) => bp.zoneId == zone.id)
+    return widget.blacklistedPoints
+        .where((bp) => bp.zoneId == widget.zone.id)
         .map((bp) => bp.pointNumber)
         .toSet();
   }
 
   @override
   Widget build(BuildContext context) {
+    final zone = widget.zone;
+    final selectedPoint = widget.selectedPoint;
+    final isDark = widget.isDark;
+    final onPointTap = widget.onPointTap;
     final theme = Theme.of(context);
 
     return Card(
@@ -643,27 +702,24 @@ class _ZoneDetailCard extends StatelessWidget {
 
             const SizedBox(height: 16),
 
-            // Point selection grid
+            // Point selection with silhouette
             Text('Seleziona il punto:', style: theme.textTheme.titleSmall),
             const SizedBox(height: 12),
 
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: List.generate(zone.numberOfPoints, (i) {
-                final pointNum = i + 1;
-                final isBlacklisted = _blacklistedNumbers.contains(pointNum);
-                final isSelected = selectedPoint == pointNum;
-
-                return _PointChip(
-                  number: pointNum,
-                  isSelected: isSelected,
-                  isBlacklisted: isBlacklisted,
+            if (_isLoading)
+              const Center(child: CircularProgressIndicator())
+            else
+              SizedBox(
+                height: 280,
+                child: _PointSelectionSilhouette(
+                  points: _points,
+                  selectedPoint: selectedPoint,
+                  blacklistedNumbers: _blacklistedNumbers,
                   isDark: isDark,
-                  onTap: isBlacklisted ? null : () => onPointTap(pointNum),
-                );
-              }),
-            ),
+                  zoneType: zone.type,
+                  onPointTap: onPointTap,
+                ),
+              ),
 
             if (selectedPoint != null) ...[
               const SizedBox(height: 16),
@@ -683,7 +739,7 @@ class _ZoneDetailCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'Selezionato: ${zone.pointLabel(selectedPoint!)}',
+                      'Selezionato: ${zone.pointLabel(selectedPoint)}',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: isDark ? AppColors.darkPine : AppColors.dawnPine,
@@ -700,7 +756,7 @@ class _ZoneDetailCard extends StatelessWidget {
   }
 
   String _getZoneInstructions() {
-    return switch (zone.type) {
+    return switch (widget.zone.type) {
       'thigh' =>
         'Parte anteriore e laterale della coscia, evitare l\'interno coscia',
       'arm' => 'Superficie esterna del braccio superiore',
@@ -711,80 +767,47 @@ class _ZoneDetailCard extends StatelessWidget {
   }
 }
 
-/// Point selection chip
-class _PointChip extends StatelessWidget {
-  const _PointChip({
-    required this.number,
-    required this.isSelected,
-    required this.isBlacklisted,
+/// Silhouette-based point selection widget
+class _PointSelectionSilhouette extends StatelessWidget {
+  const _PointSelectionSilhouette({
+    required this.points,
+    required this.selectedPoint,
+    required this.blacklistedNumbers,
     required this.isDark,
-    required this.onTap,
+    required this.zoneType,
+    required this.onPointTap,
   });
 
-  final int number;
-  final bool isSelected;
-  final bool isBlacklisted;
+  final List<PositionedPoint> points;
+  final int? selectedPoint;
+  final Set<int> blacklistedNumbers;
   final bool isDark;
-  final VoidCallback? onTap;
+  final String zoneType;
+  final void Function(int) onPointTap;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 56,
-        height: 56,
-        decoration: BoxDecoration(
-          color: isBlacklisted
-              ? (isDark ? AppColors.darkMuted : AppColors.dawnMuted).withValues(
-                  alpha: 0.2,
-                )
-              : isSelected
-              ? (isDark ? AppColors.darkFoam : AppColors.dawnFoam)
-              : (isDark ? AppColors.darkSurface : AppColors.dawnSurface),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isBlacklisted
-                ? (isDark ? AppColors.darkMuted : AppColors.dawnMuted)
-                : isSelected
-                ? (isDark ? AppColors.darkPine : AppColors.dawnPine)
-                : (isDark ? AppColors.darkMuted : AppColors.dawnMuted),
-            width: isSelected ? 2 : 1,
-          ),
-        ),
-        child: Center(
-          child: isBlacklisted
-              ? Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.block,
-                      size: 20,
-                      color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
-                    ),
-                    Text(
-                      '$number',
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: isDark
-                            ? AppColors.darkMuted
-                            : AppColors.dawnMuted,
-                      ),
-                    ),
-                  ],
-                )
-              : Text(
-                  '$number',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: isSelected
-                        ? (isDark ? AppColors.darkBase : AppColors.dawnBase)
-                        : (isDark ? AppColors.darkText : AppColors.dawnText),
-                  ),
-                ),
-        ),
-      ),
+    // Filtra i punti blacklisted per mostrarli in modo diverso
+    final visiblePoints = points.map((p) {
+      if (blacklistedNumbers.contains(p.pointNumber)) {
+        // Marca i punti blacklisted con un nome speciale per riconoscerli
+        return p.copyWith(customName: '✗');
+      }
+      return p;
+    }).toList();
+
+    return BodySilhouetteEditor(
+      points: visiblePoints,
+      selectedPointNumber: selectedPoint,
+      zoneType: zoneType,
+      editable: false, // Non trascinabili, solo cliccabili
+      onPointMoved: (_, __, ___, ____) {}, // Non usato
+      onPointTapped: (pointNumber) {
+        // Non permettere tap su punti blacklisted
+        if (!blacklistedNumbers.contains(pointNumber)) {
+          onPointTap(pointNumber);
+        }
+      },
     );
   }
 }

@@ -121,6 +121,25 @@ class BodyZone {
     );
   }
 
+  /// Create from database row (Drift BodyZone table)
+  factory BodyZone.fromDatabase(dynamic dbZone) {
+    return BodyZone(
+      id: dbZone.id as int,
+      code: dbZone.code as String,
+      name: dbZone.name as String,
+      customName: dbZone.customName as String?,
+      icon: dbZone.icon as String?,
+      type: dbZone.type as String? ?? 'custom',
+      side: dbZone.side as String? ?? 'none',
+      numberOfPoints: dbZone.numberOfPoints as int,
+      isEnabled: dbZone.isEnabled as bool? ?? true,
+      sortOrder: dbZone.sortOrder as int? ?? 0,
+    );
+  }
+
+  /// Get total points (alias for numberOfPoints)
+  int get totalPoints => numberOfPoints;
+
   /// Convert to JSON map
   Map<String, dynamic> toJson() => {
     'id': id,

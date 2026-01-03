@@ -1,0 +1,177 @@
+{
+  "@@locale": "en",
+  "appName": "InjeCare Plan",
+  "home": "Home",
+  "calendar": "Calendar",
+  "history": "History",
+  "settings": "Settings",
+  "statistics": "Statistics",
+  "newInjection": "New injection",
+  "hello": "Hello, {name}",
+  "@hello": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "adherence": "Adherence",
+  "adherenceLast30Days": "Adherence last 30 days",
+  "injections": "injections",
+  "noInjections": "No injections",
+  "completed": "Completed",
+  "skipped": "Skipped",
+  "scheduled": "Scheduled",
+  "streak": "Streak",
+  "currentStreak": "Current streak",
+  "longestStreak": "Record",
+  "consecutiveInjections": "consecutive injections",
+  "weeklyEvents": "Weekly events",
+  "noEventsThisWeek": "No events this week",
+  "suggestion": "Suggestion",
+  "aiSuggestion": "AI Suggestion",
+  "viewProposals": "View proposals",
+  "selectZone": "Select zone",
+  "selectPoint": "Select point",
+  "zone": "Zone",
+  "point": "Point",
+  "blacklist": "Exclude point",
+  "blacklistReason": "Exclusion reason",
+  "skinReaction": "Skin reaction",
+  "scar": "Scar / lesion",
+  "hardToReach": "Hard to reach",
+  "other": "Other",
+  "save": "Save",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "edit": "Edit",
+  "confirm": "Confirm",
+  "back": "Back",
+  "next": "Next",
+  "skip": "Skip",
+  "finish": "Done",
+  "today": "Today",
+  "yesterday": "Yesterday",
+  "tomorrow": "Tomorrow",
+  "daysAgo": "{count} days ago",
+  "@daysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "weeksAgo": "{count} weeks ago",
+  "@weeksAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "monthsAgo": "{count} months ago",
+  "@monthsAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "inDays": "In {count} days",
+  "@inDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lastWeek": "Last week",
+  "lastMonth": "Last month",
+  "last3Months": "Last 3 months",
+  "lastYear": "Last year",
+  "all": "All",
+  "period": "Period",
+  "monthlyAdherence": "Monthly Adherence",
+  "weeklyTrend": "Weekly Trend",
+  "zoneUsage": "Zone Usage",
+  "zoneDetails": "Zone Details",
+  "noDataAvailable": "No data available",
+  "loading": "Loading...",
+  "error": "Error",
+  "errorLoadingData": "Unable to load data",
+  "tryAgain": "Try again",
+  "therapyPlan": "Therapy plan",
+  "weeklyInjections": "Weekly injections",
+  "reminderAdvance": "Reminder advance",
+  "minutes": "minutes",
+  "hours": "hours",
+  "hour": "hour",
+  "theme": "Theme",
+  "lightTheme": "Light",
+  "darkTheme": "Dark",
+  "systemTheme": "System",
+  "scheduledTheme": "Scheduled",
+  "darkModeStart": "Dark mode start",
+  "darkModeEnd": "Dark mode end",
+  "biometricAuth": "Biometric authentication",
+  "enableBiometric": "Enable biometric unlock",
+  "googleAccount": "Google Account",
+  "connectGoogle": "Connect Google account",
+  "disconnectGoogle": "Disconnect",
+  "backup": "Backup",
+  "restore": "Restore",
+  "export": "Export",
+  "exportPdf": "Export PDF",
+  "exportCsv": "Export CSV",
+  "about": "About",
+  "version": "Version",
+  "help": "Help",
+  "privacy": "Privacy",
+  "termsOfService": "Terms of Service",
+  "welcomeTitle": "Welcome to InjeCare",
+  "welcomeSubtitle": "Your therapy, under control",
+  "onboardingStep1Title": "Record injections",
+  "onboardingStep1Desc": "Track every injection with just a few taps",
+  "onboardingStep2Title": "Automatic rotation",
+  "onboardingStep2Desc": "The app suggests the best zone for your next injection",
+  "onboardingStep3Title": "Statistics and reports",
+  "onboardingStep3Desc": "Monitor your adherence and share reports with your doctor",
+  "getStarted": "Get Started",
+  "recordInjection": "Record injection",
+  "markAsCompleted": "Mark as completed",
+  "markAsSkipped": "Mark as skipped",
+  "changePoint": "Change point",
+  "deleteInjection": "Delete injection",
+  "confirmDelete": "Confirm deletion",
+  "confirmDeleteMessage": "Are you sure you want to delete this injection?",
+  "success": "Success",
+  "injectionRecorded": "Injection recorded successfully",
+  "injectionDeleted": "Injection deleted",
+  "injectionUpdated": "Injection updated",
+  "notificationTitle": "Injection reminder",
+  "notificationBody": "It's time for your injection",
+  "missedInjection": "Forgot your injection?",
+  "missedInjectionBody": "You haven't recorded today's injection yet",
+  "zoneSuggestion": "Zone suggestion",
+  "neverUsed": "Never used",
+  "notUsedFor": "Not used for {days} days",
+  "@notUsedFor": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "zoneManagement": "Zone management",
+  "editPoints": "Edit points",
+  "pointsEditor": "Points editor",
+  "dragToPosition": "Drag points to position them",
+  "tapToAddPoint": "Tap to add point",
+  "resetPositions": "Reset positions",
+  "saveChanges": "Save changes",
+  "unsavedChanges": "Unsaved changes",
+  "discardChanges": "Do you want to discard changes?",
+  "discard": "Discard",
+  "guide": "Guide",
+  "info": "Info"
+}

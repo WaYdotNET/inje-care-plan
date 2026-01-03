@@ -74,10 +74,7 @@ class HomeScreen extends ConsumerWidget {
                     style: theme.textTheme.titleMedium,
                   ),
                   if (user?.email != null)
-                    Text(
-                      user!.email!,
-                      style: theme.textTheme.bodySmall,
-                    ),
+                    Text(user!.email!, style: theme.textTheme.bodySmall),
                 ],
               ),
             ),
@@ -109,6 +106,14 @@ class HomeScreen extends ConsumerWidget {
               onTap: () {
                 Navigator.pop(context);
                 context.go(AppRoutes.history);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.bar_chart),
+              title: const Text('Statistiche'),
+              onTap: () {
+                Navigator.pop(context);
+                context.push(AppRoutes.statistics);
               },
             ),
             const Divider(),
@@ -151,10 +156,7 @@ class HomeScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Greeting
-              Text(
-                'Ciao, $displayName',
-                style: theme.textTheme.headlineMedium,
-              ),
+              Text('Ciao, $displayName', style: theme.textTheme.headlineMedium),
 
               const SizedBox(height: 24),
 
@@ -196,9 +198,33 @@ class HomeScreen extends ConsumerWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: _QuickActionCard(
+                      icon: Icons.bar_chart,
+                      label: 'Statistiche',
+                      onTap: () => context.push(AppRoutes.statistics),
+                      isDark: isDark,
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 12),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: _QuickActionCard(
                       icon: Icons.history,
                       label: 'Storico',
                       onTap: () => context.go(AppRoutes.history),
+                      isDark: isDark,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _QuickActionCard(
+                      icon: Icons.help_outline,
+                      label: 'Guida',
+                      onTap: () => context.push(AppRoutes.help),
                       isDark: isDark,
                     ),
                   ),
@@ -228,10 +254,14 @@ class HomeScreen extends ConsumerWidget {
             // Converti WeeklyEventData in WeeklyEvent con zone
             final events = weeklyEventData.map((data) {
               final zone = data.suggestion != null
-                  ? zones.where((z) => z.id == data.suggestion!.zoneId).firstOrNull
+                  ? zones
+                        .where((z) => z.id == data.suggestion!.zoneId)
+                        .firstOrNull
                   : (data.confirmedEvent != null
-                      ? zones.where((z) => z.id == data.confirmedEvent!.zoneId).firstOrNull
-                      : null);
+                        ? zones
+                              .where((z) => z.id == data.confirmedEvent!.zoneId)
+                              .firstOrNull
+                        : null);
               return WeeklyEvent(
                 date: data.date,
                 confirmedEvent: data.confirmedEvent,
@@ -353,7 +383,9 @@ class _AdherenceCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  total > 0 ? '$completed/$total iniezioni' : 'Nessuna iniezione',
+                  total > 0
+                      ? '$completed/$total iniezioni'
+                      : 'Nessuna iniezione',
                   style: theme.textTheme.bodyMedium,
                 ),
                 Text(
@@ -402,10 +434,7 @@ class _QuickActionCard extends StatelessWidget {
                 color: isDark ? AppColors.darkPine : AppColors.dawnPine,
               ),
               const SizedBox(height: 8),
-              Text(
-                label,
-                style: theme.textTheme.titleSmall,
-              ),
+              Text(label, style: theme.textTheme.titleSmall),
             ],
           ),
         ),

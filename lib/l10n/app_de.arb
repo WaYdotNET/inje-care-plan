@@ -1,0 +1,177 @@
+{
+  "@@locale": "de",
+  "appName": "InjeCare Plan",
+  "home": "Startseite",
+  "calendar": "Kalender",
+  "history": "Verlauf",
+  "settings": "Einstellungen",
+  "statistics": "Statistiken",
+  "newInjection": "Neue Injektion",
+  "hello": "Hallo, {name}",
+  "@hello": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "adherence": "Adhärenz",
+  "adherenceLast30Days": "Adhärenz letzte 30 Tage",
+  "injections": "Injektionen",
+  "noInjections": "Keine Injektionen",
+  "completed": "Abgeschlossen",
+  "skipped": "Übersprungen",
+  "scheduled": "Geplant",
+  "streak": "Serie",
+  "currentStreak": "Aktuelle Serie",
+  "longestStreak": "Rekord",
+  "consecutiveInjections": "aufeinanderfolgende Injektionen",
+  "weeklyEvents": "Wöchentliche Ereignisse",
+  "noEventsThisWeek": "Keine Ereignisse diese Woche",
+  "suggestion": "Vorschlag",
+  "aiSuggestion": "KI-Vorschlag",
+  "viewProposals": "Vorschläge anzeigen",
+  "selectZone": "Zone auswählen",
+  "selectPoint": "Punkt auswählen",
+  "zone": "Zone",
+  "point": "Punkt",
+  "blacklist": "Punkt ausschließen",
+  "blacklistReason": "Ausschlussgrund",
+  "skinReaction": "Hautreaktion",
+  "scar": "Narbe / Verletzung",
+  "hardToReach": "Schwer erreichbar",
+  "other": "Andere",
+  "save": "Speichern",
+  "cancel": "Abbrechen",
+  "delete": "Löschen",
+  "edit": "Bearbeiten",
+  "confirm": "Bestätigen",
+  "back": "Zurück",
+  "next": "Weiter",
+  "skip": "Überspringen",
+  "finish": "Fertig",
+  "today": "Heute",
+  "yesterday": "Gestern",
+  "tomorrow": "Morgen",
+  "daysAgo": "Vor {count} Tagen",
+  "@daysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "weeksAgo": "Vor {count} Wochen",
+  "@weeksAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "monthsAgo": "Vor {count} Monaten",
+  "@monthsAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "inDays": "In {count} Tagen",
+  "@inDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lastWeek": "Letzte Woche",
+  "lastMonth": "Letzter Monat",
+  "last3Months": "Letzte 3 Monate",
+  "lastYear": "Letztes Jahr",
+  "all": "Alles",
+  "period": "Zeitraum",
+  "monthlyAdherence": "Monatliche Adhärenz",
+  "weeklyTrend": "Wochentrend",
+  "zoneUsage": "Zonennutzung",
+  "zoneDetails": "Zonendetails",
+  "noDataAvailable": "Keine Daten verfügbar",
+  "loading": "Laden...",
+  "error": "Fehler",
+  "errorLoadingData": "Daten konnten nicht geladen werden",
+  "tryAgain": "Erneut versuchen",
+  "therapyPlan": "Therapieplan",
+  "weeklyInjections": "Wöchentliche Injektionen",
+  "reminderAdvance": "Erinnerungsvorlauf",
+  "minutes": "Minuten",
+  "hours": "Stunden",
+  "hour": "Stunde",
+  "theme": "Thema",
+  "lightTheme": "Hell",
+  "darkTheme": "Dunkel",
+  "systemTheme": "System",
+  "scheduledTheme": "Geplant",
+  "darkModeStart": "Dunkelmodus-Start",
+  "darkModeEnd": "Dunkelmodus-Ende",
+  "biometricAuth": "Biometrische Authentifizierung",
+  "enableBiometric": "Biometrische Entsperrung aktivieren",
+  "googleAccount": "Google-Konto",
+  "connectGoogle": "Google-Konto verbinden",
+  "disconnectGoogle": "Trennen",
+  "backup": "Backup",
+  "restore": "Wiederherstellen",
+  "export": "Exportieren",
+  "exportPdf": "PDF exportieren",
+  "exportCsv": "CSV exportieren",
+  "about": "Über",
+  "version": "Version",
+  "help": "Hilfe",
+  "privacy": "Datenschutz",
+  "termsOfService": "Nutzungsbedingungen",
+  "welcomeTitle": "Willkommen bei InjeCare",
+  "welcomeSubtitle": "Ihre Therapie unter Kontrolle",
+  "onboardingStep1Title": "Injektionen aufzeichnen",
+  "onboardingStep1Desc": "Verfolgen Sie jede Injektion mit nur wenigen Klicks",
+  "onboardingStep2Title": "Automatische Rotation",
+  "onboardingStep2Desc": "Die App schlägt die beste Zone für Ihre nächste Injektion vor",
+  "onboardingStep3Title": "Statistiken und Berichte",
+  "onboardingStep3Desc": "Überwachen Sie Ihre Adhärenz und teilen Sie Berichte mit Ihrem Arzt",
+  "getStarted": "Loslegen",
+  "recordInjection": "Injektion aufzeichnen",
+  "markAsCompleted": "Als abgeschlossen markieren",
+  "markAsSkipped": "Als übersprungen markieren",
+  "changePoint": "Punkt ändern",
+  "deleteInjection": "Injektion löschen",
+  "confirmDelete": "Löschen bestätigen",
+  "confirmDeleteMessage": "Möchten Sie diese Injektion wirklich löschen?",
+  "success": "Erfolg",
+  "injectionRecorded": "Injektion erfolgreich aufgezeichnet",
+  "injectionDeleted": "Injektion gelöscht",
+  "injectionUpdated": "Injektion aktualisiert",
+  "notificationTitle": "Injektions-Erinnerung",
+  "notificationBody": "Es ist Zeit für Ihre Injektion",
+  "missedInjection": "Injektion vergessen?",
+  "missedInjectionBody": "Sie haben die heutige Injektion noch nicht aufgezeichnet",
+  "zoneSuggestion": "Zonenvorschlag",
+  "neverUsed": "Nie verwendet",
+  "notUsedFor": "Seit {days} Tagen nicht verwendet",
+  "@notUsedFor": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "zoneManagement": "Zonenverwaltung",
+  "editPoints": "Punkte bearbeiten",
+  "pointsEditor": "Punkte-Editor",
+  "dragToPosition": "Punkte ziehen zum Positionieren",
+  "tapToAddPoint": "Tippen zum Hinzufügen",
+  "resetPositions": "Positionen zurücksetzen",
+  "saveChanges": "Änderungen speichern",
+  "unsavedChanges": "Nicht gespeicherte Änderungen",
+  "discardChanges": "Möchten Sie die Änderungen verwerfen?",
+  "discard": "Verwerfen",
+  "guide": "Anleitung",
+  "info": "Info"
+}

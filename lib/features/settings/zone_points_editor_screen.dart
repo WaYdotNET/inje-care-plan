@@ -66,11 +66,7 @@ class _ZonePointsEditorScreenState
         );
         final defaultPoint = defaults.firstWhere(
           (p) => p.pointNumber == i,
-          orElse: () => PositionedPoint(
-            pointNumber: i,
-            x: 0.5,
-            y: 0.5,
-          ),
+          orElse: () => PositionedPoint(pointNumber: i, x: 0.5, y: 0.5),
         );
         _points.add(defaultPoint);
       }
@@ -245,10 +241,14 @@ class _ZonePointsEditorScreenState
                 orElse: () => zones.first,
               );
               return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
-                  color: (isDark ? AppColors.darkSurface : AppColors.dawnSurface)
-                      .withValues(alpha: 0.9),
+                  color:
+                      (isDark ? AppColors.darkSurface : AppColors.dawnSurface)
+                          .withValues(alpha: 0.9),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
@@ -336,7 +336,10 @@ class _ZonePointsEditorScreenState
             right: 0,
             child: Center(
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: (isDark ? AppColors.darkPine : AppColors.dawnPine)
                       .withValues(alpha: 0.95),
@@ -350,7 +353,7 @@ class _ZonePointsEditorScreenState
                   ],
                 ),
                 child: Text(
-                  'Punto ${_draggingPointNumber}: X ${(_dragX! * 100).toStringAsFixed(0)}% · Y ${(_dragY! * 100).toStringAsFixed(0)}%',
+                  'Punto $_draggingPointNumber: X ${(_dragX! * 100).toStringAsFixed(0)}% · Y ${(_dragY! * 100).toStringAsFixed(0)}%',
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -430,7 +433,9 @@ class _ZonePointsEditorScreenState
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.2),
+                  color: (isDark ? Colors.white : Colors.black).withValues(
+                    alpha: 0.2,
+                  ),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -456,7 +461,12 @@ class _ZonePointsEditorScreenState
                   child: Center(
                     child: Text(
                       point.customName?.isNotEmpty == true
-                          ? point.customName!.substring(0, point.customName!.length > 3 ? 3 : point.customName!.length)
+                          ? point.customName!.substring(
+                              0,
+                              point.customName!.length > 3
+                                  ? 3
+                                  : point.customName!.length,
+                            )
                           : '$pointNumber',
                       style: const TextStyle(
                         color: Colors.white,
@@ -474,16 +484,16 @@ class _ZonePointsEditorScreenState
                       Text(
                         'Modifica Punto $pointNumber',
                         style: Theme.of(ctx).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       Text(
                         'X: ${(point.x * 100).toStringAsFixed(0)}% · Y: ${(point.y * 100).toStringAsFixed(0)}%',
                         style: Theme.of(ctx).textTheme.bodySmall?.copyWith(
-                              color: isDark
-                                  ? AppColors.darkMuted
-                                  : AppColors.dawnMuted,
-                            ),
+                          color: isDark
+                              ? AppColors.darkMuted
+                              : AppColors.dawnMuted,
+                        ),
                       ),
                     ],
                   ),
@@ -606,11 +616,7 @@ class _FloatingToolbar extends StatelessWidget {
           ),
 
           // Salva (evidenziato se ci sono modifiche)
-          _SaveButton(
-            hasChanges: hasChanges,
-            isDark: isDark,
-            onTap: onSave,
-          ),
+          _SaveButton(hasChanges: hasChanges, isDark: isDark, onTap: onSave),
         ],
       ),
     );
@@ -645,11 +651,7 @@ class _ToolbarButton extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              color: isActive ? activeColor : inactiveColor,
-              size: 24,
-            ),
+            Icon(icon, color: isActive ? activeColor : inactiveColor, size: 24),
             const SizedBox(height: 4),
             Text(
               label,
@@ -686,8 +688,9 @@ class _SaveButton extends StatelessWidget {
             ? LinearGradient(
                 colors: [
                   isDark ? AppColors.darkPine : AppColors.dawnPine,
-                  (isDark ? AppColors.darkPine : AppColors.dawnPine)
-                      .withValues(alpha: 0.8),
+                  (isDark ? AppColors.darkPine : AppColors.dawnPine).withValues(
+                    alpha: 0.8,
+                  ),
                 ],
               )
             : null,

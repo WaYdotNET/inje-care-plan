@@ -1,0 +1,180 @@
+{
+  "@@locale": "it",
+  "appName": "InjeCare Plan",
+  "@appName": {
+    "description": "Nome dell'applicazione"
+  },
+  "home": "Home",
+  "calendar": "Calendario",
+  "history": "Storico",
+  "settings": "Impostazioni",
+  "statistics": "Statistiche",
+  "newInjection": "Nuova iniezione",
+  "hello": "Ciao, {name}",
+  "@hello": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "adherence": "Aderenza",
+  "adherenceLast30Days": "Aderenza ultimi 30 giorni",
+  "injections": "iniezioni",
+  "noInjections": "Nessuna iniezione",
+  "completed": "Completate",
+  "skipped": "Saltate",
+  "scheduled": "Programmate",
+  "streak": "Streak",
+  "currentStreak": "Streak attuale",
+  "longestStreak": "Record",
+  "consecutiveInjections": "iniezioni consecutive",
+  "weeklyEvents": "Eventi settimanali",
+  "noEventsThisWeek": "Nessun evento questa settimana",
+  "suggestion": "Suggerimento",
+  "aiSuggestion": "Suggerimento AI",
+  "viewProposals": "Vedi proposte",
+  "selectZone": "Seleziona zona",
+  "selectPoint": "Seleziona punto",
+  "zone": "Zona",
+  "point": "Punto",
+  "blacklist": "Escludi punto",
+  "blacklistReason": "Motivo esclusione",
+  "skinReaction": "Reazione cutanea",
+  "scar": "Cicatrice / lesione",
+  "hardToReach": "Difficile da raggiungere",
+  "other": "Altro",
+  "save": "Salva",
+  "cancel": "Annulla",
+  "delete": "Elimina",
+  "edit": "Modifica",
+  "confirm": "Conferma",
+  "back": "Indietro",
+  "next": "Avanti",
+  "skip": "Salta",
+  "finish": "Fine",
+  "today": "Oggi",
+  "yesterday": "Ieri",
+  "tomorrow": "Domani",
+  "daysAgo": "{count} giorni fa",
+  "@daysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "weeksAgo": "{count} settimane fa",
+  "@weeksAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "monthsAgo": "{count} mesi fa",
+  "@monthsAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "inDays": "Tra {count} giorni",
+  "@inDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lastWeek": "Ultima settimana",
+  "lastMonth": "Ultimo mese",
+  "last3Months": "Ultimi 3 mesi",
+  "lastYear": "Ultimo anno",
+  "all": "Tutto",
+  "period": "Periodo",
+  "monthlyAdherence": "Aderenza Mensile",
+  "weeklyTrend": "Trend Settimanale",
+  "zoneUsage": "Utilizzo Zone",
+  "zoneDetails": "Dettaglio Zone",
+  "noDataAvailable": "Nessun dato disponibile",
+  "loading": "Caricamento...",
+  "error": "Errore",
+  "errorLoadingData": "Impossibile caricare i dati",
+  "tryAgain": "Riprova",
+  "therapyPlan": "Piano terapia",
+  "weeklyInjections": "Iniezioni settimanali",
+  "reminderAdvance": "Anticipo promemoria",
+  "minutes": "minuti",
+  "hours": "ore",
+  "hour": "ora",
+  "theme": "Tema",
+  "lightTheme": "Chiaro",
+  "darkTheme": "Scuro",
+  "systemTheme": "Sistema",
+  "scheduledTheme": "Programmato",
+  "darkModeStart": "Inizio dark mode",
+  "darkModeEnd": "Fine dark mode",
+  "biometricAuth": "Autenticazione biometrica",
+  "enableBiometric": "Abilita sblocco biometrico",
+  "googleAccount": "Account Google",
+  "connectGoogle": "Collega account Google",
+  "disconnectGoogle": "Scollega",
+  "backup": "Backup",
+  "restore": "Ripristina",
+  "export": "Esporta",
+  "exportPdf": "Esporta PDF",
+  "exportCsv": "Esporta CSV",
+  "about": "Informazioni",
+  "version": "Versione",
+  "help": "Guida",
+  "privacy": "Privacy",
+  "termsOfService": "Termini di servizio",
+  "welcomeTitle": "Benvenuto in InjeCare",
+  "welcomeSubtitle": "La tua terapia, sotto controllo",
+  "onboardingStep1Title": "Registra le iniezioni",
+  "onboardingStep1Desc": "Tieni traccia di ogni iniezione con pochi tap",
+  "onboardingStep2Title": "Rotazione automatica",
+  "onboardingStep2Desc": "L'app suggerisce la zona migliore per la prossima iniezione",
+  "onboardingStep3Title": "Statistiche e report",
+  "onboardingStep3Desc": "Monitora la tua aderenza e condividi i report con il medico",
+  "getStarted": "Inizia",
+  "recordInjection": "Registra iniezione",
+  "markAsCompleted": "Segna come completata",
+  "markAsSkipped": "Segna come saltata",
+  "changePoint": "Cambia punto",
+  "deleteInjection": "Elimina iniezione",
+  "confirmDelete": "Conferma eliminazione",
+  "confirmDeleteMessage": "Sei sicuro di voler eliminare questa iniezione?",
+  "success": "Successo",
+  "injectionRecorded": "Iniezione registrata con successo",
+  "injectionDeleted": "Iniezione eliminata",
+  "injectionUpdated": "Iniezione aggiornata",
+  "notificationTitle": "Promemoria iniezione",
+  "notificationBody": "È ora della tua iniezione",
+  "missedInjection": "Iniezione dimenticata?",
+  "missedInjectionBody": "Non hai ancora registrato l'iniezione di oggi",
+  "zoneSuggestion": "Suggerimento zona",
+  "neverUsed": "Mai utilizzata",
+  "notUsedFor": "Non utilizzata da {days} giorni",
+  "@notUsedFor": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "zoneManagement": "Gestione zone",
+  "editPoints": "Modifica punti",
+  "pointsEditor": "Editor punti",
+  "dragToPosition": "Trascina i punti per posizionarli",
+  "tapToAddPoint": "Tap per aggiungere punto",
+  "resetPositions": "Reset posizioni",
+  "saveChanges": "Salva modifiche",
+  "unsavedChanges": "Modifiche non salvate",
+  "discardChanges": "Vuoi scartare le modifiche?",
+  "discard": "Scarta",
+  "guide": "Guida",
+  "info": "Info"
+}

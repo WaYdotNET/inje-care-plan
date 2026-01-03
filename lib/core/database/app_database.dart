@@ -8,15 +8,17 @@ import 'tables.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [
-  BodyZones,
-  TherapyPlans,
-  Injections,
-  BlacklistedPoints,
-  AppSettings,
-  UserProfiles,
-  PointConfigs,
-])
+@DriftDatabase(
+  tables: [
+    BodyZones,
+    TherapyPlans,
+    Injections,
+    BlacklistedPoints,
+    AppSettings,
+    UserProfiles,
+    PointConfigs,
+  ],
+)
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
@@ -28,22 +30,22 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-        onCreate: (m) async {
-          await m.createAll();
-          // Inserisci le zone predefinite
-          await _seedDefaultZones();
-        },
-        onUpgrade: (m, from, to) async {
-          if (from < 2) {
-            // Aggiungi nuove colonne alla tabella BodyZones
-            await m.addColumn(bodyZones, bodyZones.customName);
-            await m.addColumn(bodyZones, bodyZones.icon);
-            await m.addColumn(bodyZones, bodyZones.type);
-            await m.addColumn(bodyZones, bodyZones.side);
-            await m.addColumn(bodyZones, bodyZones.sortOrder);
+    onCreate: (m) async {
+      await m.createAll();
+      // Inserisci le zone predefinite
+      await _seedDefaultZones();
+    },
+    onUpgrade: (m, from, to) async {
+      if (from < 2) {
+        // Aggiungi nuove colonne alla tabella BodyZones
+        await m.addColumn(bodyZones, bodyZones.customName);
+        await m.addColumn(bodyZones, bodyZones.icon);
+        await m.addColumn(bodyZones, bodyZones.type);
+        await m.addColumn(bodyZones, bodyZones.side);
+        await m.addColumn(bodyZones, bodyZones.sortOrder);
 
-            // Aggiorna le zone esistenti con i valori corretti
-            await customStatement('''
+        // Aggiorna le zone esistenti con i valori corretti
+        await customStatement('''
               UPDATE body_zones SET
                 type = CASE code
                   WHEN 'CD' THEN 'thigh' WHEN 'CS' THEN 'thigh'
@@ -59,13 +61,13 @@ class AppDatabase extends _$AppDatabase {
                 END,
                 sort_order = id
             ''');
-          }
-          if (from < 3) {
-            // Crea tabella PointConfigs per configurazione punti
-            await m.createTable(pointConfigs);
-          }
-        },
-      );
+      }
+      if (from < 3) {
+        // Crea tabella PointConfigs per configurazione punti
+        await m.createTable(pointConfigs);
+      }
+    },
+  );
 
   /// Inserisce le 8 zone predefinite
   Future<void> _seedDefaultZones() async {
@@ -144,11 +146,13 @@ class AppDatabase extends _$AppDatabase {
   // ============ DAO Methods ============
 
   // --- Body Zones ---
-  Future<List<BodyZone>> getAllZones() =>
-      (select(bodyZones)..orderBy([(z) => OrderingTerm.asc(z.sortOrder)])).get();
+  Future<List<BodyZone>> getAllZones() => (select(
+    bodyZones,
+  )..orderBy([(z) => OrderingTerm.asc(z.sortOrder)])).get();
 
-  Stream<List<BodyZone>> watchAllZones() =>
-      (select(bodyZones)..orderBy([(z) => OrderingTerm.asc(z.sortOrder)])).watch();
+  Stream<List<BodyZone>> watchAllZones() => (select(
+    bodyZones,
+  )..orderBy([(z) => OrderingTerm.asc(z.sortOrder)])).watch();
 
   Future<List<BodyZone>> getEnabledZones() =>
       (select(bodyZones)
@@ -172,39 +176,39 @@ class AppDatabase extends _$AppDatabase {
       into(bodyZones).insert(zone);
 
   Future<int> updateZone(BodyZonesCompanion zone) =>
-      (update(bodyZones)..where((z) => z.id.equals(zone.id.value)))
-          .write(zone);
+      (update(bodyZones)..where((z) => z.id.equals(zone.id.value))).write(zone);
 
   Future<int> deleteZone(int id) =>
       (delete(bodyZones)..where((z) => z.id.equals(id))).go();
 
   Future<void> updateZonePointCount(int zoneId, int count) =>
-      (update(bodyZones)..where((z) => z.id.equals(zoneId)))
-          .write(BodyZonesCompanion(
-            numberOfPoints: Value(count),
-            updatedAt: Value(DateTime.now()),
-          ));
+      (update(bodyZones)..where((z) => z.id.equals(zoneId))).write(
+        BodyZonesCompanion(
+          numberOfPoints: Value(count),
+          updatedAt: Value(DateTime.now()),
+        ),
+      );
 
   Future<void> updateZoneCustomName(int zoneId, String? customName) =>
-      (update(bodyZones)..where((z) => z.id.equals(zoneId)))
-          .write(BodyZonesCompanion(
-            customName: Value(customName),
-            updatedAt: Value(DateTime.now()),
-          ));
+      (update(bodyZones)..where((z) => z.id.equals(zoneId))).write(
+        BodyZonesCompanion(
+          customName: Value(customName),
+          updatedAt: Value(DateTime.now()),
+        ),
+      );
 
   Future<void> updateZoneIcon(int zoneId, String? icon) =>
-      (update(bodyZones)..where((z) => z.id.equals(zoneId)))
-          .write(BodyZonesCompanion(
-            icon: Value(icon),
-            updatedAt: Value(DateTime.now()),
-          ));
+      (update(bodyZones)..where((z) => z.id.equals(zoneId))).write(
+        BodyZonesCompanion(icon: Value(icon), updatedAt: Value(DateTime.now())),
+      );
 
   Future<void> toggleZoneEnabled(int zoneId, bool enabled) =>
-      (update(bodyZones)..where((z) => z.id.equals(zoneId)))
-          .write(BodyZonesCompanion(
-            isEnabled: Value(enabled),
-            updatedAt: Value(DateTime.now()),
-          ));
+      (update(bodyZones)..where((z) => z.id.equals(zoneId))).write(
+        BodyZonesCompanion(
+          isEnabled: Value(enabled),
+          updatedAt: Value(DateTime.now()),
+        ),
+      );
 
   Future<void> reorderZones(List<int> zoneIdsInOrder) async {
     await batch((b) {
@@ -228,34 +232,38 @@ class AppDatabase extends _$AppDatabase {
   Future<int> insertTherapyPlan(TherapyPlansCompanion plan) =>
       into(therapyPlans).insert(plan);
 
-  Future<int> updateTherapyPlan(TherapyPlansCompanion plan) =>
-      (update(therapyPlans)..where((p) => p.id.equals(plan.id.value)))
-          .write(plan);
+  Future<int> updateTherapyPlan(TherapyPlansCompanion plan) => (update(
+    therapyPlans,
+  )..where((p) => p.id.equals(plan.id.value))).write(plan);
 
   // --- Injections ---
-  Future<List<Injection>> getAllInjections() =>
-      (select(injections)..orderBy([(i) => OrderingTerm.desc(i.scheduledAt)]))
+  Future<List<Injection>> getAllInjections() => (select(
+    injections,
+  )..orderBy([(i) => OrderingTerm.desc(i.scheduledAt)])).get();
+
+  Future<List<Injection>> getInjectionsByZone(int zoneId) =>
+      (select(injections)
+            ..where((i) => i.zoneId.equals(zoneId))
+            ..orderBy([(i) => OrderingTerm.desc(i.scheduledAt)]))
           .get();
 
-  Future<List<Injection>> getInjectionsByZone(int zoneId) => (select(injections)
-        ..where((i) => i.zoneId.equals(zoneId))
-        ..orderBy([(i) => OrderingTerm.desc(i.scheduledAt)]))
-      .get();
-
   Future<List<Injection>> getInjectionsByDateRange(
-          DateTime start, DateTime end) =>
+    DateTime start,
+    DateTime end,
+  ) =>
       (select(injections)
-            ..where(
-                (i) => i.scheduledAt.isBetweenValues(start, end))
+            ..where((i) => i.scheduledAt.isBetweenValues(start, end))
             ..orderBy([(i) => OrderingTerm.asc(i.scheduledAt)]))
           .get();
 
   Future<Injection?> getLastInjectionForPoint(int zoneId, int pointNumber) =>
       (select(injections)
-            ..where((i) =>
-                i.zoneId.equals(zoneId) &
-                i.pointNumber.equals(pointNumber) &
-                i.status.equals('completed'))
+            ..where(
+              (i) =>
+                  i.zoneId.equals(zoneId) &
+                  i.pointNumber.equals(pointNumber) &
+                  i.status.equals('completed'),
+            )
             ..orderBy([(i) => OrderingTerm.desc(i.completedAt)])
             ..limit(1))
           .getSingleOrNull();
@@ -263,9 +271,9 @@ class AppDatabase extends _$AppDatabase {
   Future<int> insertInjection(InjectionsCompanion injection) =>
       into(injections).insert(injection);
 
-  Future<int> updateInjection(InjectionsCompanion injection) =>
-      (update(injections)..where((i) => i.id.equals(injection.id.value)))
-          .write(injection);
+  Future<int> updateInjection(InjectionsCompanion injection) => (update(
+    injections,
+  )..where((i) => i.id.equals(injection.id.value))).write(injection);
 
   Future<int> deleteInjection(int id) =>
       (delete(injections)..where((i) => i.id.equals(id))).go();
@@ -287,13 +295,16 @@ class AppDatabase extends _$AppDatabase {
       pointUsage[p] = null;
     }
 
-    final recentInjections = await (select(injections)
-          ..where((i) =>
-              i.zoneId.equals(zoneId) &
-              i.status.equals('completed') &
-              i.completedAt.isBiggerOrEqualValue(cutoffDate))
-          ..orderBy([(i) => OrderingTerm.desc(i.completedAt)]))
-        .get();
+    final recentInjections =
+        await (select(injections)
+              ..where(
+                (i) =>
+                    i.zoneId.equals(zoneId) &
+                    i.status.equals('completed') &
+                    i.completedAt.isBiggerOrEqualValue(cutoffDate),
+              )
+              ..orderBy([(i) => OrderingTerm.desc(i.completedAt)]))
+            .get();
 
     for (final inj in recentInjections) {
       if (pointUsage.containsKey(inj.pointNumber) &&
@@ -331,23 +342,24 @@ class AppDatabase extends _$AppDatabase {
       (select(blacklistedPoints)..where((b) => b.zoneId.equals(zoneId))).get();
 
   Future<bool> isPointBlacklisted(String pointCode) async {
-    final result = await (select(blacklistedPoints)
-          ..where((b) => b.pointCode.equals(pointCode)))
-        .getSingleOrNull();
+    final result = await (select(
+      blacklistedPoints,
+    )..where((b) => b.pointCode.equals(pointCode))).getSingleOrNull();
     return result != null;
   }
 
   Future<int> insertBlacklistedPoint(BlacklistedPointsCompanion point) =>
       into(blacklistedPoints).insert(point);
 
-  Future<int> removeBlacklistedPoint(String pointCode) =>
-      (delete(blacklistedPoints)..where((b) => b.pointCode.equals(pointCode)))
-          .go();
+  Future<int> removeBlacklistedPoint(String pointCode) => (delete(
+    blacklistedPoints,
+  )..where((b) => b.pointCode.equals(pointCode))).go();
 
   // --- App Settings ---
   Future<String?> getSetting(String key) async {
-    final result = await (select(appSettings)..where((s) => s.key.equals(key)))
-        .getSingleOrNull();
+    final result = await (select(
+      appSettings,
+    )..where((s) => s.key.equals(key))).getSingleOrNull();
     return result?.value;
   }
 
@@ -364,15 +376,16 @@ class AppDatabase extends _$AppDatabase {
   Future<int> insertUserProfile(UserProfilesCompanion profile) =>
       into(userProfiles).insert(profile);
 
-  Future<int> updateUserProfile(UserProfilesCompanion profile) =>
-      (update(userProfiles)..where((p) => p.id.equals(profile.id.value)))
-          .write(profile);
+  Future<int> updateUserProfile(UserProfilesCompanion profile) => (update(
+    userProfiles,
+  )..where((p) => p.id.equals(profile.id.value))).write(profile);
 
   Future<void> updateLastBackupTime(DateTime time) async {
     final profile = await getUserProfile();
     if (profile != null) {
-      await (update(userProfiles)..where((p) => p.id.equals(profile.id)))
-          .write(UserProfilesCompanion(lastBackupAt: Value(time)));
+      await (update(userProfiles)..where((p) => p.id.equals(profile.id))).write(
+        UserProfilesCompanion(lastBackupAt: Value(time)),
+      );
     }
   }
 
@@ -390,9 +403,9 @@ class AppDatabase extends _$AppDatabase {
           .watch();
 
   Future<PointConfig?> getPointConfig(int zoneId, int pointNumber) =>
-      (select(pointConfigs)
-            ..where((p) =>
-                p.zoneId.equals(zoneId) & p.pointNumber.equals(pointNumber)))
+      (select(pointConfigs)..where(
+            (p) => p.zoneId.equals(zoneId) & p.pointNumber.equals(pointNumber),
+          ))
           .getSingleOrNull();
 
   Future<int> insertPointConfig(PointConfigsCompanion config) =>
@@ -401,9 +414,9 @@ class AppDatabase extends _$AppDatabase {
   Future<int> upsertPointConfig(PointConfigsCompanion config) =>
       into(pointConfigs).insertOnConflictUpdate(config);
 
-  Future<int> updatePointConfig(PointConfigsCompanion config) =>
-      (update(pointConfigs)..where((p) => p.id.equals(config.id.value)))
-          .write(config);
+  Future<int> updatePointConfig(PointConfigsCompanion config) => (update(
+    pointConfigs,
+  )..where((p) => p.id.equals(config.id.value))).write(config);
 
   Future<void> updatePointPosition(
     int zoneId,
@@ -414,38 +427,48 @@ class AppDatabase extends _$AppDatabase {
   ) async {
     final existing = await getPointConfig(zoneId, pointNumber);
     if (existing != null) {
-      await (update(pointConfigs)..where((p) => p.id.equals(existing.id)))
-          .write(PointConfigsCompanion(
-            positionX: Value(x),
-            positionY: Value(y),
-            bodyView: Value(bodyView),
-            updatedAt: Value(DateTime.now()),
-          ));
+      await (update(
+        pointConfigs,
+      )..where((p) => p.id.equals(existing.id))).write(
+        PointConfigsCompanion(
+          positionX: Value(x),
+          positionY: Value(y),
+          bodyView: Value(bodyView),
+          updatedAt: Value(DateTime.now()),
+        ),
+      );
     } else {
-      await into(pointConfigs).insert(PointConfigsCompanion.insert(
-        zoneId: zoneId,
-        pointNumber: pointNumber,
-        positionX: Value(x),
-        positionY: Value(y),
-        bodyView: Value(bodyView),
-      ));
+      await into(pointConfigs).insert(
+        PointConfigsCompanion.insert(
+          zoneId: zoneId,
+          pointNumber: pointNumber,
+          positionX: Value(x),
+          positionY: Value(y),
+          bodyView: Value(bodyView),
+        ),
+      );
     }
   }
 
   Future<void> updatePointName(int zoneId, int pointNumber, String name) async {
     final existing = await getPointConfig(zoneId, pointNumber);
     if (existing != null) {
-      await (update(pointConfigs)..where((p) => p.id.equals(existing.id)))
-          .write(PointConfigsCompanion(
-            customName: Value(name),
-            updatedAt: Value(DateTime.now()),
-          ));
+      await (update(
+        pointConfigs,
+      )..where((p) => p.id.equals(existing.id))).write(
+        PointConfigsCompanion(
+          customName: Value(name),
+          updatedAt: Value(DateTime.now()),
+        ),
+      );
     } else {
-      await into(pointConfigs).insert(PointConfigsCompanion.insert(
-        zoneId: zoneId,
-        pointNumber: pointNumber,
-        customName: Value(name),
-      ));
+      await into(pointConfigs).insert(
+        PointConfigsCompanion.insert(
+          zoneId: zoneId,
+          pointNumber: pointNumber,
+          customName: Value(name),
+        ),
+      );
     }
   }
 
@@ -490,8 +513,10 @@ QueryExecutor _openConnection() {
       driftWorker: Uri.parse('drift_worker.js'),
       onResult: (result) {
         if (result.missingFeatures.isNotEmpty) {
-          debugPrint('Using ${result.chosenImplementation} due to missing '
-              'browser features: ${result.missingFeatures}');
+          debugPrint(
+            'Using ${result.chosenImplementation} due to missing '
+            'browser features: ${result.missingFeatures}',
+          );
         }
       },
     ),

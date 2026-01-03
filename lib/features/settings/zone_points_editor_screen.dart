@@ -340,6 +340,12 @@ class _ZonePointsEditorScreenState
       orElse: () => PositionedPoint(pointNumber: pointNumber, x: 0.5, y: 0.5),
     );
 
+    // Lista di nomi già usati da altri punti (per validazione unicità)
+    final existingNames = _points
+        .where((p) => p.pointNumber != pointNumber && p.customName != null)
+        .map((p) => p.customName!)
+        .toList();
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -350,6 +356,7 @@ class _ZonePointsEditorScreenState
               pointNumber: pointNumber,
               currentName: point.customName ?? '',
               onNameChanged: (name) => _onPointNameChanged(pointNumber, name),
+              existingNames: existingNames,
             ),
             const SizedBox(height: 12),
             Row(

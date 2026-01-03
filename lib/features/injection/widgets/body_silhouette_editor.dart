@@ -88,6 +88,17 @@ class _BodySilhouetteEditorState extends State<BodySilhouetteEditor> {
       ? 'assets/images/body_silhouette_front.svg'
       : 'assets/images/body_silhouette_back.svg';
 
+  /// Restituisce l'etichetta da mostrare nel punto: nome personalizzato o numero
+  String _getPointLabel(PositionedPoint point) {
+    if (point.customName != null && point.customName!.isNotEmpty) {
+      // Limita a 3 caratteri per stare nel cerchio
+      return point.customName!.length > 3 
+          ? point.customName!.substring(0, 3) 
+          : point.customName!;
+    }
+    return '${point.pointNumber}';
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -100,7 +111,7 @@ class _BodySilhouetteEditorState extends State<BodySilhouetteEditor> {
         const toggleHeight = 48.0; // SegmentedButton height
         const spacing = 16.0;
         final silhouetteHeight = outerConstraints.maxHeight - toggleHeight - spacing;
-        
+
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -216,13 +227,14 @@ class _BodySilhouetteEditorState extends State<BodySilhouetteEditor> {
                           ),
                           child: Center(
                             child: Text(
-                              '${point.pointNumber}',
+                              _getPointLabel(point),
                               style: TextStyle(
                                 color: isDark
                                     ? AppColors.darkBase
                                     : AppColors.dawnBase,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 12,
+                                fontSize: point.customName != null && point.customName!.isNotEmpty 
+                                    ? 10 : 12,
                               ),
                             ),
                           ),
@@ -295,18 +307,21 @@ class _BodySilhouetteEditorState extends State<BodySilhouetteEditor> {
   }
 }
 
-/// Widget per modificare il nome di un singolo punto
+/// Widget per modificare il nome di un singolo punto (max 3 caratteri, univoco)
 class PointNameEditor extends StatefulWidget {
   const PointNameEditor({
     super.key,
     required this.pointNumber,
     required this.currentName,
     required this.onNameChanged,
+    this.existingNames = const [],
   });
 
   final int pointNumber;
   final String currentName;
   final void Function(String name) onNameChanged;
+  /// Lista di nomi già usati da altri punti (per validazione unicità)
+  final List<String> existingNames;
 
   @override
   State<PointNameEditor> createState() => _PointNameEditorState();
@@ -314,6 +329,7 @@ class PointNameEditor extends StatefulWidget {
 
 class _PointNameEditorState extends State<PointNameEditor> {
   late final TextEditingController _controller;
+  String? _errorText;
 
   @override
   void initState() {
@@ -335,17 +351,45 @@ class _PointNameEditorState extends State<PointNameEditor> {
     super.dispose();
   }
 
+  void _validateAndUpdate(String value) {
+    // Limita a 3 caratteri e uppercase
+    final trimmed = value.toUpperCase().substring(0, value.length > 3 ? 3 : value.length);
+    
+    // Controlla unicità (ignora se vuoto o uguale al nome corrente)
+    if (trimmed.isNotEmpty && 
+        trimmed != widget.currentName.toUpperCase() &&
+        widget.existingNames.map((n) => n.toUpperCase()).contains(trimmed)) {
+      setState(() => _errorText = 'Nome già usato');
+    } else {
+      setState(() => _errorText = null);
+      widget.onNameChanged(trimmed);
+    }
+    
+    // Aggiorna il controller se il testo è stato troncato
+    if (trimmed != value) {
+      _controller.text = trimmed;
+      _controller.selection = TextSelection.fromPosition(
+        TextPosition(offset: trimmed.length),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return TextField(
       controller: _controller,
+      maxLength: 3,
+      textCapitalization: TextCapitalization.characters,
       decoration: InputDecoration(
-        labelText: 'Nome punto ${widget.pointNumber}',
-        hintText: 'Es: Alto esterno',
+        labelText: 'Codice punto ${widget.pointNumber}',
+        hintText: 'Es: CD1',
+        helperText: 'Max 3 caratteri, univoco',
+        errorText: _errorText,
         border: const OutlineInputBorder(),
         isDense: true,
+        counterText: '', // Nasconde il contatore
       ),
-      onChanged: widget.onNameChanged,
+      onChanged: _validateAndUpdate,
     );
   }
 }

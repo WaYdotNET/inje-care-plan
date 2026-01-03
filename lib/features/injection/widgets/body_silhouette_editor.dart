@@ -42,10 +42,15 @@ class BodySilhouetteEditor extends StatefulWidget {
     required this.points,
     required this.onPointMoved,
     required this.onPointTapped,
+    this.onDragEnd,
     this.selectedPointNumber,
     this.initialView = BodyView.front,
     this.editable = true,
     this.zoneType,
+    this.showGrid = false,
+    this.currentView,
+    this.onViewChanged,
+    this.enableZoom = false,
   });
 
   /// Lista dei punti posizionati
@@ -57,6 +62,9 @@ class BodySilhouetteEditor extends StatefulWidget {
 
   /// Callback quando un punto viene toccato
   final void Function(int pointNumber) onPointTapped;
+
+  /// Callback quando il drag termina
+  final VoidCallback? onDragEnd;
 
   /// Numero del punto selezionato
   final int? selectedPointNumber;
@@ -70,21 +78,37 @@ class BodySilhouetteEditor extends StatefulWidget {
   /// Tipo di zona per evidenziare l'area appropriata
   final String? zoneType;
 
+  /// Mostra la griglia di riferimento
+  final bool showGrid;
+
+  /// Vista corrente (controllata esternamente)
+  final BodyView? currentView;
+
+  /// Callback quando la vista cambia
+  final void Function(BodyView)? onViewChanged;
+
+  /// Abilita zoom e pan con InteractiveViewer
+  final bool enableZoom;
+
   @override
   State<BodySilhouetteEditor> createState() => _BodySilhouetteEditorState();
 }
 
 class _BodySilhouetteEditorState extends State<BodySilhouetteEditor>
     with SingleTickerProviderStateMixin {
-  late BodyView _currentView;
+  late BodyView _internalView;
   int? _draggingPoint;
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
+  final TransformationController _transformationController =
+      TransformationController();
+
+  BodyView get _currentView => widget.currentView ?? _internalView;
 
   @override
   void initState() {
     super.initState();
-    _currentView = widget.initialView;
+    _internalView = widget.initialView;
     _pulseController = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
@@ -97,6 +121,7 @@ class _BodySilhouetteEditorState extends State<BodySilhouetteEditor>
   @override
   void dispose() {
     _pulseController.dispose();
+    _transformationController.dispose();
     super.dispose();
   }
 
@@ -107,12 +132,19 @@ class _BodySilhouetteEditorState extends State<BodySilhouetteEditor>
   /// Restituisce l'etichetta da mostrare nel punto: nome personalizzato o numero
   String _getPointLabel(PositionedPoint point) {
     if (point.customName != null && point.customName!.isNotEmpty) {
-      // Limita a 3 caratteri per stare nel cerchio
       return point.customName!.length > 3
           ? point.customName!.substring(0, 3)
           : point.customName!;
     }
     return '${point.pointNumber}';
+  }
+
+  void _setView(BodyView view) {
+    if (widget.onViewChanged != null) {
+      widget.onViewChanged!(view);
+    } else {
+      setState(() => _internalView = view);
+    }
   }
 
   @override
@@ -121,223 +153,254 @@ class _BodySilhouetteEditorState extends State<BodySilhouetteEditor>
     final isDark = theme.brightness == Brightness.dark;
     final color = isDark ? AppColors.darkFoam : AppColors.dawnFoam;
 
+    // Se la vista è controllata esternamente, non mostrare il toggle
+    final showViewToggle = widget.onViewChanged == null;
+
     return LayoutBuilder(
       builder: (context, outerConstraints) {
-        // Calcola altezza disponibile per la silhouette
-        const toggleHeight = 48.0; // SegmentedButton height
-        const spacing = 16.0;
-        final silhouetteHeight = outerConstraints.maxHeight - toggleHeight - spacing;
+        final toggleHeight = showViewToggle ? 48.0 : 0.0;
+        final spacing = showViewToggle ? 16.0 : 0.0;
+        final silhouetteHeight =
+            outerConstraints.maxHeight - toggleHeight - spacing;
 
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // View toggle
-            SegmentedButton<BodyView>(
-              segments: const [
-                ButtonSegment(
-                  value: BodyView.front,
-                  label: Text('Fronte'),
-                  icon: Icon(Icons.person),
-                ),
-                ButtonSegment(
-                  value: BodyView.back,
-                  label: Text('Retro'),
-                  icon: Icon(Icons.person_outline),
-                ),
-              ],
-              selected: {_currentView},
-              onSelectionChanged: (selection) {
-                setState(() => _currentView = selection.first);
-              },
-            ),
-            const SizedBox(height: spacing),
-
-            // Silhouette with draggable points - constrained to available space
-            SizedBox(
-              height: silhouetteHeight > 0 ? silhouetteHeight : 300,
-              child: LayoutBuilder(
-            builder: (context, constraints) {
-              return Stack(
-                children: [
-                  // SVG background - fit within available space
-                  Positioned.fill(
-                    child: SvgPicture.asset(
-                      _svgAsset,
-                      fit: BoxFit.contain,
-                      colorFilter: ColorFilter.mode(
-                        color.withValues(alpha: 0.7),
-                        BlendMode.srcIn,
-                      ),
-                    ),
+            // View toggle (solo se non controllato esternamente)
+            if (showViewToggle)
+              SegmentedButton<BodyView>(
+                segments: const [
+                  ButtonSegment(
+                    value: BodyView.front,
+                    label: Text('Fronte'),
+                    icon: Icon(Icons.person),
                   ),
-
-                  // Highlight zone area based on type (only in edit mode)
-                  if (widget.zoneType != null && widget.editable)
-                    _buildZoneHighlight(constraints, isDark),
-
-                  // Draggable points
-                  ...widget.points.map((point) {
-                    final isSelected =
-                        point.pointNumber == widget.selectedPointNumber;
-                    final isDragging = point.pointNumber == _draggingPoint;
-
-                    // Colori per i pallini
-                    final primaryColor = isDark
-                        ? AppColors.darkPine
-                        : AppColors.dawnPine;
-                    final secondaryColor = isDark
-                        ? AppColors.darkFoam
-                        : AppColors.dawnFoam;
-                    final textColor = isDark
-                        ? AppColors.darkBase
-                        : AppColors.dawnBase;
-
-                    return AnimatedBuilder(
-                      animation: _pulseAnimation,
-                      builder: (context, child) {
-                        final scale = isSelected && !widget.editable
-                            ? _pulseAnimation.value
-                            : 1.0;
-
-                        return Positioned(
-                          left: point.x * constraints.maxWidth - 20,
-                          top: point.y * constraints.maxHeight - 20,
-                          child: GestureDetector(
-                            onTap: () => widget.onPointTapped(point.pointNumber),
-                            onPanStart: widget.editable
-                                ? (_) =>
-                                    setState(() => _draggingPoint = point.pointNumber)
-                                : null,
-                            onPanUpdate: widget.editable
-                                ? (details) {
-                                    final newX = (point.x * constraints.maxWidth +
-                                            details.delta.dx) /
-                                        constraints.maxWidth;
-                                    final newY = (point.y * constraints.maxHeight +
-                                            details.delta.dy) /
-                                        constraints.maxHeight;
-                                    widget.onPointMoved(
-                                      point.pointNumber,
-                                      newX.clamp(0.05, 0.95),
-                                      newY.clamp(0.05, 0.95),
-                                      _currentView,
-                                    );
-                                  }
-                                : null,
-                            onPanEnd: widget.editable
-                                ? (_) => setState(() => _draggingPoint = null)
-                                : null,
-                            child: Transform.scale(
-                              scale: scale,
-                              child: Container(
-                                width: isSelected || isDragging ? 44 : 40,
-                                height: isSelected || isDragging ? 44 : 40,
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                    colors: isSelected
-                                        ? [
-                                            primaryColor,
-                                            primaryColor.withValues(alpha: 0.8),
-                                          ]
-                                        : [
-                                            secondaryColor,
-                                            secondaryColor.withValues(alpha: 0.7),
-                                          ],
-                                  ),
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: isSelected
-                                        ? Colors.white.withValues(alpha: 0.8)
-                                        : textColor.withValues(alpha: 0.5),
-                                    width: isSelected ? 3 : 2,
-                                  ),
-                                  boxShadow: [
-                                    // Ombra esterna principale
-                                    BoxShadow(
-                                      color: isSelected
-                                          ? primaryColor.withValues(alpha: 0.5)
-                                          : Colors.black.withValues(alpha: 0.2),
-                                      blurRadius: isSelected || isDragging ? 12 : 6,
-                                      spreadRadius: isSelected || isDragging ? 2 : 1,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                    // Glow interno per effetto 3D
-                                    if (isSelected)
-                                      BoxShadow(
-                                        color: Colors.white.withValues(alpha: 0.3),
-                                        blurRadius: 4,
-                                        spreadRadius: -2,
-                                        offset: const Offset(-2, -2),
-                                      ),
-                                  ],
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    _getPointLabel(point),
-                                    style: TextStyle(
-                                      color: isSelected
-                                          ? Colors.white
-                                          : textColor,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: point.customName != null &&
-                                              point.customName!.isNotEmpty
-                                          ? 12
-                                          : 14,
-                                      shadows: isSelected
-                                          ? [
-                                              Shadow(
-                                                color: Colors.black.withValues(alpha: 0.3),
-                                                blurRadius: 2,
-                                                offset: const Offset(0, 1),
-                                              ),
-                                            ]
-                                          : null,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    );
-                  }),
-
-                  // Tap to add point hint (only in edit mode)
-                  if (widget.editable && widget.points.isEmpty)
-                    Positioned.fill(
-                      child: Center(
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: (isDark
-                                    ? AppColors.darkSurface
-                                    : AppColors.dawnSurface)
-                                .withValues(alpha: 0.9),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            'Trascina i punti per posizionarli',
-                            style: theme.textTheme.bodySmall,
-                          ),
-                        ),
-                      ),
-                    ),
+                  ButtonSegment(
+                    value: BodyView.back,
+                    label: Text('Retro'),
+                    icon: Icon(Icons.person_outline),
+                  ),
                 ],
-              );
-            },
-          ),
-        ),
+                selected: {_currentView},
+                onSelectionChanged: (selection) => _setView(selection.first),
+              ),
+            if (showViewToggle) const SizedBox(height: 16),
+
+            // Silhouette with draggable points
+            Expanded(
+              child: SizedBox(
+                height: silhouetteHeight > 0 ? silhouetteHeight : 300,
+                child: widget.enableZoom
+                    ? InteractiveViewer(
+                        transformationController: _transformationController,
+                        minScale: 1.0,
+                        maxScale: 3.0,
+                        boundaryMargin: const EdgeInsets.all(80),
+                        child: _buildSilhouetteStack(color, isDark),
+                      )
+                    : _buildSilhouetteStack(color, isDark),
+              ),
+            ),
           ],
         );
       },
     );
   }
 
+  Widget _buildSilhouetteStack(Color color, bool isDark) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Stack(
+          children: [
+            // Griglia di riferimento (opzionale)
+            if (widget.showGrid) _buildGrid(constraints, isDark),
+
+            // SVG background
+            Positioned.fill(
+              child: SvgPicture.asset(
+                _svgAsset,
+                fit: BoxFit.contain,
+                colorFilter: ColorFilter.mode(
+                  color.withValues(alpha: 0.7),
+                  BlendMode.srcIn,
+                ),
+              ),
+            ),
+
+            // Highlight zone area (only in edit mode)
+            if (widget.zoneType != null && widget.editable)
+              _buildZoneHighlight(constraints, isDark),
+
+            // Draggable points
+            ...widget.points.map((point) => _buildDraggablePoint(
+                  point,
+                  constraints,
+                  isDark,
+                )),
+
+            // Empty hint
+            if (widget.editable && widget.points.isEmpty)
+              Positioned.fill(
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: (isDark
+                              ? AppColors.darkSurface
+                              : AppColors.dawnSurface)
+                          .withValues(alpha: 0.9),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      'Trascina i punti per posizionarli',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildGrid(BoxConstraints constraints, bool isDark) {
+    final gridColor = (isDark ? Colors.white : Colors.black).withValues(alpha: 0.1);
+    const divisions = 10;
+
+    return CustomPaint(
+      size: Size(constraints.maxWidth, constraints.maxHeight),
+      painter: _GridPainter(
+        color: gridColor,
+        divisions: divisions,
+      ),
+    );
+  }
+
+  Widget _buildDraggablePoint(
+    PositionedPoint point,
+    BoxConstraints constraints,
+    bool isDark,
+  ) {
+    final isSelected = point.pointNumber == widget.selectedPointNumber;
+    final isDragging = point.pointNumber == _draggingPoint;
+
+    final primaryColor = isDark ? AppColors.darkPine : AppColors.dawnPine;
+    final secondaryColor = isDark ? AppColors.darkFoam : AppColors.dawnFoam;
+    final textColor = isDark ? AppColors.darkBase : AppColors.dawnBase;
+
+    return AnimatedBuilder(
+      animation: _pulseAnimation,
+      builder: (context, child) {
+        final scale =
+            isSelected && !widget.editable ? _pulseAnimation.value : 1.0;
+
+        return Positioned(
+          left: point.x * constraints.maxWidth - 20,
+          top: point.y * constraints.maxHeight - 20,
+          child: GestureDetector(
+            onTap: () => widget.onPointTapped(point.pointNumber),
+            onPanStart: widget.editable
+                ? (_) => setState(() => _draggingPoint = point.pointNumber)
+                : null,
+            onPanUpdate: widget.editable
+                ? (details) {
+                    final newX = (point.x * constraints.maxWidth +
+                            details.delta.dx) /
+                        constraints.maxWidth;
+                    final newY = (point.y * constraints.maxHeight +
+                            details.delta.dy) /
+                        constraints.maxHeight;
+                    widget.onPointMoved(
+                      point.pointNumber,
+                      newX.clamp(0.05, 0.95),
+                      newY.clamp(0.05, 0.95),
+                      _currentView,
+                    );
+                  }
+                : null,
+            onPanEnd: widget.editable
+                ? (_) {
+                    setState(() => _draggingPoint = null);
+                    widget.onDragEnd?.call();
+                  }
+                : null,
+            child: Transform.scale(
+              scale: scale,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 150),
+                width: isSelected || isDragging ? 48 : 40,
+                height: isSelected || isDragging ? 48 : 40,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: isSelected
+                        ? [
+                            primaryColor,
+                            primaryColor.withValues(alpha: 0.8),
+                          ]
+                        : [
+                            secondaryColor,
+                            secondaryColor.withValues(alpha: 0.7),
+                          ],
+                  ),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isSelected
+                        ? Colors.white.withValues(alpha: 0.9)
+                        : textColor.withValues(alpha: 0.5),
+                    width: isSelected ? 3 : 2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: isSelected
+                          ? primaryColor.withValues(alpha: 0.5)
+                          : Colors.black.withValues(alpha: 0.2),
+                      blurRadius: isSelected || isDragging ? 16 : 8,
+                      spreadRadius: isSelected || isDragging ? 3 : 1,
+                      offset: const Offset(0, 2),
+                    ),
+                    if (isSelected)
+                      BoxShadow(
+                        color: Colors.white.withValues(alpha: 0.3),
+                        blurRadius: 4,
+                        spreadRadius: -2,
+                        offset: const Offset(-2, -2),
+                      ),
+                  ],
+                ),
+                child: Center(
+                  child: Text(
+                    _getPointLabel(point),
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : textColor,
+                      fontWeight: FontWeight.bold,
+                      fontSize: point.customName != null &&
+                              point.customName!.isNotEmpty
+                          ? 12
+                          : 14,
+                      shadows: isSelected
+                          ? [
+                              Shadow(
+                                color: Colors.black.withValues(alpha: 0.3),
+                                blurRadius: 2,
+                                offset: const Offset(0, 1),
+                              ),
+                            ]
+                          : null,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildZoneHighlight(BoxConstraints constraints, bool isDark) {
-    // Posizioni predefinite per ogni tipo di zona
     final zoneAreas = <String, ({double x, double y, double w, double h})>{
       'thigh': (x: 0.22, y: 0.52, w: 0.56, h: 0.25),
       'arm': (x: 0.08, y: 0.20, w: 0.84, h: 0.18),
@@ -381,6 +444,56 @@ class _BodySilhouetteEditorState extends State<BodySilhouetteEditor>
   }
 }
 
+/// Painter per la griglia di riferimento
+class _GridPainter extends CustomPainter {
+  _GridPainter({
+    required this.color,
+    required this.divisions,
+  });
+
+  final Color color;
+  final int divisions;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 1;
+
+    // Linee verticali
+    for (var i = 0; i <= divisions; i++) {
+      final x = size.width * i / divisions;
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
+    }
+
+    // Linee orizzontali
+    for (var i = 0; i <= divisions; i++) {
+      final y = size.height * i / divisions;
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
+    }
+
+    // Linee centrali più evidenti
+    final centerPaint = Paint()
+      ..color = color.withValues(alpha: (color.a * 2).clamp(0, 1))
+      ..strokeWidth = 2;
+
+    canvas.drawLine(
+      Offset(size.width / 2, 0),
+      Offset(size.width / 2, size.height),
+      centerPaint,
+    );
+    canvas.drawLine(
+      Offset(0, size.height / 2),
+      Offset(size.width, size.height / 2),
+      centerPaint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_GridPainter oldDelegate) =>
+      color != oldDelegate.color || divisions != oldDelegate.divisions;
+}
+
 /// Widget per modificare il nome di un singolo punto (max 3 caratteri, univoco)
 class PointNameEditor extends StatefulWidget {
   const PointNameEditor({
@@ -394,7 +507,6 @@ class PointNameEditor extends StatefulWidget {
   final int pointNumber;
   final String currentName;
   final void Function(String name) onNameChanged;
-  /// Lista di nomi già usati da altri punti (per validazione unicità)
   final List<String> existingNames;
 
   @override
@@ -426,10 +538,11 @@ class _PointNameEditorState extends State<PointNameEditor> {
   }
 
   void _validateAndUpdate(String value) {
-    // Limita a 3 caratteri e uppercase
-    final trimmed = value.toUpperCase().substring(0, value.length > 3 ? 3 : value.length);
+    final trimmed = value.toUpperCase().substring(
+          0,
+          value.length > 3 ? 3 : value.length,
+        );
 
-    // Controlla unicità (ignora se vuoto o uguale al nome corrente)
     if (trimmed.isNotEmpty &&
         trimmed != widget.currentName.toUpperCase() &&
         widget.existingNames.map((n) => n.toUpperCase()).contains(trimmed)) {
@@ -439,7 +552,6 @@ class _PointNameEditorState extends State<PointNameEditor> {
       widget.onNameChanged(trimmed);
     }
 
-    // Aggiorna il controller se il testo è stato troncato
     if (trimmed != value) {
       _controller.text = trimmed;
       _controller.selection = TextSelection.fromPosition(
@@ -461,7 +573,8 @@ class _PointNameEditorState extends State<PointNameEditor> {
         errorText: _errorText,
         border: const OutlineInputBorder(),
         isDense: true,
-        counterText: '', // Nasconde il contatore
+        counterText: '',
+        prefixIcon: const Icon(Icons.label_outline),
       ),
       onChanged: _validateAndUpdate,
     );
@@ -484,7 +597,6 @@ List<PositionedPoint> generateDefaultPointPositions(
   String zoneType,
   String side,
 ) {
-  // Posizioni di base per ogni tipo di zona
   final basePositions = <String, ({double x, double y, double spacing})>{
     'thigh': (x: 0.35, y: 0.58, spacing: 0.08),
     'arm': (x: 0.2, y: 0.25, spacing: 0.06),
@@ -493,8 +605,6 @@ List<PositionedPoint> generateDefaultPointPositions(
   };
 
   final base = basePositions[zoneType] ?? (x: 0.5, y: 0.5, spacing: 0.08);
-
-  // Offset per lato sinistro/destro
   final xOffset = side == 'left' ? -0.15 : (side == 'right' ? 0.15 : 0);
 
   final points = <PositionedPoint>[];

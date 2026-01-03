@@ -236,27 +236,7 @@ dependencies:
 
 ## File Principali da Creare
 
-| Fase | File | Descrizione |
-
-|------|------|-------------|
-
-| 1 | `statistics_screen.dart` | Schermata principale stats |
-
-| 1 | `statistics_provider.dart` | Calcolo metriche |
-
-| 1 | `adherence_chart.dart` | Grafico aderenza |
-
-| 1 | `zone_heatmap.dart` | Heatmap zone |
-
-| 2 | `smart_reminder_service.dart` | Notifiche intelligenti |
-
-| 2 | `pdf_report_service.dart` | Report PDF avanzato |
-
-| 3 | `widget_data_service.dart` | Dati per widget |
-
-| 4 | `guided_tour.dart` | Tutorial onboarding |
-
-| 5 | `app_*.arb` | File traduzioni |---
+| Fase | File | Descrizione ||------|------|-------------|| 1 | `statistics_screen.dart` | Schermata principale stats || 1 | `statistics_provider.dart` | Calcolo metriche || 1 | `adherence_chart.dart` | Grafico aderenza || 1 | `zone_heatmap.dart` | Heatmap zone || 2 | `smart_reminder_service.dart` | Notifiche intelligenti || 2 | `pdf_report_service.dart` | Report PDF avanzato || 3 | `widget_data_service.dart` | Dati per widget || 4 | `guided_tour.dart` | Tutorial onboarding || 5 | `app_*.arb` | File traduzioni |---
 
 ## Dipendenze Totali
 
@@ -273,5 +253,6 @@ dev_dependencies:
   mocktail: ^1.0.4            # Mocking per test
   integration_test:
     sdk: flutter
+
 
 ```

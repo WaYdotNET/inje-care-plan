@@ -262,7 +262,7 @@ class _ZonePointsEditorScreenState
 
           // Body silhouette editor
           SizedBox(
-            height: 450,
+            height: 320,
             child: BodySilhouetteEditor(
               points: _points,
               onPointMoved: _onPointMoved,

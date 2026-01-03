@@ -94,40 +94,49 @@ class _BodySilhouetteEditorState extends State<BodySilhouetteEditor> {
     final isDark = theme.brightness == Brightness.dark;
     final color = isDark ? AppColors.darkFoam : AppColors.dawnFoam;
 
-    return Column(
-      children: [
-        // View toggle
-        SegmentedButton<BodyView>(
-          segments: const [
-            ButtonSegment(
-              value: BodyView.front,
-              label: Text('Fronte'),
-              icon: Icon(Icons.person),
+    return LayoutBuilder(
+      builder: (context, outerConstraints) {
+        // Calcola altezza disponibile per la silhouette
+        const toggleHeight = 48.0; // SegmentedButton height
+        const spacing = 16.0;
+        final silhouetteHeight = outerConstraints.maxHeight - toggleHeight - spacing;
+        
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // View toggle
+            SegmentedButton<BodyView>(
+              segments: const [
+                ButtonSegment(
+                  value: BodyView.front,
+                  label: Text('Fronte'),
+                  icon: Icon(Icons.person),
+                ),
+                ButtonSegment(
+                  value: BodyView.back,
+                  label: Text('Retro'),
+                  icon: Icon(Icons.person_outline),
+                ),
+              ],
+              selected: {_currentView},
+              onSelectionChanged: (selection) {
+                setState(() => _currentView = selection.first);
+              },
             ),
-            ButtonSegment(
-              value: BodyView.back,
-              label: Text('Retro'),
-              icon: Icon(Icons.person_outline),
-            ),
-          ],
-          selected: {_currentView},
-          onSelectionChanged: (selection) {
-            setState(() => _currentView = selection.first);
-          },
-        ),
-        const SizedBox(height: 16),
+            const SizedBox(height: spacing),
 
-        // Silhouette with draggable points
-        AspectRatio(
-          aspectRatio: 0.5, // 200x400 SVG
-          child: LayoutBuilder(
+            // Silhouette with draggable points - constrained to available space
+            SizedBox(
+              height: silhouetteHeight > 0 ? silhouetteHeight : 300,
+              child: LayoutBuilder(
             builder: (context, constraints) {
               return Stack(
                 children: [
-                  // SVG background
+                  // SVG background - fit within available space
                   Positioned.fill(
                     child: SvgPicture.asset(
                       _svgAsset,
+                      fit: BoxFit.contain,
                       colorFilter: ColorFilter.mode(
                         color.withValues(alpha: 0.5),
                         BlendMode.srcIn,
@@ -247,7 +256,9 @@ class _BodySilhouetteEditorState extends State<BodySilhouetteEditor> {
             },
           ),
         ),
-      ],
+          ],
+        );
+      },
     );
   }
 

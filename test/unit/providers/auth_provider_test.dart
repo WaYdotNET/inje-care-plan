@@ -101,7 +101,7 @@ void main() {
     });
   });
 
-  // NOTE: Tests for isAuthenticatedProvider and authStateProvider are
-  // intentionally skipped due to async initialization complexity.
-  // The core logic is verified via AppState unit tests.
+  // NOTE: Provider integration tests are skipped due to async microtask
+  // timing issues with ProviderContainer lifecycle.
+  // The AppState and AppStateNotifier logic is covered by the tests above.
 }

@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:injecare_plan/core/theme/theme_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
+  setUp(() async {
+    SharedPreferences.setMockInitialValues({});
+  });
   group('AppThemeMode', () {
     test('has correct values', () {
       expect(AppThemeMode.values, hasLength(4));
@@ -189,6 +194,97 @@ void main() {
       );
 
       expect(state.effectiveThemeMode, ThemeMode.system);
+    });
+  });
+
+  group('ThemeModeNotifier with Riverpod', () {
+    test('initial state is ThemeMode.system', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      final themeMode = container.read(themeModeProvider);
+      expect(themeMode, ThemeMode.system);
+    });
+
+    test('setThemeMode updates state', () async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      await container.read(themeModeProvider.notifier).setThemeMode(ThemeMode.dark);
+      expect(container.read(themeModeProvider), ThemeMode.dark);
+
+      await container.read(themeModeProvider.notifier).setThemeMode(ThemeMode.light);
+      expect(container.read(themeModeProvider), ThemeMode.light);
+    });
+  });
+
+  group('ThemeStateNotifier with Riverpod', () {
+    test('initial state has default values', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      final state = container.read(themeStateProvider);
+      expect(state.mode, AppThemeMode.system);
+      expect(state.effectiveThemeMode, ThemeMode.system);
+    });
+
+    test('setAppThemeMode updates mode', () async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      await container.read(themeStateProvider.notifier).setAppThemeMode(AppThemeMode.dark);
+      expect(container.read(themeStateProvider).mode, AppThemeMode.dark);
+      expect(container.read(themeStateProvider).effectiveThemeMode, ThemeMode.dark);
+    });
+
+    test('setAppThemeMode to light updates correctly', () async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      await container.read(themeStateProvider.notifier).setAppThemeMode(AppThemeMode.light);
+      expect(container.read(themeStateProvider).mode, AppThemeMode.light);
+      expect(container.read(themeStateProvider).effectiveThemeMode, ThemeMode.light);
+    });
+
+    test('setScheduledConfig updates config', () async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      const newConfig = ScheduledDarkModeConfig(
+        darkModeStart: TimeOfDay(hour: 19, minute: 0),
+        darkModeEnd: TimeOfDay(hour: 8, minute: 0),
+      );
+
+      await container.read(themeStateProvider.notifier).setScheduledConfig(newConfig);
+      final state = container.read(themeStateProvider);
+      expect(state.scheduledConfig.darkModeStart.hour, 19);
+      expect(state.scheduledConfig.darkModeEnd.hour, 8);
+    });
+
+    test('setAppThemeMode to scheduled mode', () async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      await container.read(themeStateProvider.notifier).setAppThemeMode(AppThemeMode.scheduled);
+      expect(container.read(themeStateProvider).mode, AppThemeMode.scheduled);
+      // effectiveThemeMode depends on current time
+      expect(
+        [ThemeMode.dark, ThemeMode.light],
+        contains(container.read(themeStateProvider).effectiveThemeMode),
+      );
+    });
+
+    test('setAppThemeMode to system mode', () async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      // First set to dark
+      await container.read(themeStateProvider.notifier).setAppThemeMode(AppThemeMode.dark);
+      // Then back to system
+      await container.read(themeStateProvider.notifier).setAppThemeMode(AppThemeMode.system);
+      
+      expect(container.read(themeStateProvider).mode, AppThemeMode.system);
+      expect(container.read(themeStateProvider).effectiveThemeMode, ThemeMode.system);
     });
   });
 }

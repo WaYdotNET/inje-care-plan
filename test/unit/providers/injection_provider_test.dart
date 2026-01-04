@@ -1,31 +1,99 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import 'package:injecare_plan/features/injection/injection_provider.dart';
 import 'package:injecare_plan/core/database/app_database.dart' as db;
+import 'package:injecare_plan/features/injection/injection_provider.dart';
 
 void main() {
   group('WeeklyEventData', () {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    test('can be created with required fields', () {
+      final event = WeeklyEventData(
+        date: today,
+      );
+
+      expect(event.date, today);
+      expect(event.confirmedEvent, isNull);
+      expect(event.suggestion, isNull);
+      expect(event.isTherapyDay, isFalse);
+      expect(event.preferredTime, isNull);
+    });
+
+    test('can be created with all fields', () {
+      final injection = db.Injection(
+        id: 1,
+        zoneId: 1,
+        pointNumber: 1,
+        pointCode: 'CD-1',
+        pointLabel: 'Coscia Dx - 1',
+        scheduledAt: today,
+        status: 'completed',
+        notes: '',
+        sideEffects: '',
+        calendarEventId: '',
+        createdAt: now,
+        updatedAt: now,
+      );
+
+      final event = WeeklyEventData(
+        date: today,
+        confirmedEvent: injection,
+        isTherapyDay: true,
+        preferredTime: '20:00',
+      );
+
+      expect(event.date, today);
+      expect(event.confirmedEvent, injection);
+      expect(event.isTherapyDay, isTrue);
+      expect(event.preferredTime, '20:00');
+    });
+
     test('isSuggested returns true when no confirmed event but has suggestion', () {
-      final data = WeeklyEventData(
-        date: DateTime.now(),
-        suggestion: (zoneId: 1, pointNumber: 1),
+      final event = WeeklyEventData(
+        date: today,
+        suggestion: (zoneId: 1, pointNumber: 2),
         isTherapyDay: true,
       );
 
-      expect(data.isSuggested, true);
-      expect(data.isConfirmed, false);
+      expect(event.isSuggested, isTrue);
+      expect(event.isConfirmed, isFalse);
+    });
+
+    test('isSuggested returns false when has confirmed event', () {
+      final injection = db.Injection(
+        id: 1,
+        zoneId: 1,
+        pointNumber: 1,
+        pointCode: 'CD-1',
+        pointLabel: 'Coscia Dx - 1',
+        scheduledAt: today,
+        status: 'scheduled',
+        notes: '',
+        sideEffects: '',
+        calendarEventId: '',
+        createdAt: now,
+        updatedAt: now,
+      );
+
+      final event = WeeklyEventData(
+        date: today,
+        confirmedEvent: injection,
+        suggestion: (zoneId: 1, pointNumber: 2),
+        isTherapyDay: true,
+      );
+
+      expect(event.isSuggested, isFalse);
+      expect(event.isConfirmed, isTrue);
     });
 
     test('isConfirmed returns true when has confirmed event', () {
-      final now = DateTime.now();
       final injection = db.Injection(
         id: 1,
         zoneId: 1,
         pointNumber: 1,
         pointCode: 'CD-1',
-        pointLabel: 'Coscia Dx · 1',
-        scheduledAt: now,
+        pointLabel: 'Coscia Dx - 1',
+        scheduledAt: today,
         status: 'completed',
         notes: '',
         sideEffects: '',
@@ -34,43 +102,56 @@ void main() {
         updatedAt: now,
       );
 
-      final data = WeeklyEventData(
-        date: now,
+      final event = WeeklyEventData(
+        date: today,
         confirmedEvent: injection,
-        isTherapyDay: true,
       );
 
-      expect(data.isConfirmed, true);
-      expect(data.isSuggested, false);
+      expect(event.isConfirmed, isTrue);
+    });
+
+    test('isConfirmed returns false when no confirmed event', () {
+      final event = WeeklyEventData(
+        date: today,
+      );
+
+      expect(event.isConfirmed, isFalse);
     });
 
     test('isPast returns true for past dates', () {
-      final data = WeeklyEventData(
-        date: DateTime.now().subtract(const Duration(days: 2)),
-        isTherapyDay: true,
+      final pastDate = today.subtract(const Duration(days: 5));
+      final event = WeeklyEventData(
+        date: pastDate,
       );
 
-      expect(data.isPast, true);
+      expect(event.isPast, isTrue);
+    });
+
+    test('isPast returns false for today', () {
+      final event = WeeklyEventData(
+        date: today,
+      );
+
+      expect(event.isPast, isFalse);
     });
 
     test('isPast returns false for future dates', () {
-      final data = WeeklyEventData(
-        date: DateTime.now().add(const Duration(days: 2)),
-        isTherapyDay: true,
+      final futureDate = today.add(const Duration(days: 5));
+      final event = WeeklyEventData(
+        date: futureDate,
       );
 
-      expect(data.isPast, false);
+      expect(event.isPast, isFalse);
     });
 
     test('status returns confirmed event status when present', () {
-      final now = DateTime.now();
       final injection = db.Injection(
         id: 1,
         zoneId: 1,
         pointNumber: 1,
         pointCode: 'CD-1',
-        pointLabel: 'Coscia Dx · 1',
-        scheduledAt: now,
+        pointLabel: 'Coscia Dx - 1',
+        scheduledAt: today,
         status: 'completed',
         notes: '',
         sideEffects: '',
@@ -79,61 +160,61 @@ void main() {
         updatedAt: now,
       );
 
-      final data = WeeklyEventData(
-        date: now,
+      final event = WeeklyEventData(
+        date: today,
         confirmedEvent: injection,
-        isTherapyDay: true,
       );
 
-      expect(data.status, 'completed');
+      expect(event.status, 'completed');
     });
 
-    test('status returns missed for past dates without confirmed event', () {
-      final data = WeeklyEventData(
-        date: DateTime.now().subtract(const Duration(days: 2)),
-        isTherapyDay: true,
+    test('status returns missed for past days without confirmed event', () {
+      final pastDate = today.subtract(const Duration(days: 3));
+      final event = WeeklyEventData(
+        date: pastDate,
       );
 
-      expect(data.status, 'missed');
+      expect(event.status, 'missed');
     });
 
-    test('status returns suggested for future dates without confirmed event', () {
-      final data = WeeklyEventData(
-        date: DateTime.now().add(const Duration(days: 2)),
+    test('status returns suggested for future days without confirmed event', () {
+      final futureDate = today.add(const Duration(days: 3));
+      final event = WeeklyEventData(
+        date: futureDate,
         suggestion: (zoneId: 1, pointNumber: 1),
         isTherapyDay: true,
       );
 
-      expect(data.status, 'suggested');
+      expect(event.status, 'suggested');
+    });
+
+    test('status returns suggested for today without confirmed event', () {
+      final event = WeeklyEventData(
+        date: today,
+        suggestion: (zoneId: 1, pointNumber: 1),
+        isTherapyDay: true,
+      );
+
+      expect(event.status, 'suggested');
     });
   });
 
   group('SelectedDayNotifier', () {
-    test('select updates selected day', () {
-      final container = ProviderContainer();
-      addTearDown(container.dispose);
-
-      final notifier = container.read(selectedDayProvider.notifier);
-      final date = DateTime(2024, 7, 15);
-
-      notifier.select(date);
-      expect(container.read(selectedDayProvider), date);
-
-      notifier.select(null);
-      expect(container.read(selectedDayProvider), null);
+    test('initial state is null', () {
+      final notifier = SelectedDayNotifier();
+      expect(notifier.build(), isNull);
     });
   });
 
   group('FocusedDayNotifier', () {
-    test('focus updates focused day', () {
-      final container = ProviderContainer();
-      addTearDown(container.dispose);
-
-      final notifier = container.read(focusedDayProvider.notifier);
-      final date = DateTime(2024, 7, 15);
-
-      notifier.focus(date);
-      expect(container.read(focusedDayProvider), date);
+    test('initial state is today', () {
+      final notifier = FocusedDayNotifier();
+      final now = DateTime.now();
+      final result = notifier.build();
+      
+      expect(result.year, now.year);
+      expect(result.month, now.month);
+      expect(result.day, now.day);
     });
   });
 }

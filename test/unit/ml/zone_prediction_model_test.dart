@@ -246,4 +246,3 @@ ZoneInjectionData _createZoneData({
     availablePointsCount: fullyBlacklisted ? 0 : availablePointsCount,
   );
 }
-

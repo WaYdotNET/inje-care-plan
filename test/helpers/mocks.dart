@@ -36,4 +36,3 @@ void setUpMocks() {
   registerFallbackValue(DateTime.now());
   registerFallbackValue(const Duration(days: 1));
 }
-

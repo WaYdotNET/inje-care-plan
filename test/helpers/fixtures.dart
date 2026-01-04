@@ -32,7 +32,8 @@ class Fixtures {
     DateTime? startDate,
     String zoneCode = 'CD',
   }) {
-    final start = startDate ?? DateTime.now().subtract(const Duration(days: 30));
+    final start =
+        startDate ?? DateTime.now().subtract(const Duration(days: 30));
     return List.generate(count, (i) {
       return createInjection(
         id: i + 1,
@@ -86,4 +87,3 @@ class Fixtures {
   static const defaultInjectionsPerWeek = 3;
   static const defaultReminderMinutes = 30;
 }
-

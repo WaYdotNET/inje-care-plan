@@ -11,7 +11,7 @@ void main() {
   group('AppState', () {
     test('default state has correct values', () {
       const state = AppState();
-      
+
       expect(state.isLoading, false);
       expect(state.hasCompletedOnboarding, false);
       expect(state.error, null);
@@ -25,7 +25,7 @@ void main() {
 
     test('copyWith updates values correctly', () {
       const original = AppState();
-      
+
       final updated = original.copyWith(
         isLoading: true,
         hasCompletedOnboarding: true,
@@ -42,7 +42,7 @@ void main() {
         hasCompletedOnboarding: true,
         isLoading: true,
       );
-      
+
       final updated = original.copyWith(isLoading: false);
 
       expect(updated.isLoading, false);
@@ -57,19 +57,19 @@ void main() {
 
     test('completeOnboarding saves to SharedPreferences', () async {
       SharedPreferences.setMockInitialValues({});
-      
+
       final container = ProviderContainer();
-      
+
       // Wait for initial state to settle
       await Future<void>.delayed(const Duration(milliseconds: 200));
-      
+
       final notifier = container.read(authNotifierProvider.notifier);
       await notifier.completeOnboarding();
-      
+
       // Verify in SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       expect(prefs.getBool('onboarding_completed'), true);
-      
+
       container.dispose();
     });
 
@@ -77,19 +77,19 @@ void main() {
       SharedPreferences.setMockInitialValues({
         'onboarding_completed': true,
       });
-      
+
       final container = ProviderContainer();
-      
+
       // Wait for initial state to settle
       await Future<void>.delayed(const Duration(milliseconds: 200));
-      
+
       final notifier = container.read(authNotifierProvider.notifier);
       await notifier.resetOnboarding();
-      
+
       // Verify in SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       expect(prefs.getBool('onboarding_completed'), null);
-      
+
       container.dispose();
     });
   });

@@ -5,6 +5,23 @@ Tutte le modifiche rilevanti a InjeCare Plan sono documentate in questo file.
 Il formato segue [Keep a Changelog](https://keepachangelog.com/it/1.0.0/),
 e il progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 
+## [3.5.0] - 2026-01-04
+
+### Nuovo
+- **Panoramica settimanale migliorata**: La home mostra tutti i 7 giorni della settimana con:
+  - Indicatori visivi per ogni giorno (completato ✓, suggerito ✨, mancato ✗, riposo)
+  - Contatore progressi (es. 2/3 iniezioni completate)
+  - Visualizzazione compatta che evidenzia oggi
+- **Chiarezza onboarding**: Aggiunta nota informativa che spiega la differenza tra:
+  - Dati demo (iniezioni passate per testare)
+  - Suggerimenti AI (proposte future basate sul piano terapeutico)
+
+### Migliorato
+- **Silhouette aggiornate**: Pulita cache asset per garantire visualizzazione corretta fronte/retro
+- **Eventi settimanali**: Ora tutti i 7 giorni vengono visualizzati, anche i giorni di riposo
+
+---
+
 ## [3.4.3] - 2026-01-04
 
 ### Corretto

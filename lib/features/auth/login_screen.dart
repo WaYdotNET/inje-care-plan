@@ -343,7 +343,7 @@ class _DemoDataPage extends StatelessWidget {
           isSelected: !insertDemoData,
           icon: Icons.start,
           title: 'Inizia da zero',
-          description: 'Storico vuoto, inserisci le tue iniezioni',
+          description: 'Storico vuoto, nessun dato inserito',
           onTap: () => onChanged(false),
         ),
 
@@ -354,8 +354,40 @@ class _DemoDataPage extends StatelessWidget {
           isSelected: insertDemoData,
           icon: Icons.auto_awesome,
           title: 'Inserisci dati demo',
-          description: '~12 iniezioni nell\'ultimo mese',
+          description: '~12 iniezioni nell\'ultimo mese per testare',
           onTap: () => onChanged(true),
+        ),
+
+        const SizedBox(height: 16),
+
+        // Info box
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: (isDark ? AppColors.darkFoam : AppColors.dawnFoam).withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: (isDark ? AppColors.darkFoam : AppColors.dawnFoam).withValues(alpha: 0.3),
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.info_outline,
+                size: 20,
+                color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'L\'app mostrerà sempre suggerimenti AI per le iniezioni future basati sul tuo piano terapeutico.',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: isDark ? AppColors.darkSubtle : AppColors.dawnSubtle,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ],
     );

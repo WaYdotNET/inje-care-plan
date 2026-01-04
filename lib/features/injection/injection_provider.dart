@@ -160,6 +160,12 @@ final weeklyEventsProvider = FutureProvider<List<WeeklyEventData>>((ref) async {
         isTherapyDay: isTherapyDay,
         preferredTime: therapyPlan.preferredTime,
       ));
+    } else {
+      // Giorno di riposo (non nel piano terapeutico)
+      events.add(WeeklyEventData(
+        date: day,
+        isTherapyDay: false,
+      ));
     }
   }
 

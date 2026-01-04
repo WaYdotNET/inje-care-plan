@@ -79,9 +79,23 @@ Dopo il primo avvio, verrai accolto dalla schermata principale.
 | Elemento | Descrizione |
 |----------|-------------|
 | **Suggerimento AI** | Raccomandazione intelligente basata sui tuoi pattern |
-| **Appuntamenti Settimanali** | Le prossime iniezioni programmate nella settimana |
+| **Piano Settimanale** | Panoramica dei 7 giorni con indicatori visivi |
+| **Appuntamenti Settimanali** | Le iniezioni programmate con suggerimenti AI |
 | **Aderenza** | Percentuale di aderenza negli ultimi 30 giorni |
 | **Registra ora** | Pulsante rapido per registrare l'iniezione |
+
+### Piano Settimanale
+
+La nuova visualizzazione compatta mostra tutti i 7 giorni della settimana:
+
+| Indicatore | Significato |
+|------------|-------------|
+| ✓ Verde | Iniezione completata |
+| ✨ Azzurro | Suggerimento AI (giorno programmato) |
+| ✗ Rosso | Iniezione mancata |
+| Numero | Giorno di riposo |
+
+Il contatore in alto a destra (es. "2/3") mostra il progresso settimanale.
 
 ### Suggerimenti Intelligenti
 

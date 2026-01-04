@@ -173,7 +173,7 @@ class AppDatabase extends _$AppDatabase {
     for (final plan in existingPlans) {
       final correctName = _patternTypeNames[plan.rotationPatternType] ?? 'Piano Smart';
       final shouldBeActive = !hasActivePlan; // Il primo piano diventa attivo
-      
+
       await (update(therapyPlans)..where((p) => p.id.equals(plan.id))).write(
         TherapyPlansCompanion(
           name: Value(correctName),
@@ -181,13 +181,13 @@ class AppDatabase extends _$AppDatabase {
           updatedAt: Value(now),
         ),
       );
-      
+
       if (shouldBeActive) hasActivePlan = true;
     }
 
     // Crea i piani mancanti
     final missingTypes = _patternTypeNames.keys.where((t) => !existingTypes.contains(t));
-    
+
     for (final patternType in missingTypes) {
       await into(therapyPlans).insert(
         TherapyPlansCompanion.insert(

@@ -265,7 +265,7 @@ class WeeklyEventItem extends StatelessWidget {
   }
 }
 
-/// Card per la lista eventi settimanali
+/// Card per la lista eventi settimanali con panoramica compatta
 class WeeklyEventsCard extends StatelessWidget {
   const WeeklyEventsCard({
     super.key,
@@ -284,6 +284,9 @@ class WeeklyEventsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final suggestedCount = events.where((e) => e.isSuggested && !e.isPast).length;
+    final completedCount = events.where((e) => e.confirmedEvent?.status == 'completed').length;
+    final therapyDaysCount = events.where((e) => 
+      e.confirmedEvent != null || e.suggestion != null).length;
 
     return Card(
       child: Padding(
@@ -294,57 +297,168 @@ class WeeklyEventsCard extends StatelessWidget {
             Row(
               children: [
                 Text(
-                  'QUESTA SETTIMANA',
+                  'PIANO SETTIMANALE',
                   style: theme.textTheme.labelMedium?.copyWith(
                     letterSpacing: 1.2,
                   ),
                 ),
                 const Spacer(),
-                if (suggestedCount > 0)
-                  TextButton.icon(
-                    onPressed: onViewProposals,
-                    icon: const Icon(Icons.auto_awesome, size: 16),
-                    label: Text('$suggestedCount proposte'),
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      visualDensity: VisualDensity.compact,
+                if (therapyDaysCount > 0)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: (isDark ? AppColors.darkPine : AppColors.dawnPine)
+                          .withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '$completedCount/$therapyDaysCount',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: isDark ? AppColors.darkPine : AppColors.dawnPine,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
 
-            if (events.isEmpty)
+            // Week overview - compact 7-day view
+            _WeekOverview(events: events, isDark: isDark, onDayTap: onEventTap),
+
+            const SizedBox(height: 16),
+
+            // Only show therapy day events (not rest days)
+            ...events
+                .where((e) => e.confirmedEvent != null || e.suggestion != null)
+                .map((event) => WeeklyEventItem(
+                  event: event,
+                  onTap: () => onEventTap(event),
+                  isDark: isDark,
+                )),
+
+            if (suggestedCount > 0) ...[
+              const SizedBox(height: 8),
               Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.calendar_today_outlined,
-                        size: 48,
-                        color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'Nessun evento questa settimana',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
-                        ),
-                      ),
-                    ],
+                child: TextButton.icon(
+                  onPressed: onViewProposals,
+                  icon: const Icon(Icons.auto_awesome, size: 16),
+                  label: Text('Vedi $suggestedCount proposte AI'),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
                   ),
                 ),
-              )
-            else
-              ...events.map((event) => WeeklyEventItem(
-                event: event,
-                onTap: () => onEventTap(event),
-                isDark: isDark,
-              )),
+              ),
+            ],
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Week overview showing all 7 days in a compact horizontal view
+class _WeekOverview extends StatelessWidget {
+  const _WeekOverview({
+    required this.events,
+    required this.isDark,
+    required this.onDayTap,
+  });
+
+  final List<WeeklyEvent> events;
+  final bool isDark;
+  final void Function(WeeklyEvent event) onDayTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final dayNames = ['L', 'M', 'M', 'G', 'V', 'S', 'D'];
+    final now = DateTime.now();
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: List.generate(7, (index) {
+        final event = events.length > index ? events[index] : null;
+        if (event == null) return const SizedBox(width: 40);
+
+        final isToday = event.date.year == now.year &&
+            event.date.month == now.month &&
+            event.date.day == now.day;
+        final hasEvent = event.confirmedEvent != null || event.suggestion != null;
+        final isCompleted = event.confirmedEvent?.status == 'completed';
+        final isSuggested = event.suggestion != null && event.confirmedEvent == null;
+
+        Color bgColor;
+        Color textColor;
+        IconData? icon;
+
+        if (isCompleted) {
+          bgColor = isDark ? AppColors.darkPine : AppColors.dawnPine;
+          textColor = isDark ? AppColors.darkBase : AppColors.dawnBase;
+          icon = Icons.check;
+        } else if (isSuggested && !event.isPast) {
+          bgColor = (isDark ? AppColors.darkFoam : AppColors.dawnFoam)
+              .withValues(alpha: 0.3);
+          textColor = isDark ? AppColors.darkFoam : AppColors.dawnFoam;
+          icon = Icons.auto_awesome;
+        } else if (event.isPast && hasEvent) {
+          bgColor = (isDark ? AppColors.darkLove : AppColors.dawnLove)
+              .withValues(alpha: 0.3);
+          textColor = isDark ? AppColors.darkLove : AppColors.dawnLove;
+          icon = Icons.close;
+        } else if (hasEvent) {
+          bgColor = (isDark ? AppColors.darkGold : AppColors.dawnGold)
+              .withValues(alpha: 0.3);
+          textColor = isDark ? AppColors.darkGold : AppColors.dawnGold;
+        } else {
+          // Rest day
+          bgColor = (isDark ? AppColors.darkMuted : AppColors.dawnMuted)
+              .withValues(alpha: 0.1);
+          textColor = isDark ? AppColors.darkMuted : AppColors.dawnMuted;
+        }
+
+        return GestureDetector(
+          onTap: hasEvent ? () => onDayTap(event) : null,
+          child: Container(
+            width: 40,
+            height: 56,
+            decoration: BoxDecoration(
+              color: bgColor,
+              borderRadius: BorderRadius.circular(8),
+              border: isToday
+                  ? Border.all(
+                      color: isDark ? AppColors.darkPine : AppColors.dawnPine,
+                      width: 2,
+                    )
+                  : null,
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  dayNames[index],
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                if (icon != null)
+                  Icon(icon, size: 16, color: textColor)
+                else
+                  Text(
+                    '${event.date.day}',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
+                      color: textColor,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        );
+      }),
     );
   }
 }

@@ -279,6 +279,12 @@ Ideale per condividere con il tuo neurologo.
 |---------|-------------|
 | **Sblocco biometrico** | Richiedi Face ID / Touch ID all'avvio |
 
+> **Come attivare lo sblocco biometrico:**
+> 1. Vai in Impostazioni → Sicurezza
+> 2. Attiva "Sblocco biometrico"
+> 3. Conferma con la tua impronta o volto
+> 4. All'avvio successivo, l'app richiederà l'autenticazione biometrica
+
 ---
 
 ## Privacy e Sicurezza

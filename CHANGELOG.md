@@ -5,6 +5,22 @@ Tutte le modifiche rilevanti a InjeCare Plan sono documentate in questo file.
 Il formato segue [Keep a Changelog](https://keepachangelog.com/it/1.0.0/),
 e il progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 
+## [3.1.0] - 2026-01-04
+
+### Aggiunto
+- **Sblocco biometrico**: Supporto Face ID / Touch ID all'avvio
+  - Nuova schermata `BiometricLockScreen`
+  - Provider `biometricEnabledProvider`, `requiresBiometricUnlockProvider`
+  - Persistenza impostazione in SharedPreferences
+- Redirect automatico via GoRouter per schermata di sblocco
+
+### Migliorato
+- **Test coverage 100%** su tutti i 57 file non generati
+- Totale **642 test** passati
+- 5 nuovi test per funzionalità biometrica
+
+---
+
 ## [3.0.0] - 2026-01-04
 
 ### Cambiato

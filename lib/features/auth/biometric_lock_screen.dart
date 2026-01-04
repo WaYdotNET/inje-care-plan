@@ -35,7 +35,7 @@ class _BiometricLockScreenState extends ConsumerState<BiometricLockScreen> {
 
     try {
       final success = await ref.read(authNotifierProvider.notifier).unlockWithBiometrics();
-      
+
       if (!success && mounted) {
         setState(() {
           _error = 'Autenticazione non riuscita';
@@ -158,4 +158,3 @@ class _BiometricLockScreenState extends ConsumerState<BiometricLockScreen> {
     );
   }
 }
-

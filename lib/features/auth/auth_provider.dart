@@ -39,7 +39,7 @@ class AppState {
 
   /// L'utente è autenticato se ha completato l'onboarding E (biometria disattivata O sbloccato)
   bool get isAuthenticated => hasCompletedOnboarding && (!biometricEnabled || biometricUnlocked);
-  
+
   /// Deve mostrare la schermata di sblocco biometrico
   bool get requiresBiometricUnlock => hasCompletedOnboarding && biometricEnabled && !biometricUnlocked;
 }
@@ -57,7 +57,7 @@ class AppStateNotifier extends Notifier<AppState> {
       final prefs = await SharedPreferences.getInstance();
       final hasCompleted = prefs.getBool(_onboardingCompletedKey) ?? false;
       final biometricEnabled = prefs.getBool(_biometricEnabledKey) ?? false;
-      
+
       state = AppState(
         hasCompletedOnboarding: hasCompleted,
         biometricEnabled: biometricEnabled,
@@ -91,12 +91,12 @@ class AppStateNotifier extends Notifier<AppState> {
     try {
       // Se si vuole attivare, verifica prima che la biometria sia disponibile
       if (enabled) {
-        final canAuth = await _localAuth.canCheckBiometrics && 
+        final canAuth = await _localAuth.canCheckBiometrics &&
                         await _localAuth.isDeviceSupported();
         if (!canAuth) {
           return false;
         }
-        
+
         // Verifica l'autenticazione prima di attivare
         final authenticated = await _localAuth.authenticate(
           localizedReason: 'Verifica la tua identità per attivare lo sblocco biometrico',
@@ -105,7 +105,7 @@ class AppStateNotifier extends Notifier<AppState> {
           return false;
         }
       }
-      
+
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(_biometricEnabledKey, enabled);
       state = state.copyWith(
@@ -124,7 +124,7 @@ class AppStateNotifier extends Notifier<AppState> {
       final authenticated = await _localAuth.authenticate(
         localizedReason: 'Sblocca InjeCare Plan',
       );
-      
+
       if (authenticated) {
         state = state.copyWith(biometricUnlocked: true);
       }

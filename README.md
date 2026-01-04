@@ -69,12 +69,15 @@ flutter test
 flutter test --coverage
 ```
 
-**Copertura dei test:**
-- Unit test per modelli (`BodyZone`, `TherapyPlan`)
-- Unit test per provider (`AuthProvider`, `InjectionProvider`)
+**Copertura dei test: 100%** (su file non generati)
+- **642 test** totali
+- Unit test per modelli (`BodyZone`, `TherapyPlan`, `InjectionRecord`)
+- Unit test per provider (`AuthProvider`, `InjectionProvider`, `ZoneProvider`, `StatisticsProvider`)
 - Unit test per algoritmi ML (`ZonePredictionModel`, `TimeOptimizer`, `AdherenceScorer`)
+- Unit test per servizi (`CryptoService`, `ExportService`, `SmartReminderService`)
+- Unit test per database (`AppDatabase` DAO methods)
 - Widget test per componenti UI (`ShimmerLoading`, `AnimatedCounter`, `CommonWidgets`)
-- Integration test per flussi principali
+- Test per temi (`AppTheme`, `AppColors`)
 
 ## Setup
 

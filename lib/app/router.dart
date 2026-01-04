@@ -63,7 +63,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         return AppRoutes.login;
       }
 
-      // Se ha completato l'onboarding ed è sulla schermata di login, 
+      // Se ha completato l'onboarding ed è sulla schermata di login,
       // controlla se serve sblocco biometrico
       if (hasCompletedOnboarding && isLoginRoute) {
         if (requiresBiometricUnlock) {

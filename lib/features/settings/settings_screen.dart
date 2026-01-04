@@ -731,7 +731,7 @@ class _BiometricTile extends ConsumerWidget {
           onChanged: (value) async {
             final notifier = ref.read(authNotifierProvider.notifier);
             final success = await notifier.setBiometricEnabled(value);
-            
+
             if (!success && context.mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(

@@ -154,7 +154,15 @@ class AuthNotifier extends Notifier<AuthState> {
         return false;
       }
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      // Messaggio di errore più chiaro
+      String errorMessage = e.toString();
+      if (errorMessage.contains('PlatformException') || 
+          errorMessage.contains('sign_in_failed') ||
+          errorMessage.contains('ApiException')) {
+        errorMessage = 'Google Sign-In non configurato. '
+            'Verifica google-services.json e OAuth credentials.';
+      }
+      state = state.copyWith(isLoading: false, error: errorMessage);
       return false;
     }
   }

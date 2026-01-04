@@ -6,6 +6,7 @@ import '../../../app/router.dart';
 import '../../../core/ml/smart_suggestion_provider.dart';
 import '../../../core/ml/adherence_scorer.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../injection/point_selection_screen.dart';
 
 /// Card che mostra suggerimenti ML intelligenti
 class SmartSuggestionCard extends ConsumerWidget {
@@ -339,8 +340,8 @@ class SmartSuggestionCard extends ConsumerWidget {
     context.push(
       AppRoutes.selectPoint,
       extra: {
-        'mode': 'injection',
-        'suggestedZoneId': suggestion.topZonePrediction!.zone.id,
+        'mode': PointSelectionMode.injection,
+        'zoneId': suggestion.topZonePrediction!.zone.id,
       },
     );
   }

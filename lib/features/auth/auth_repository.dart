@@ -1,8 +1,18 @@
 import 'package:drift/drift.dart';
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:local_auth/local_auth.dart';
 
 import '../../core/database/app_database.dart';
+
+/// Exception for Google Sign-In errors
+class GoogleSignInException implements Exception {
+  final String message;
+  GoogleSignInException(this.message);
+  
+  @override
+  String toString() => message;
+}
 
 /// Rappresentazione locale dell'utente (senza Firebase)
 class LocalUser {
@@ -73,7 +83,7 @@ class AuthRepository {
       final googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
         // Login annullato dall'utente
-        return null;
+        throw GoogleSignInException('Login annullato dall\'utente');
       }
 
       _googleAccount = googleUser;
@@ -82,8 +92,9 @@ class AuthRepository {
 
       return _currentUser;
     } catch (e) {
-      // Errore durante il login
-      return null;
+      // Log errore per debug
+      debugPrint('Google Sign-In error: $e');
+      rethrow;
     }
   }
 

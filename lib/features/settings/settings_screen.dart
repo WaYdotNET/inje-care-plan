@@ -1004,7 +1004,7 @@ class _RotationPatternSection extends ConsumerWidget {
                       if (planId == null) return;
 
                       final service = ref.read(rotationPatternServiceProvider);
-                      
+
                       // Se è la rotazione settimanale, inizializza la data
                       if (patternType == RotationPatternType.weeklyRotation) {
                         await service.initWeeklyRotation();

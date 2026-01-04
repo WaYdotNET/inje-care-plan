@@ -5,6 +5,14 @@ Tutte le modifiche rilevanti a InjeCare Plan sono documentate in questo file.
 Il formato segue [Keep a Changelog](https://keepachangelog.com/it/1.0.0/),
 e il progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 
+## [3.4.2] - 2026-01-04
+
+### Migliorato
+- **Screenshot aggiornati**: Tutti gli screenshot del README mostrano correttamente le nuove funzionalità
+- Screenshot per: Home, Calendario, Selezione punti, Impostazioni, Demo data, Onboarding
+
+---
+
 ## [3.4.1] - 2026-01-04
 
 ### Corretto

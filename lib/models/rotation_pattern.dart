@@ -2,16 +2,16 @@
 enum RotationPatternType {
   /// Suggerimento AI basato su ML (comportamento attuale)
   smart,
-  
+
   /// Sequenza fissa delle zone (Coscia Sx -> Coscia Dx -> Braccio Sx -> ...)
   sequential,
-  
+
   /// Alternanza laterale (Sinistra -> Destra -> Sinistra -> ...)
   alternateSides,
-  
+
   /// Rotazione settimanale per tipo di zona
   weeklyRotation,
-  
+
   /// Sequenza personalizzata definita dall'utente
   custom,
 }
@@ -29,15 +29,15 @@ extension RotationPatternTypeExtension on RotationPatternType {
 
   /// Descrizione del pattern
   String get description => switch (this) {
-    RotationPatternType.smart => 
+    RotationPatternType.smart =>
       'L\'AI suggerisce la zona migliore in base allo storico e al tempo trascorso',
-    RotationPatternType.sequential => 
+    RotationPatternType.sequential =>
       'Segue un ordine fisso: Coscia Sx → Coscia Dx → Braccio Sx → Braccio Dx → ...',
-    RotationPatternType.alternateSides => 
+    RotationPatternType.alternateSides =>
       'Alterna sempre tra lato sinistro e destro del corpo',
-    RotationPatternType.weeklyRotation => 
+    RotationPatternType.weeklyRotation =>
       'Cambia tipo di zona ogni settimana (es. cosce questa settimana, braccia la prossima)',
-    RotationPatternType.custom => 
+    RotationPatternType.custom =>
       'Definisci tu l\'ordine delle zone da seguire',
   };
 
@@ -52,7 +52,7 @@ extension RotationPatternTypeExtension on RotationPatternType {
 
   /// Converte in stringa per il database
   String get databaseValue => name;
-  
+
   /// Crea da stringa del database
   static RotationPatternType fromDatabaseValue(String? value) {
     if (value == null) return RotationPatternType.smart;
@@ -166,4 +166,3 @@ class DefaultZoneSequence {
   /// Ordine dei gruppi per rotazione settimanale
   static const List<String> weeklyOrder = ['cosce', 'braccia', 'addome', 'glutei'];
 }
-

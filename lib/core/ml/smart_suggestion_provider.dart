@@ -144,7 +144,7 @@ Future<SmartSuggestion> smartSuggestion(Ref ref) async {
 
     // Genera suggerimenti secondari
     final secondarySuggestions = <String>[];
-    
+
     // Mostra il motivo del pattern
     if (topZone != null && pattern.type != RotationPatternType.smart) {
       secondarySuggestions.add(topZone.reason);
@@ -217,7 +217,7 @@ class SmartSuggestion {
   bool get hasZoneSuggestion => topZonePrediction != null;
 
   /// Ha un suggerimento temporale valido
-  bool get hasTimeSuggestion => 
+  bool get hasTimeSuggestion =>
       timeRecommendation != null && timeRecommendation!.confidence > 0.3;
 
   /// Livello di confidenza complessivo
@@ -236,4 +236,3 @@ class SmartSuggestion {
     return '📊';
   }
 }
-

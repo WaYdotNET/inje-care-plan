@@ -10,7 +10,7 @@ import '../../core/theme/theme_provider.dart';
 import '../../core/services/export_service.dart';
 import '../../core/services/import_service.dart';
 import '../../core/services/notification_settings_provider.dart';
-import '../../core/database/app_database.dart' hide TherapyPlan;
+import '../../core/database/app_database.dart' as db;
 import '../../core/database/database_provider.dart';
 import '../../core/ml/rotation_pattern_engine.dart';
 import '../../app/router.dart';
@@ -280,7 +280,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   // Convert Drift Injection to model for export
-  List<dynamic> _convertInjections(List<Injection> injections) {
+  List<dynamic> _convertInjections(List<db.Injection> injections) {
     // ExportService needs to be updated to work with Drift types
     // For now, pass the raw list
     return injections;
@@ -813,11 +813,12 @@ class _RotationPatternSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final allPlansAsync = ref.watch(allTherapyPlansProvider);
     final patternAsync = ref.watch(currentRotationPatternProvider);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return patternAsync.when(
+    return allPlansAsync.when(
       loading: () => const ListTile(
         leading: CircularProgressIndicator(strokeWidth: 2),
         title: Text('Caricamento...'),
@@ -826,67 +827,96 @@ class _RotationPatternSection extends ConsumerWidget {
         leading: const Icon(Icons.error),
         title: Text('Errore: $e'),
       ),
-      data: (pattern) => Column(
-        children: [
-          // Current pattern display
-          ListTile(
-            leading: Text(
-              pattern.type.icon,
-              style: const TextStyle(fontSize: 24),
-            ),
-            title: Text(pattern.type.displayName),
-            subtitle: Text(
-              pattern.type.description,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.bodySmall,
-            ),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => _showPatternSelector(context, ref, pattern),
-          ),
+      data: (plans) {
+        if (plans.isEmpty) {
+          return const ListTile(
+            leading: Icon(Icons.warning),
+            title: Text('Nessun piano disponibile'),
+          );
+        }
 
-          // Info card for current pattern
-          if (pattern.type != RotationPatternType.smart)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Card(
-                color: isDark ? AppColors.darkOverlay : AppColors.dawnOverlay,
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.info_outline,
-                        size: 20,
-                        color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
+        final activePlan = plans.firstWhere(
+          (p) => p.isActive,
+          orElse: () => plans.first,
+        );
+        final patternType = RotationPatternTypeExtension.fromDatabaseValue(
+          activePlan.rotationPatternType,
+        );
+
+        return Column(
+          children: [
+            // Current plan display
+            ListTile(
+              leading: Text(
+                patternType.icon,
+                style: const TextStyle(fontSize: 24),
+              ),
+              title: Text(activePlan.name),
+              subtitle: Text(
+                patternType.description,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodySmall,
+              ),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => _showPlanSelector(context, ref, plans, activePlan),
+            ),
+
+            // Info card for current pattern
+            patternAsync.when(
+              loading: () => const SizedBox.shrink(),
+              error: (_, __) => const SizedBox.shrink(),
+              data: (pattern) {
+                if (pattern.type == RotationPatternType.smart) {
+                  return const SizedBox.shrink();
+                }
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Card(
+                    color: isDark ? AppColors.darkOverlay : AppColors.dawnOverlay,
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.info_outline,
+                            size: 20,
+                            color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              _getPatternStatus(pattern),
+                              style: theme.textTheme.bodySmall,
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          _getPatternStatus(pattern),
-                          style: theme.textTheme.bodySmall,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
+                );
+              },
+            ),
+
+            // Custom sequence button
+            if (patternType == RotationPatternType.custom)
+              patternAsync.when(
+                loading: () => const SizedBox.shrink(),
+                error: (_, __) => const SizedBox.shrink(),
+                data: (pattern) => _SettingsTile(
+                  icon: Icons.reorder,
+                  title: 'Modifica sequenza',
+                  trailing: Text(
+                    pattern.customSequence != null
+                        ? '${pattern.customSequence!.length} zone'
+                        : 'Non configurata',
+                  ),
+                  onTap: () => context.push(AppRoutes.customPattern),
                 ),
               ),
-            ),
-
-          // Custom sequence button
-          if (pattern.type == RotationPatternType.custom)
-            _SettingsTile(
-              icon: Icons.reorder,
-              title: 'Modifica sequenza',
-              trailing: Text(
-                pattern.customSequence != null
-                    ? '${pattern.customSequence!.length} zone'
-                    : 'Non configurata',
-              ),
-              onTap: () => context.push(AppRoutes.customPattern),
-            ),
-        ],
-      ),
+          ],
+        );
+      },
     );
   }
 
@@ -914,10 +944,11 @@ class _RotationPatternSection extends ConsumerWidget {
     return '${date.day}/${date.month}/${date.year}';
   }
 
-  void _showPatternSelector(
+  void _showPlanSelector(
     BuildContext context,
     WidgetRef ref,
-    RotationPattern currentPattern,
+    List<db.TherapyPlan> plans,
+    db.TherapyPlan activePlan,
   ) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
@@ -947,33 +978,42 @@ class _RotationPatternSection extends ConsumerWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Text(
-                'Seleziona Pattern di Rotazione',
+                'Seleziona Piano di Rotazione',
                 style: theme.textTheme.titleLarge,
               ),
             ),
 
             const Divider(),
 
-            // Pattern options
+            // Plan options
             Expanded(
-              child: ListView(
+              child: ListView.builder(
                 controller: scrollController,
-                children: RotationPatternType.values.map((type) {
-                  final isSelected = currentPattern.type == type;
-                  return RadioListTile<RotationPatternType>(
-                    value: type,
-                    groupValue: currentPattern.type,
-                    onChanged: (value) async {
-                      if (value == null) return;
-                      final service = ref.read(rotationPatternServiceProvider);
+                itemCount: plans.length,
+                itemBuilder: (context, index) {
+                  final plan = plans[index];
+                  final patternType = RotationPatternTypeExtension.fromDatabaseValue(
+                    plan.rotationPatternType,
+                  );
+                  final isSelected = plan.id == activePlan.id;
 
-                      if (value == RotationPatternType.weeklyRotation) {
+                  return RadioListTile<int>(
+                    value: plan.id,
+                    groupValue: activePlan.id,
+                    onChanged: (planId) async {
+                      if (planId == null) return;
+
+                      final service = ref.read(rotationPatternServiceProvider);
+                      
+                      // Se è la rotazione settimanale, inizializza la data
+                      if (patternType == RotationPatternType.weeklyRotation) {
                         await service.initWeeklyRotation();
                       } else {
-                        await service.setPatternType(value);
+                        await service.activatePlan(planId);
                       }
 
                       ref.invalidate(currentRotationPatternProvider);
+                      ref.invalidate(allTherapyPlansProvider);
                       ref.invalidate(patternBasedZoneSuggestionProvider);
 
                       if (context.mounted) {
@@ -982,28 +1022,44 @@ class _RotationPatternSection extends ConsumerWidget {
                     },
                     title: Row(
                       children: [
-                        Text(type.icon, style: const TextStyle(fontSize: 20)),
+                        Text(patternType.icon, style: const TextStyle(fontSize: 20)),
                         const SizedBox(width: 12),
-                        Text(
-                          type.displayName,
-                          style: TextStyle(
-                            fontWeight:
-                                isSelected ? FontWeight.bold : FontWeight.normal,
+                        Expanded(
+                          child: Text(
+                            plan.name,
+                            style: TextStyle(
+                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            ),
                           ),
                         ),
+                        if (isSelected)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: isDark ? AppColors.darkPine : AppColors.dawnPine,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              'ATTIVO',
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
                       ],
                     ),
                     subtitle: Padding(
-                      padding: const EdgeInsets.only(left: 32),
+                      padding: const EdgeInsets.only(left: 32, top: 4),
                       child: Text(
-                        type.description,
+                        patternType.description,
                         style: theme.textTheme.bodySmall,
                       ),
                     ),
                     selected: isSelected,
                     activeColor: isDark ? AppColors.darkIris : AppColors.dawnIris,
                   );
-                }).toList(),
+                },
               ),
             ),
           ],

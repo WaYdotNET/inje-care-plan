@@ -707,6 +707,31 @@ class $TherapyPlansTable extends TherapyPlans
       'PRIMARY KEY AUTOINCREMENT',
     ),
   );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('Piano Smart'),
+  );
+  static const VerificationMeta _isActiveMeta = const VerificationMeta(
+    'isActive',
+  );
+  @override
+  late final GeneratedColumn<bool> isActive = GeneratedColumn<bool>(
+    'is_active',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_active" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   static const VerificationMeta _injectionsPerWeekMeta = const VerificationMeta(
     'injectionsPerWeek',
   );
@@ -850,6 +875,8 @@ class $TherapyPlansTable extends TherapyPlans
   @override
   List<GeneratedColumn> get $columns => [
     id,
+    name,
+    isActive,
     injectionsPerWeek,
     weekDays,
     preferredTime,
@@ -877,6 +904,18 @@ class $TherapyPlansTable extends TherapyPlans
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    }
+    if (data.containsKey('is_active')) {
+      context.handle(
+        _isActiveMeta,
+        isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta),
+      );
     }
     if (data.containsKey('injections_per_week')) {
       context.handle(
@@ -989,6 +1028,14 @@ class $TherapyPlansTable extends TherapyPlans
         DriftSqlType.int,
         data['${effectivePrefix}id'],
       )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      isActive: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_active'],
+      )!,
       injectionsPerWeek: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}injections_per_week'],
@@ -1048,6 +1095,8 @@ class $TherapyPlansTable extends TherapyPlans
 
 class TherapyPlan extends DataClass implements Insertable<TherapyPlan> {
   final int id;
+  final String name;
+  final bool isActive;
   final int injectionsPerWeek;
   final String weekDays;
   final String preferredTime;
@@ -1062,6 +1111,8 @@ class TherapyPlan extends DataClass implements Insertable<TherapyPlan> {
   final DateTime updatedAt;
   const TherapyPlan({
     required this.id,
+    required this.name,
+    required this.isActive,
     required this.injectionsPerWeek,
     required this.weekDays,
     required this.preferredTime,
@@ -1079,6 +1130,8 @@ class TherapyPlan extends DataClass implements Insertable<TherapyPlan> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    map['is_active'] = Variable<bool>(isActive);
     map['injections_per_week'] = Variable<int>(injectionsPerWeek);
     map['week_days'] = Variable<String>(weekDays);
     map['preferred_time'] = Variable<String>(preferredTime);
@@ -1101,6 +1154,8 @@ class TherapyPlan extends DataClass implements Insertable<TherapyPlan> {
   TherapyPlansCompanion toCompanion(bool nullToAbsent) {
     return TherapyPlansCompanion(
       id: Value(id),
+      name: Value(name),
+      isActive: Value(isActive),
       injectionsPerWeek: Value(injectionsPerWeek),
       weekDays: Value(weekDays),
       preferredTime: Value(preferredTime),
@@ -1127,6 +1182,8 @@ class TherapyPlan extends DataClass implements Insertable<TherapyPlan> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return TherapyPlan(
       id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      isActive: serializer.fromJson<bool>(json['isActive']),
       injectionsPerWeek: serializer.fromJson<int>(json['injectionsPerWeek']),
       weekDays: serializer.fromJson<String>(json['weekDays']),
       preferredTime: serializer.fromJson<String>(json['preferredTime']),
@@ -1154,6 +1211,8 @@ class TherapyPlan extends DataClass implements Insertable<TherapyPlan> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'isActive': serializer.toJson<bool>(isActive),
       'injectionsPerWeek': serializer.toJson<int>(injectionsPerWeek),
       'weekDays': serializer.toJson<String>(weekDays),
       'preferredTime': serializer.toJson<String>(preferredTime),
@@ -1173,6 +1232,8 @@ class TherapyPlan extends DataClass implements Insertable<TherapyPlan> {
 
   TherapyPlan copyWith({
     int? id,
+    String? name,
+    bool? isActive,
     int? injectionsPerWeek,
     String? weekDays,
     String? preferredTime,
@@ -1187,6 +1248,8 @@ class TherapyPlan extends DataClass implements Insertable<TherapyPlan> {
     DateTime? updatedAt,
   }) => TherapyPlan(
     id: id ?? this.id,
+    name: name ?? this.name,
+    isActive: isActive ?? this.isActive,
     injectionsPerWeek: injectionsPerWeek ?? this.injectionsPerWeek,
     weekDays: weekDays ?? this.weekDays,
     preferredTime: preferredTime ?? this.preferredTime,
@@ -1207,6 +1270,8 @@ class TherapyPlan extends DataClass implements Insertable<TherapyPlan> {
   TherapyPlan copyWithCompanion(TherapyPlansCompanion data) {
     return TherapyPlan(
       id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      isActive: data.isActive.present ? data.isActive.value : this.isActive,
       injectionsPerWeek: data.injectionsPerWeek.present
           ? data.injectionsPerWeek.value
           : this.injectionsPerWeek,
@@ -1242,6 +1307,8 @@ class TherapyPlan extends DataClass implements Insertable<TherapyPlan> {
   String toString() {
     return (StringBuffer('TherapyPlan(')
           ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('isActive: $isActive, ')
           ..write('injectionsPerWeek: $injectionsPerWeek, ')
           ..write('weekDays: $weekDays, ')
           ..write('preferredTime: $preferredTime, ')
@@ -1261,6 +1328,8 @@ class TherapyPlan extends DataClass implements Insertable<TherapyPlan> {
   @override
   int get hashCode => Object.hash(
     id,
+    name,
+    isActive,
     injectionsPerWeek,
     weekDays,
     preferredTime,
@@ -1279,6 +1348,8 @@ class TherapyPlan extends DataClass implements Insertable<TherapyPlan> {
       identical(this, other) ||
       (other is TherapyPlan &&
           other.id == this.id &&
+          other.name == this.name &&
+          other.isActive == this.isActive &&
           other.injectionsPerWeek == this.injectionsPerWeek &&
           other.weekDays == this.weekDays &&
           other.preferredTime == this.preferredTime &&
@@ -1295,6 +1366,8 @@ class TherapyPlan extends DataClass implements Insertable<TherapyPlan> {
 
 class TherapyPlansCompanion extends UpdateCompanion<TherapyPlan> {
   final Value<int> id;
+  final Value<String> name;
+  final Value<bool> isActive;
   final Value<int> injectionsPerWeek;
   final Value<String> weekDays;
   final Value<String> preferredTime;
@@ -1309,6 +1382,8 @@ class TherapyPlansCompanion extends UpdateCompanion<TherapyPlan> {
   final Value<DateTime> updatedAt;
   const TherapyPlansCompanion({
     this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.isActive = const Value.absent(),
     this.injectionsPerWeek = const Value.absent(),
     this.weekDays = const Value.absent(),
     this.preferredTime = const Value.absent(),
@@ -1324,6 +1399,8 @@ class TherapyPlansCompanion extends UpdateCompanion<TherapyPlan> {
   });
   TherapyPlansCompanion.insert({
     this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.isActive = const Value.absent(),
     this.injectionsPerWeek = const Value.absent(),
     this.weekDays = const Value.absent(),
     this.preferredTime = const Value.absent(),
@@ -1339,6 +1416,8 @@ class TherapyPlansCompanion extends UpdateCompanion<TherapyPlan> {
   }) : startDate = Value(startDate);
   static Insertable<TherapyPlan> custom({
     Expression<int>? id,
+    Expression<String>? name,
+    Expression<bool>? isActive,
     Expression<int>? injectionsPerWeek,
     Expression<String>? weekDays,
     Expression<String>? preferredTime,
@@ -1354,6 +1433,8 @@ class TherapyPlansCompanion extends UpdateCompanion<TherapyPlan> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (isActive != null) 'is_active': isActive,
       if (injectionsPerWeek != null) 'injections_per_week': injectionsPerWeek,
       if (weekDays != null) 'week_days': weekDays,
       if (preferredTime != null) 'preferred_time': preferredTime,
@@ -1375,6 +1456,8 @@ class TherapyPlansCompanion extends UpdateCompanion<TherapyPlan> {
 
   TherapyPlansCompanion copyWith({
     Value<int>? id,
+    Value<String>? name,
+    Value<bool>? isActive,
     Value<int>? injectionsPerWeek,
     Value<String>? weekDays,
     Value<String>? preferredTime,
@@ -1390,6 +1473,8 @@ class TherapyPlansCompanion extends UpdateCompanion<TherapyPlan> {
   }) {
     return TherapyPlansCompanion(
       id: id ?? this.id,
+      name: name ?? this.name,
+      isActive: isActive ?? this.isActive,
       injectionsPerWeek: injectionsPerWeek ?? this.injectionsPerWeek,
       weekDays: weekDays ?? this.weekDays,
       preferredTime: preferredTime ?? this.preferredTime,
@@ -1411,6 +1496,12 @@ class TherapyPlansCompanion extends UpdateCompanion<TherapyPlan> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (isActive.present) {
+      map['is_active'] = Variable<bool>(isActive.value);
     }
     if (injectionsPerWeek.present) {
       map['injections_per_week'] = Variable<int>(injectionsPerWeek.value);
@@ -1461,6 +1552,8 @@ class TherapyPlansCompanion extends UpdateCompanion<TherapyPlan> {
   String toString() {
     return (StringBuffer('TherapyPlansCompanion(')
           ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('isActive: $isActive, ')
           ..write('injectionsPerWeek: $injectionsPerWeek, ')
           ..write('weekDays: $weekDays, ')
           ..write('preferredTime: $preferredTime, ')
@@ -4967,6 +5060,8 @@ typedef $$BodyZonesTableProcessedTableManager =
 typedef $$TherapyPlansTableCreateCompanionBuilder =
     TherapyPlansCompanion Function({
       Value<int> id,
+      Value<String> name,
+      Value<bool> isActive,
       Value<int> injectionsPerWeek,
       Value<String> weekDays,
       Value<String> preferredTime,
@@ -4983,6 +5078,8 @@ typedef $$TherapyPlansTableCreateCompanionBuilder =
 typedef $$TherapyPlansTableUpdateCompanionBuilder =
     TherapyPlansCompanion Function({
       Value<int> id,
+      Value<String> name,
+      Value<bool> isActive,
       Value<int> injectionsPerWeek,
       Value<String> weekDays,
       Value<String> preferredTime,
@@ -5008,6 +5105,16 @@ class $$TherapyPlansTableFilterComposer
   });
   ColumnFilters<int> get id => $composableBuilder(
     column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5086,6 +5193,16 @@ class $$TherapyPlansTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get injectionsPerWeek => $composableBuilder(
     column: $table.injectionsPerWeek,
     builder: (column) => ColumnOrderings(column),
@@ -5158,6 +5275,12 @@ class $$TherapyPlansTableAnnotationComposer
   });
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<bool> get isActive =>
+      $composableBuilder(column: $table.isActive, builder: (column) => column);
 
   GeneratedColumn<int> get injectionsPerWeek => $composableBuilder(
     column: $table.injectionsPerWeek,
@@ -5244,6 +5367,8 @@ class $$TherapyPlansTableTableManager
           updateCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
                 Value<int> injectionsPerWeek = const Value.absent(),
                 Value<String> weekDays = const Value.absent(),
                 Value<String> preferredTime = const Value.absent(),
@@ -5258,6 +5383,8 @@ class $$TherapyPlansTableTableManager
                 Value<DateTime> updatedAt = const Value.absent(),
               }) => TherapyPlansCompanion(
                 id: id,
+                name: name,
+                isActive: isActive,
                 injectionsPerWeek: injectionsPerWeek,
                 weekDays: weekDays,
                 preferredTime: preferredTime,
@@ -5274,6 +5401,8 @@ class $$TherapyPlansTableTableManager
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
                 Value<int> injectionsPerWeek = const Value.absent(),
                 Value<String> weekDays = const Value.absent(),
                 Value<String> preferredTime = const Value.absent(),
@@ -5288,6 +5417,8 @@ class $$TherapyPlansTableTableManager
                 Value<DateTime> updatedAt = const Value.absent(),
               }) => TherapyPlansCompanion.insert(
                 id: id,
+                name: name,
+                isActive: isActive,
                 injectionsPerWeek: injectionsPerWeek,
                 weekDays: weekDays,
                 preferredTime: preferredTime,

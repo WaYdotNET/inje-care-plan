@@ -20,6 +20,8 @@ class BodyZones extends Table {
 /// Piano terapeutico dell'utente
 class TherapyPlans extends Table {
   IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text().withDefault(const Constant('Piano Smart'))();
+  BoolColumn get isActive => boolean().withDefault(const Constant(false))();
   IntColumn get injectionsPerWeek =>
       integer().withDefault(const Constant(3))();
   TextColumn get weekDays =>

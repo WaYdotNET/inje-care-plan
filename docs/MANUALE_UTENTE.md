@@ -262,7 +262,7 @@ Ideale per condividere con il tuo neurologo.
 
 #### Pattern di Rotazione
 
-Scegli come ruotare le zone del corpo per le iniezioni:
+L'app include **5 piani di rotazione predefiniti** per le tue iniezioni. Puoi selezionare quello più adatto alle tue esigenze:
 
 | Pattern | Descrizione |
 |---------|-------------|
@@ -271,6 +271,12 @@ Scegli come ruotare le zone del corpo per le iniezioni:
 | **Alternanza Sx/Dx** | Alterna sempre tra lato sinistro e destro del corpo |
 | **Rotazione settimanale** | Cambia tipo di zona ogni settimana (es. cosce questa settimana, braccia la prossima) |
 | **Personalizzato** | Definisci tu l'ordine delle zone da seguire con drag-and-drop |
+
+**Come selezionare un pattern:**
+1. Vai in **Impostazioni** > **Pattern di Rotazione**
+2. Tocca il pattern attivo per aprire la lista
+3. Seleziona il nuovo pattern desiderato
+4. Il pattern selezionato sarà contrassegnato come **ATTIVO**
 
 > **Consiglio**: Se hai bisogno di seguire uno schema specifico prescritto dal medico, usa il pattern "Personalizzato" per definire esattamente l'ordine delle zone.
 

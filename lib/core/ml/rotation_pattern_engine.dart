@@ -55,7 +55,7 @@ class RotationPatternEngine {
   Future<ZoneSuggestion?> _getSmartSuggestion() async {
     // Trova la zona meno usata di recente
     BodyZone? bestZone;
-    
+
     for (final zone in zones) {
       final lastPoint = await db.findLeastUsedPoint(zone.id, days: 30);
       if (lastPoint == null) {
@@ -64,13 +64,13 @@ class RotationPatternEngine {
         break;
       }
     }
-    
+
     if (bestZone == null && zones.isNotEmpty) {
       bestZone = zones.first;
     }
-    
+
     if (bestZone == null) return null;
-    
+
     return ZoneSuggestion(
       zoneId: bestZone.id,
       zoneName: bestZone.name,
@@ -81,7 +81,7 @@ class RotationPatternEngine {
   /// Suggerimento sequenziale
   Future<ZoneSuggestion?> _getSequentialSuggestion() async {
     final sequence = DefaultZoneSequence.standard;
-    
+
     var currentIndex = currentPattern.currentIndex;
     if (currentIndex >= sequence.length) {
       currentIndex = 0;
@@ -104,9 +104,9 @@ class RotationPatternEngine {
   Future<ZoneSuggestion?> _getAlternateSidesSuggestion() async {
     final lastSide = currentPattern.lastSide;
     final nextSide = (lastSide == 'left') ? 'right' : 'left';
-    
+
     final sideZones = zones.where((z) => z.side == nextSide).toList();
-    
+
     if (sideZones.isEmpty) {
       final zone = zones.first;
       return ZoneSuggestion(
@@ -118,7 +118,7 @@ class RotationPatternEngine {
 
     final lastZoneId = currentPattern.lastZoneId;
     BodyZone selectedZone;
-    
+
     if (lastZoneId != null) {
       final otherZones = sideZones.where((z) => z.id != lastZoneId).toList();
       selectedZone = otherZones.isNotEmpty ? otherZones.first : sideZones.first;
@@ -138,16 +138,16 @@ class RotationPatternEngine {
   Future<ZoneSuggestion?> _getWeeklyRotationSuggestion() async {
     final now = DateTime.now();
     final weekStart = currentPattern.weekStartDate ?? now;
-    
+
     final weeksPassed = now.difference(weekStart).inDays ~/ 7;
-    
+
     final groupOrder = DefaultZoneSequence.weeklyOrder;
     final currentGroupIndex = weeksPassed % groupOrder.length;
     final currentGroup = groupOrder[currentGroupIndex];
     final groupZoneIds = DefaultZoneSequence.weeklyGroups[currentGroup] ?? [];
-    
+
     final groupZones = zones.where((z) => groupZoneIds.contains(z.id)).toList();
-    
+
     if (groupZones.isEmpty) {
       final zone = zones.first;
       return ZoneSuggestion(
@@ -159,7 +159,7 @@ class RotationPatternEngine {
 
     final lastZoneId = currentPattern.lastZoneId;
     BodyZone selectedZone;
-    
+
     if (lastZoneId != null && groupZones.length > 1) {
       final currentIdx = groupZones.indexWhere((z) => z.id == lastZoneId);
       final nextIdx = (currentIdx + 1) % groupZones.length;
@@ -178,7 +178,7 @@ class RotationPatternEngine {
   /// Suggerimento con sequenza personalizzata
   Future<ZoneSuggestion?> _getCustomSuggestion() async {
     final customSequence = currentPattern.customSequence;
-    
+
     if (customSequence == null || customSequence.isEmpty) {
       return _getSequentialSuggestion();
     }
@@ -207,36 +207,40 @@ class RotationPatternEngine {
   }
 }
 
-/// Provider per il pattern di rotazione corrente
+/// Provider per il pattern di rotazione corrente (dal piano attivo)
 final currentRotationPatternProvider = FutureProvider<RotationPattern>((ref) async {
   final db = ref.watch(databaseProvider);
-  
-  // Ottieni il primo piano terapeutico
-  final plans = await (db.select(db.therapyPlans)..limit(1)).get();
-  if (plans.isEmpty) {
+
+  // Ottieni il piano terapeutico attivo
+  final activePlan = await db.getCurrentTherapyPlan();
+  if (activePlan == null) {
     return RotationPattern.defaults;
   }
-  
-  final therapyPlan = plans.first;
 
   return RotationPattern(
     type: RotationPatternTypeExtension.fromDatabaseValue(
-      therapyPlan.rotationPatternType,
+      activePlan.rotationPatternType,
     ),
-    customSequence: therapyPlan.customPatternSequence.isNotEmpty
-        ? therapyPlan.customPatternSequence
+    customSequence: activePlan.customPatternSequence.isNotEmpty
+        ? activePlan.customPatternSequence
             .split(',')
             .where((s) => s.isNotEmpty)
             .map((s) => int.parse(s.trim()))
             .toList()
         : null,
-    currentIndex: therapyPlan.patternCurrentIndex,
-    lastZoneId: therapyPlan.patternLastZoneId,
-    lastSide: therapyPlan.patternLastSide.isNotEmpty
-        ? therapyPlan.patternLastSide
+    currentIndex: activePlan.patternCurrentIndex,
+    lastZoneId: activePlan.patternLastZoneId,
+    lastSide: activePlan.patternLastSide.isNotEmpty
+        ? activePlan.patternLastSide
         : null,
-    weekStartDate: therapyPlan.patternWeekStartDate,
+    weekStartDate: activePlan.patternWeekStartDate,
   );
+});
+
+/// Provider per tutti i piani terapeutici disponibili
+final allTherapyPlansProvider = FutureProvider<List<TherapyPlan>>((ref) async {
+  final db = ref.watch(databaseProvider);
+  return db.getAllTherapyPlans();
 });
 
 /// Provider per il rotation engine
@@ -264,57 +268,59 @@ class RotationPatternService {
 
   final AppDatabase db;
 
-  /// Aggiorna il tipo di pattern
-  Future<void> setPatternType(RotationPatternType type) async {
-    final plans = await (db.select(db.therapyPlans)..limit(1)).get();
-    if (plans.isEmpty) return;
-    
-    final currentPlan = plans.first;
-
-    await (db.update(db.therapyPlans)..where((t) => t.id.equals(currentPlan.id)))
-        .write(TherapyPlansCompanion(
-          rotationPatternType: Value(type.databaseValue),
-          updatedAt: Value(DateTime.now()),
-        ));
+  /// Attiva un piano specifico tramite ID
+  Future<void> activatePlan(int planId) async {
+    await db.activateTherapyPlan(planId);
   }
 
-  /// Imposta sequenza personalizzata
-  Future<void> setCustomSequence(List<int> zoneIds) async {
-    final plans = await (db.select(db.therapyPlans)..limit(1)).get();
-    if (plans.isEmpty) return;
-    
-    final currentPlan = plans.first;
+  /// Attiva il piano con un certo tipo di pattern
+  Future<void> activatePlanByType(RotationPatternType type) async {
+    final allPlans = await db.getAllTherapyPlans();
+    final planToActivate = allPlans.firstWhere(
+      (p) => RotationPatternTypeExtension.fromDatabaseValue(p.rotationPatternType) == type,
+      orElse: () => allPlans.first,
+    );
+    await db.activateTherapyPlan(planToActivate.id);
+  }
 
-    await (db.update(db.therapyPlans)..where((t) => t.id.equals(currentPlan.id)))
+  /// Imposta sequenza personalizzata sul piano custom
+  Future<void> setCustomSequence(List<int> zoneIds) async {
+    final allPlans = await db.getAllTherapyPlans();
+    final customPlan = allPlans.firstWhere(
+      (p) => p.rotationPatternType == 'custom',
+      orElse: () => allPlans.last,
+    );
+
+    await (db.update(db.therapyPlans)..where((t) => t.id.equals(customPlan.id)))
         .write(TherapyPlansCompanion(
-          rotationPatternType: Value(RotationPatternType.custom.databaseValue),
           customPatternSequence: Value(zoneIds.join(',')),
           patternCurrentIndex: const Value(0),
           updatedAt: Value(DateTime.now()),
         ));
+
+    // Attiva il piano custom
+    await db.activateTherapyPlan(customPlan.id);
   }
 
   /// Avanza al prossimo elemento nella sequenza
   Future<void> advancePattern(int usedZoneId, String side) async {
-    final plans = await (db.select(db.therapyPlans)..limit(1)).get();
-    if (plans.isEmpty) return;
-    
-    final currentPlan = plans.first;
+    final currentPlan = await db.getCurrentTherapyPlan();
+    if (currentPlan == null) return;
 
     int newIndex = currentPlan.patternCurrentIndex + 1;
-    
+
     final patternType = RotationPatternTypeExtension.fromDatabaseValue(
       currentPlan.rotationPatternType,
     );
-    
+
     int sequenceLength;
-    if (patternType == RotationPatternType.custom && 
+    if (patternType == RotationPatternType.custom &&
         currentPlan.customPatternSequence.isNotEmpty) {
       sequenceLength = currentPlan.customPatternSequence.split(',').length;
     } else {
       sequenceLength = DefaultZoneSequence.standard.length;
     }
-    
+
     if (newIndex >= sequenceLength) {
       newIndex = 0;
     }
@@ -328,19 +334,27 @@ class RotationPatternService {
         ));
   }
 
-  /// Inizializza rotazione settimanale
+  /// Inizializza rotazione settimanale e attiva il piano
   Future<void> initWeeklyRotation() async {
-    final plans = await (db.select(db.therapyPlans)..limit(1)).get();
-    if (plans.isEmpty) return;
-    
-    final currentPlan = plans.first;
+    final allPlans = await db.getAllTherapyPlans();
+    final weeklyPlan = allPlans.firstWhere(
+      (p) => p.rotationPatternType == 'weeklyRotation',
+      orElse: () => allPlans.first,
+    );
 
-    await (db.update(db.therapyPlans)..where((t) => t.id.equals(currentPlan.id)))
+    await (db.update(db.therapyPlans)..where((t) => t.id.equals(weeklyPlan.id)))
         .write(TherapyPlansCompanion(
-          rotationPatternType: Value(RotationPatternType.weeklyRotation.databaseValue),
           patternWeekStartDate: Value(DateTime.now()),
           updatedAt: Value(DateTime.now()),
         ));
+
+    await db.activateTherapyPlan(weeklyPlan.id);
+  }
+
+  /// Metodo di compatibilità (deprecato)
+  @Deprecated('Use activatePlanByType instead')
+  Future<void> setPatternType(RotationPatternType type) async {
+    await activatePlanByType(type);
   }
 }
 

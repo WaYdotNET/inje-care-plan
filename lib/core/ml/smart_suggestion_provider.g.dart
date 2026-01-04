@@ -415,4 +415,4 @@ final class SmartSuggestionProvider
   }
 }
 
-String _$smartSuggestionHash() => r'cdf006c2ea7fcf5006ef8be4630565de91f94010';
+String _$smartSuggestionHash() => r'bb8a7f7bb53a65ca3fc795daff47ef28ff1bd14d';

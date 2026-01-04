@@ -5,6 +5,23 @@ Tutte le modifiche rilevanti a InjeCare Plan sono documentate in questo file.
 Il formato segue [Keep a Changelog](https://keepachangelog.com/it/1.0.0/),
 e il progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 
+## [3.4.1] - 2026-01-04
+
+### Corretto
+- **Selezione pattern di rotazione**: I pattern ora sono correttamente selezionabili
+- **5 piani terapeutici predefiniti**: All'avvio vengono creati 5 piani (Smart, Sequenza, Alternanza, Settimanale, Personalizzato)
+- **Attivazione piano**: Solo un piano può essere attivo alla volta
+- Migrazione database per supportare il campo `isActive` e `name` sui piani
+- Fix test per la nuova architettura dei piani multipli
+
+### Aggiunto
+- `getAllTherapyPlans()` per ottenere tutti i piani disponibili
+- `activateTherapyPlan(id)` per cambiare il piano attivo
+- `allTherapyPlansProvider` per l'UI di selezione
+- Provider `activatePlan()` e `activatePlanByType()` nel servizio
+
+---
+
 ## [3.4.0] - 2026-01-04
 
 ### Aggiunto

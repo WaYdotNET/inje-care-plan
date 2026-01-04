@@ -184,34 +184,47 @@ void main() {
   });
 
   group('AppDatabase - Therapy Plans', () {
-    test('getCurrentTherapyPlan returns null when no plan', () async {
-      final plan = await db.getCurrentTherapyPlan();
-      expect(plan, isNull);
-    });
-
-    test('insertTherapyPlan adds a plan', () async {
-      final id = await db.insertTherapyPlan(TestData.createTherapyPlan());
-      expect(id, greaterThan(0));
-
+    test('getCurrentTherapyPlan returns the active plan', () async {
+      // I 5 piani sono già stati creati dal seed
       final plan = await db.getCurrentTherapyPlan();
       expect(plan, isNotNull);
-      expect(plan!.injectionsPerWeek, 3);
-      expect(plan.weekDays, '1,3,5');
-      expect(plan.preferredTime, '20:00');
+      expect(plan!.isActive, isTrue);
+      expect(plan.name, 'Suggerimento AI'); // Il piano smart è attivo di default
+    });
+
+    test('getAllTherapyPlans returns 5 seeded plans', () async {
+      final plans = await db.getAllTherapyPlans();
+      expect(plans.length, 5);
+      expect(plans.where((p) => p.isActive).length, 1);
+    });
+
+    test('activateTherapyPlan changes the active plan', () async {
+      final plans = await db.getAllTherapyPlans();
+      final secondPlan = plans[1]; // Sequential plan
+
+      await db.activateTherapyPlan(secondPlan.id);
+
+      final activePlan = await db.getCurrentTherapyPlan();
+      expect(activePlan!.id, secondPlan.id);
+
+      // Verifica che solo un piano sia attivo
+      final allPlans = await db.getAllTherapyPlans();
+      expect(allPlans.where((p) => p.isActive).length, 1);
     });
 
     test('updateTherapyPlan modifies plan', () async {
-      final id = await db.insertTherapyPlan(TestData.createTherapyPlan());
+      final plan = await db.getCurrentTherapyPlan();
+      expect(plan, isNotNull);
 
       await db.updateTherapyPlan(TherapyPlansCompanion(
-        id: Value(id),
+        id: Value(plan!.id),
         injectionsPerWeek: const Value(2),
         weekDays: const Value('2,4'),
       ));
 
-      final plan = await db.getCurrentTherapyPlan();
-      expect(plan!.injectionsPerWeek, 2);
-      expect(plan.weekDays, '2,4');
+      final updated = await db.getCurrentTherapyPlan();
+      expect(updated!.injectionsPerWeek, 2);
+      expect(updated.weekDays, '2,4');
     });
   });
 

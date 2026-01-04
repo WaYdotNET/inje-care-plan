@@ -26,14 +26,15 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (m) async {
       await m.createAll();
-      // Inserisci le zone predefinite
+      // Inserisci le zone e i piani predefiniti
       await _seedDefaultZones();
+      await _seedDefaultTherapyPlans();
     },
     onUpgrade: (m, from, to) async {
       if (from < 2) {
@@ -65,6 +66,13 @@ class AppDatabase extends _$AppDatabase {
       if (from < 3) {
         // Crea tabella PointConfigs per configurazione punti
         await m.createTable(pointConfigs);
+      }
+      if (from < 4) {
+        // Aggiungi nuove colonne a TherapyPlans
+        await m.addColumn(therapyPlans, therapyPlans.name);
+        await m.addColumn(therapyPlans, therapyPlans.isActive);
+        // Crea i 5 piani predefiniti se non esistono
+        await _seedDefaultTherapyPlans();
       }
     },
   );
@@ -140,6 +148,51 @@ class AppDatabase extends _$AppDatabase {
 
     await batch((b) {
       b.insertAll(bodyZones, zones);
+    });
+  }
+
+  /// Inserisce i 5 piani terapeutici predefiniti
+  Future<void> _seedDefaultTherapyPlans() async {
+    // Verifica se esistono già piani
+    final existingPlans = await (select(therapyPlans)).get();
+    if (existingPlans.isNotEmpty) return;
+
+    final now = DateTime.now();
+    final plans = [
+      TherapyPlansCompanion.insert(
+        startDate: now,
+        name: const Value('Suggerimento AI'),
+        isActive: const Value(true), // Piano attivo di default
+        rotationPatternType: const Value('smart'),
+      ),
+      TherapyPlansCompanion.insert(
+        startDate: now,
+        name: const Value('Sequenza Zone'),
+        isActive: const Value(false),
+        rotationPatternType: const Value('sequential'),
+      ),
+      TherapyPlansCompanion.insert(
+        startDate: now,
+        name: const Value('Alternanza Sx/Dx'),
+        isActive: const Value(false),
+        rotationPatternType: const Value('alternateSides'),
+      ),
+      TherapyPlansCompanion.insert(
+        startDate: now,
+        name: const Value('Rotazione Settimanale'),
+        isActive: const Value(false),
+        rotationPatternType: const Value('weeklyRotation'),
+      ),
+      TherapyPlansCompanion.insert(
+        startDate: now,
+        name: const Value('Personalizzato'),
+        isActive: const Value(false),
+        rotationPatternType: const Value('custom'),
+      ),
+    ];
+
+    await batch((b) {
+      b.insertAll(therapyPlans, plans);
     });
   }
 
@@ -226,8 +279,21 @@ class AppDatabase extends _$AppDatabase {
   }
 
   // --- Therapy Plans ---
+  /// Ottiene il piano terapeutico attivo
   Future<TherapyPlan?> getCurrentTherapyPlan() =>
-      (select(therapyPlans)..limit(1)).getSingleOrNull();
+      (select(therapyPlans)..where((p) => p.isActive.equals(true))).getSingleOrNull();
+
+  /// Ottiene tutti i piani terapeutici
+  Future<List<TherapyPlan>> getAllTherapyPlans() =>
+      (select(therapyPlans)..orderBy([(p) => OrderingTerm.asc(p.id)])).get();
+
+  /// Stream di tutti i piani terapeutici
+  Stream<List<TherapyPlan>> watchAllTherapyPlans() =>
+      (select(therapyPlans)..orderBy([(p) => OrderingTerm.asc(p.id)])).watch();
+
+  /// Ottiene piano per ID
+  Future<TherapyPlan?> getTherapyPlanById(int id) =>
+      (select(therapyPlans)..where((p) => p.id.equals(id))).getSingleOrNull();
 
   Future<int> insertTherapyPlan(TherapyPlansCompanion plan) =>
       into(therapyPlans).insert(plan);
@@ -235,6 +301,24 @@ class AppDatabase extends _$AppDatabase {
   Future<int> updateTherapyPlan(TherapyPlansCompanion plan) => (update(
     therapyPlans,
   )..where((p) => p.id.equals(plan.id.value))).write(plan);
+
+  /// Attiva un piano specifico (disattiva gli altri)
+  Future<void> activateTherapyPlan(int planId) async {
+    await batch((b) {
+      // Disattiva tutti i piani
+      b.update(
+        therapyPlans,
+        const TherapyPlansCompanion(isActive: Value(false)),
+      );
+    });
+    // Attiva il piano selezionato
+    await (update(therapyPlans)..where((p) => p.id.equals(planId))).write(
+      TherapyPlansCompanion(
+        isActive: const Value(true),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+  }
 
   // --- Injections ---
   Future<List<Injection>> getAllInjections() => (select(

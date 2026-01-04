@@ -426,25 +426,20 @@ void main() {
   });
 
   group('InjectionRepository - Therapy Plan', () {
-    test('watchTherapyPlan returns stream', () async {
+    test('watchTherapyPlan returns stream with active plan', () async {
       final stream = repository.watchTherapyPlan();
 
-      expectLater(stream, emitsInOrder([
-        isNull,
-        isNotNull,
-      ]));
-
-      await db.insertTherapyPlan(TherapyPlansCompanion.insert(
-        startDate: DateTime.now(),
-      ));
+      // I 5 piani sono già stati creati dal seed, quindi otteniamo il piano attivo
+      expectLater(stream, emits(isNotNull));
     });
 
-    test('getTherapyPlan returns null initially', () async {
+    test('getTherapyPlan returns the active seeded plan', () async {
       final plan = await repository.getTherapyPlan();
-      expect(plan, isNull);
+      expect(plan, isNotNull);
+      expect(plan!.injectionsPerWeek, 3); // Valore default
     });
 
-    test('saveTherapyPlan creates new plan', () async {
+    test('saveTherapyPlan updates the active plan', () async {
       final plan = models.TherapyPlan(
         injectionsPerWeek: 2,
         weekDays: [2, 4],
@@ -460,13 +455,7 @@ void main() {
       expect(saved!.injectionsPerWeek, 2);
     });
 
-    test('saveTherapyPlan updates existing plan', () async {
-      // Create initial plan
-      await db.insertTherapyPlan(TherapyPlansCompanion.insert(
-        injectionsPerWeek: const Value(3),
-        startDate: DateTime.now(),
-      ));
-
+    test('saveTherapyPlan updates values correctly', () async {
       // Update plan
       final plan = models.TherapyPlan(
         injectionsPerWeek: 4,

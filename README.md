@@ -19,8 +19,8 @@ Applicazione Flutter per la gestione delle iniezioni di Interferone beta-1a per 
 <p align="center">
   <img src="assets/screenshots/home.png" width="180" alt="Home">
   <img src="assets/screenshots/calendar.png" width="180" alt="Calendario">
+  <img src="assets/screenshots/point_history.png" width="180" alt="Storico Punti">
   <img src="assets/screenshots/statistics.png" width="180" alt="Statistiche">
-  <img src="assets/screenshots/settings.png" width="180" alt="Impostazioni">
 </p>
 
 ## Caratteristiche
@@ -28,6 +28,7 @@ Applicazione Flutter per la gestione delle iniezioni di Interferone beta-1a per 
 ### Core
 - 📅 **Calendario intelligente**: Pianificazione automatica delle iniezioni
 - 🧍 **Mappa corpo interattiva**: 8 zone con rotazione automatica dei punti
+- 📜 **Storico punti**: Visualizza l'ultimo utilizzo di ogni punto con indicatori colorati (verde=consigliato, rosso=evitare)
 - 🔔 **Promemoria avanzati**: Notifiche configurabili
 - 📊 **Statistiche avanzate**: Grafici aderenza, heatmap zone, trend settimanali
 - 🤖 **Suggerimenti AI**: Raccomandazioni intelligenti per zone e orari

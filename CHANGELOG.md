@@ -5,6 +5,25 @@ Tutte le modifiche rilevanti a InjeCare Plan sono documentate in questo file.
 Il formato segue [Keep a Changelog](https://keepachangelog.com/it/1.0.0/),
 e il progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 
+## [3.3.0] - 2026-01-04
+
+### Aggiunto
+- **Storico punti per zona**: Visualizza l'ultimo utilizzo di ogni punto con indicatori colorati
+  - Verde (★ Nuovo): Mai usato o >14 giorni - consigliato
+  - Giallo: 7-14 giorni - attenzione
+  - Arancione: 3-7 giorni - recente
+  - Rosso: <3 giorni - evitare
+- Lista punti ordinata dal meno usato al più recente
+- Metodo `getPointUsageHistory()` in database
+- Provider `pointUsageHistoryProvider` per caricare lo storico
+
+### Corretto
+- **Modifica iniezioni**: Ora "Cambia punto" aggiorna l'iniezione esistente invece di creare un duplicato
+- Propagazione `existingInjectionId` attraverso router e schermate
+- `updateInjection()` chiamato correttamente invece di `createInjection()`
+
+---
+
 ## [3.2.0] - 2026-01-04
 
 ### Aggiunto

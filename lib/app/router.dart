@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../features/auth/login_screen.dart';
 import '../features/auth/auth_provider.dart';
+import '../features/auth/biometric_lock_screen.dart';
 import '../features/home/home_screen.dart';
 import '../features/calendar/calendar_screen.dart';
 import '../features/injection/zone_detail_screen.dart';
@@ -21,6 +22,7 @@ import '../features/statistics/statistics_screen.dart';
 /// App routes
 sealed class AppRoutes {
   static const login = '/login';
+  static const biometricLock = '/biometric-lock';
   static const home = '/';
   static const calendar = '/calendar';
   static const bodyMap = '/body-map';
@@ -52,15 +54,31 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
 
       final hasCompletedOnboarding = authState.hasCompletedOnboarding;
+      final requiresBiometricUnlock = authState.requiresBiometricUnlock;
       final isLoginRoute = state.matchedLocation == AppRoutes.login;
+      final isBiometricRoute = state.matchedLocation == AppRoutes.biometricLock;
 
       // Se non ha completato l'onboarding, vai alla schermata di login/onboarding
       if (!hasCompletedOnboarding && !isLoginRoute) {
         return AppRoutes.login;
       }
 
-      // Se ha completato l'onboarding ed è sulla schermata di login, vai alla home
+      // Se ha completato l'onboarding ed è sulla schermata di login, 
+      // controlla se serve sblocco biometrico
       if (hasCompletedOnboarding && isLoginRoute) {
+        if (requiresBiometricUnlock) {
+          return AppRoutes.biometricLock;
+        }
+        return AppRoutes.home;
+      }
+
+      // Se serve sblocco biometrico e non siamo sulla schermata di sblocco
+      if (requiresBiometricUnlock && !isBiometricRoute) {
+        return AppRoutes.biometricLock;
+      }
+
+      // Se siamo sulla schermata biometrica ma non serve più sblocco
+      if (isBiometricRoute && !requiresBiometricUnlock) {
         return AppRoutes.home;
       }
 
@@ -71,6 +89,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.login,
         name: 'login',
         builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.biometricLock,
+        name: 'biometricLock',
+        builder: (context, state) => const BiometricLockScreen(),
       ),
       ShellRoute(
         builder: (context, state, child) => _MainShell(child: child),

@@ -49,7 +49,7 @@ void main() {
   group('GuidedTourController', () {
     test('initial state is inactive', () {
       final controller = GuidedTourController();
-      
+
       expect(controller.isActive, false);
       expect(controller.currentStep, 0);
       expect(controller.totalSteps, 0);
@@ -79,21 +79,21 @@ void main() {
     test('notifies listeners', () {
       final controller = GuidedTourController();
       var notified = false;
-      
+
       controller.addListener(() {
         notified = true;
       });
-      
+
       // Trigger a notification by calling notifyListeners
       // This would happen internally during startTour
       controller.notifyListeners();
-      
+
       expect(notified, true);
     });
 
     test('dispose removes overlay', () {
       final controller = GuidedTourController();
-      
+
       // Should not throw
       expect(() => controller.dispose(), returnsNormally);
     });
@@ -132,7 +132,7 @@ void main() {
   group('ContextualTooltip', () {
     testWidgets('renders child widget', (tester) async {
       SharedPreferences.setMockInitialValues({});
-      
+
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -150,7 +150,7 @@ void main() {
 
     testWidgets('creates with all properties', (tester) async {
       SharedPreferences.setMockInitialValues({});
-      
+
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -170,7 +170,7 @@ void main() {
 
     testWidgets('does not show tooltip when showOnFirstView is false', (tester) async {
       SharedPreferences.setMockInitialValues({});
-      
+
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -184,14 +184,14 @@ void main() {
       );
 
       await tester.pump(const Duration(seconds: 1));
-      
+
       // Tooltip should not appear
       expect(find.text('Tooltip message'), findsNothing);
     });
 
     testWidgets('disposes without error', (tester) async {
       SharedPreferences.setMockInitialValues({});
-      
+
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(

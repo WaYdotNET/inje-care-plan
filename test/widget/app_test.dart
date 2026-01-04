@@ -35,10 +35,10 @@ void main() {
     test('both themes have consistent configuration', () {
       final light = AppTheme.light;
       final dark = AppTheme.dark;
-      
+
       // Both use Material3
       expect(light.useMaterial3, dark.useMaterial3);
-      
+
       // Both have app bar configuration
       expect(light.appBarTheme.elevation, dark.appBarTheme.elevation);
       expect(light.appBarTheme.centerTitle, dark.appBarTheme.centerTitle);
@@ -48,7 +48,7 @@ void main() {
       // These are the supported locales in app.dart
       const itLocale = Locale('it', 'IT');
       const enLocale = Locale('en', 'US');
-      
+
       expect(itLocale.languageCode, 'it');
       expect(enLocale.languageCode, 'en');
     });

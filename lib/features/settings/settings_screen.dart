@@ -22,8 +22,6 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
-  bool _biometricEnabled = false;
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -175,14 +173,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
 
           const _SectionHeader(title: 'SICUREZZA'),
-          SwitchListTile(
-            title: const Text('Sblocco biometrico'),
-            value: _biometricEnabled,
-            onChanged: (value) async {
-              // TODO: Implementare con SharedPreferences se necessario
-              setState(() => _biometricEnabled = value);
-            },
-          ),
+          _BiometricTile(),
 
           const _SectionHeader(title: 'DATI'),
           injectionsAsync.when(
@@ -695,6 +686,62 @@ class _AppInfoHeader extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Tile per sblocco biometrico
+class _BiometricTile extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final biometricEnabled = ref.watch(biometricEnabledProvider);
+    final biometricAvailable = ref.watch(biometricAvailableProvider);
+
+    return biometricAvailable.when(
+      loading: () => const SwitchListTile(
+        title: Text('Sblocco biometrico'),
+        subtitle: Text('Verifica disponibilità...'),
+        value: false,
+        onChanged: null,
+      ),
+      error: (e, st) => const SwitchListTile(
+        title: Text('Sblocco biometrico'),
+        subtitle: Text('Non disponibile'),
+        value: false,
+        onChanged: null,
+      ),
+      data: (isAvailable) {
+        if (!isAvailable) {
+          return const SwitchListTile(
+            title: Text('Sblocco biometrico'),
+            subtitle: Text('Non supportato su questo dispositivo'),
+            value: false,
+            onChanged: null,
+          );
+        }
+
+        return SwitchListTile(
+          title: const Text('Sblocco biometrico'),
+          subtitle: Text(
+            biometricEnabled
+                ? 'Richiedi Face ID / Touch ID all\'avvio'
+                : 'Disattivato',
+          ),
+          value: biometricEnabled,
+          onChanged: (value) async {
+            final notifier = ref.read(authNotifierProvider.notifier);
+            final success = await notifier.setBiometricEnabled(value);
+            
+            if (!success && context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Impossibile attivare lo sblocco biometrico'),
+                ),
+              );
+            }
+          },
+        );
+      },
     );
   }
 }

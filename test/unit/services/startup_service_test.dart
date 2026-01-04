@@ -28,7 +28,7 @@ void main() {
   group('StartupInfo', () {
     test('creates with required result', () {
       final info = StartupInfo(result: StartupCheckResult.normalStart);
-      
+
       expect(info.result, StartupCheckResult.normalStart);
       expect(info.errorMessage, isNull);
     });
@@ -38,14 +38,14 @@ void main() {
         result: StartupCheckResult.error,
         errorMessage: 'Test error',
       );
-      
+
       expect(info.result, StartupCheckResult.error);
       expect(info.errorMessage, 'Test error');
     });
 
     test('creates with firstRun result', () {
       final info = StartupInfo(result: StartupCheckResult.firstRun);
-      
+
       expect(info.result, StartupCheckResult.firstRun);
     });
   });
@@ -66,19 +66,19 @@ void main() {
     test('provides StartupService instance', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);
-      
+
       final service = container.read(startupServiceProvider);
-      
+
       expect(service, isA<StartupService>());
     });
 
     test('provides same instance on multiple reads', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);
-      
+
       final first = container.read(startupServiceProvider);
       final second = container.read(startupServiceProvider);
-      
+
       expect(identical(first, second), true);
     });
   });
@@ -92,4 +92,3 @@ void main() {
     // mocking the file system or running on web platform
   });
 }
-

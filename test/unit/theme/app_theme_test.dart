@@ -276,36 +276,35 @@ void main() {
       test('light and dark themes have same structure', () {
         final light = AppTheme.light;
         final dark = AppTheme.dark;
-        
+
         // Both have app bar themes
         expect(light.appBarTheme, isNotNull);
         expect(dark.appBarTheme, isNotNull);
-        
+
         // Both have card themes
         expect(light.cardTheme, isNotNull);
         expect(dark.cardTheme, isNotNull);
-        
+
         // Both have text themes with same styles
-        expect(light.textTheme.displayLarge?.fontSize, 
+        expect(light.textTheme.displayLarge?.fontSize,
                dark.textTheme.displayLarge?.fontSize);
-        expect(light.textTheme.bodyMedium?.fontSize, 
+        expect(light.textTheme.bodyMedium?.fontSize,
                dark.textTheme.bodyMedium?.fontSize);
       });
 
       test('text theme font sizes are consistent', () {
         final lightText = AppTheme.light.textTheme;
         final darkText = AppTheme.dark.textTheme;
-        
+
         expect(lightText.displayLarge?.fontSize, 32);
         expect(darkText.displayLarge?.fontSize, 32);
-        
+
         expect(lightText.displayMedium?.fontSize, 28);
         expect(darkText.displayMedium?.fontSize, 28);
-        
+
         expect(lightText.bodyMedium?.fontSize, 14);
         expect(darkText.bodyMedium?.fontSize, 14);
       });
     });
   });
 }
-

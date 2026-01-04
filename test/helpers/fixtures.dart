@@ -3,7 +3,16 @@ import 'package:injecare_plan/core/database/app_database.dart';
 /// Test fixtures for common test data
 class Fixtures {
   /// Sample zone IDs (matching database defaults)
-  static const zoneIds = [1, 2, 3, 4, 5, 6, 7, 8]; // CD, CS, BD, BS, AD, AS, GD, GS
+  static const zoneIds = [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+  ]; // CD, CS, BD, BS, AD, AS, GD, GS
 
   // Sample injection data
   static Injection createInjection({

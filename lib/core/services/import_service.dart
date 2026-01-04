@@ -21,14 +21,14 @@ class ImportResult {
 }
 
 /// Service per importare dati da CSV
-/// 
+///
 /// Formato CSV supportato:
 /// ```
 /// data,zona,punto,stato
 /// 2024-07-15 20:00,CD,3,completed
 /// 2024-07-17 20:00,CS,1,completed
 /// ```
-/// 
+///
 /// Zone code: CD, CS, BD, BS, AD, AS, GD, GS
 /// Status: completed, scheduled, skipped, delayed
 class ImportService {
@@ -66,7 +66,7 @@ class ImportService {
 
     // Skip header if present
     int startIndex = 0;
-    if (lines.first.toLowerCase().contains('data') || 
+    if (lines.first.toLowerCase().contains('data') ||
         lines.first.toLowerCase().contains('date')) {
       startIndex = 1;
     }
@@ -81,7 +81,7 @@ class ImportService {
 
       final lineNumber = i + 1;
       final result = await _parseLine(db, line, lineNumber);
-      
+
       if (result.isSuccess) {
         successCount++;
       } else {
@@ -108,7 +108,7 @@ class ImportService {
       // Parse date (supporta più formati)
       final dateStr = parts[0];
       DateTime? date;
-      
+
       // Try multiple date formats
       for (final format in [
         'yyyy-MM-dd HH:mm',
@@ -183,4 +183,3 @@ class _ParseResult {
   factory _ParseResult.success() => _ParseResult._(true, null);
   factory _ParseResult.failure(String error) => _ParseResult._(false, error);
 }
-

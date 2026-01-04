@@ -68,4 +68,3 @@ class DemoDataService {
     await db.deleteAllData();
   }
 }
-

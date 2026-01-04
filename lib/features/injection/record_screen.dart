@@ -218,7 +218,7 @@ class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
       final repository = ref.read(injectionRepositoryProvider);
       final now = DateTime.now();
       final scheduledAt = widget.scheduledDate ?? now;
-      
+
       // Se la data è nel futuro, salva come "scheduled", altrimenti come "completed"
       final isFuture = scheduledAt.isAfter(now);
       final status = isFuture ? InjectionStatus.scheduled : InjectionStatus.completed;

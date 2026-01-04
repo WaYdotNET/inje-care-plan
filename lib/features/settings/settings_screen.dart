@@ -540,7 +540,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       if (result == null || result.files.isEmpty) return;
 
       final file = File(result.files.first.path!);
-      
+
       // Show loading dialog
       if (mounted) {
         showDialog<void>(
@@ -619,7 +619,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       if (mounted && Navigator.canPop(context)) {
         Navigator.pop(context);
       }
-      
+
       if (mounted) {
         messenger.showSnackBar(
           SnackBar(

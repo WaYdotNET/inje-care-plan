@@ -57,6 +57,25 @@ Applicazione Flutter per la gestione delle iniezioni di Interferone beta-1a per 
 - Dart SDK 3.10+
 - Android 5.0+ o iOS 12.0+
 
+## Test
+
+Il progetto include una suite completa di test:
+
+```bash
+# Esegui tutti i test
+flutter test
+
+# Test con copertura
+flutter test --coverage
+```
+
+**Copertura dei test:**
+- Unit test per modelli (`BodyZone`, `TherapyPlan`)
+- Unit test per provider (`AuthProvider`, `InjectionProvider`)
+- Unit test per algoritmi ML (`ZonePredictionModel`, `TimeOptimizer`, `AdherenceScorer`)
+- Widget test per componenti UI (`ShimmerLoading`, `AnimatedCounter`, `CommonWidgets`)
+- Integration test per flussi principali
+
 ## Setup
 
 ### 1. Clona il repository

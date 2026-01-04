@@ -81,6 +81,14 @@ final suggestedNextPointProvider =
   return repository.getSuggestedNextPoint();
 });
 
+/// Point usage history provider for a specific zone
+/// Returns map of pointNumber -> last usage date (null if never used)
+final pointUsageHistoryProvider =
+    FutureProvider.family<Map<int, DateTime?>, int>((ref, zoneId) async {
+  final repository = ref.watch(injectionRepositoryProvider);
+  return repository.getLastUsageForZone(zoneId);
+});
+
 /// Selected day notifier for calendar
 class SelectedDayNotifier extends Notifier<DateTime?> {
   @override

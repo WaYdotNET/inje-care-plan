@@ -478,6 +478,42 @@ class AppDatabase extends _$AppDatabase {
   Future<int> deletePointConfigsForZone(int zoneId) =>
       (delete(pointConfigs)..where((p) => p.zoneId.equals(zoneId))).go();
 
+  // --- Point Usage History ---
+  /// Restituisce la mappa pointNumber -> ultima data di utilizzo per una zona
+  Future<Map<int, DateTime?>> getPointUsageHistory(int zoneId) async {
+    final zone = await getZoneById(zoneId);
+    if (zone == null) return {};
+
+    final result = <int, DateTime?>{};
+
+    // Inizializza tutti i punti a null (mai usati)
+    for (var p = 1; p <= zone.numberOfPoints; p++) {
+      result[p] = null;
+    }
+
+    // Query per l'ultima iniezione completata per ogni punto
+    final allInjections = await (select(injections)
+          ..where(
+            (i) => i.zoneId.equals(zoneId) & i.status.equals('completed'),
+          )
+          ..orderBy([(i) => OrderingTerm.desc(i.completedAt)]))
+        .get();
+
+    // Prendi solo la data più recente per ogni punto
+    for (final inj in allInjections) {
+      if (result.containsKey(inj.pointNumber) &&
+          result[inj.pointNumber] == null) {
+        result[inj.pointNumber] = inj.completedAt ?? inj.scheduledAt;
+      }
+    }
+
+    return result;
+  }
+
+  /// Restituisce l'iniezione per ID
+  Future<Injection?> getInjectionById(int id) =>
+      (select(injections)..where((i) => i.id.equals(id))).getSingleOrNull();
+
   // --- Utilities ---
   Future<void> deleteAllData() async {
     await delete(injections).go();

@@ -20,11 +20,13 @@ class RecordInjectionScreen extends ConsumerStatefulWidget {
     required this.zoneId,
     required this.pointNumber,
     this.scheduledDate,
+    this.existingInjectionId,
   });
 
   final int zoneId;
   final int pointNumber;
   final DateTime? scheduledDate;
+  final int? existingInjectionId;
 
   @override
   ConsumerState<RecordInjectionScreen> createState() => _RecordInjectionScreenState();
@@ -236,7 +238,12 @@ class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
         updatedAt: now,
       );
 
-      await repository.createInjection(record);
+      // Se stiamo modificando un'iniezione esistente, aggiorna invece di creare
+      if (widget.existingInjectionId != null) {
+        await repository.updateInjection(widget.existingInjectionId!, record);
+      } else {
+        await repository.createInjection(record);
+      }
 
       // Schedule next injection notification if enabled
       final notificationSettings = ref.read(notificationSettingsProvider);
@@ -264,9 +271,14 @@ class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
       }
 
       if (mounted) {
+        final isUpdate = widget.existingInjectionId != null;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${zone.pointLabel(widget.pointNumber)} registrata'),
+            content: Text(
+              isUpdate
+                  ? 'Iniezione modificata: ${zone.pointLabel(widget.pointNumber)}'
+                  : '${zone.pointLabel(widget.pointNumber)} registrata',
+            ),
             backgroundColor: Theme.of(context).colorScheme.primary,
           ),
         );

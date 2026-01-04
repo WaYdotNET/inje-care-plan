@@ -302,4 +302,15 @@ class InjectionRepository {
   Future<int?> findLeastUsedPoint(int zoneId, {int days = 30}) {
     return _db.findLeastUsedPoint(zoneId, days: days);
   }
+
+  /// Get point usage history for a zone
+  /// Returns a map of pointNumber -> last usage date (null if never used)
+  Future<Map<int, DateTime?>> getLastUsageForZone(int zoneId) {
+    return _db.getPointUsageHistory(zoneId);
+  }
+
+  /// Get injection by ID
+  Future<Injection?> getInjectionById(int id) {
+    return _db.getInjectionById(id);
+  }
 }

@@ -462,7 +462,10 @@ class _InjectionCard extends ConsumerWidget {
           Navigator.pop(ctx);
           context.push(
             AppRoutes.bodyMap,
-            extra: {'scheduledDate': injection.scheduledAt},
+            extra: {
+              'scheduledDate': injection.scheduledAt,
+              'existingInjectionId': injection.id,
+            },
           );
         },
       ),

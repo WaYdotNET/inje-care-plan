@@ -104,10 +104,12 @@ final routerProvider = Provider<GoRouter>((ref) {
           final extra = state.extra as Map<String, dynamic>?;
           final scheduledDate = extra?['scheduledDate'] as DateTime?;
           final initialZoneId = extra?['zoneId'] as int?;
+          final existingInjectionId = extra?['existingInjectionId'] as int?;
           return PointSelectionScreen(
             mode: PointSelectionMode.injection,
             initialZoneId: initialZoneId,
             scheduledDate: scheduledDate,
+            existingInjectionId: existingInjectionId,
           );
         },
       ),
@@ -128,6 +130,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             zoneId: extra?['zoneId'] as int? ?? 1,
             pointNumber: extra?['pointNumber'] as int? ?? 1,
             scheduledDate: extra?['scheduledDate'] as DateTime?,
+            existingInjectionId: extra?['existingInjectionId'] as int?,
           );
         },
       ),

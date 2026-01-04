@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/database/app_database.dart' as db;
@@ -20,11 +21,13 @@ class PointSelectionScreen extends ConsumerStatefulWidget {
     required this.mode,
     this.initialZoneId,
     this.scheduledDate,
+    this.existingInjectionId,
   });
 
   final PointSelectionMode mode;
   final int? initialZoneId;
   final DateTime? scheduledDate;
+  final int? existingInjectionId;
 
   @override
   ConsumerState<PointSelectionScreen> createState() =>
@@ -253,6 +256,7 @@ class _PointSelectionScreenState extends ConsumerState<PointSelectionScreen> {
           'zoneId': _selectedZoneId,
           'pointNumber': _selectedPoint,
           if (widget.scheduledDate != null) 'scheduledDate': widget.scheduledDate,
+          if (widget.existingInjectionId != null) 'existingInjectionId': widget.existingInjectionId,
         },
       );
     } else {
@@ -592,27 +596,30 @@ class _ZoneDetailCard extends ConsumerStatefulWidget {
 class _ZoneDetailCardState extends ConsumerState<_ZoneDetailCard> {
   List<PositionedPoint> _points = [];
   bool _isLoading = true;
+  Map<int, DateTime?> _usageHistory = {};
 
   @override
   void initState() {
     super.initState();
-    _loadPoints();
+    _loadData();
   }
 
   @override
   void didUpdateWidget(_ZoneDetailCard oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.zone.id != widget.zone.id) {
-      _loadPoints();
+      _loadData();
     }
   }
 
-  Future<void> _loadPoints() async {
-    final database = ref.read(databaseProvider);
-    final configs = await database.getPointConfigsForZone(widget.zone.id);
+  Future<void> _loadData() async {
+    setState(() => _isLoading = true);
 
+    final database = ref.read(databaseProvider);
+
+    // Carica posizioni punti
+    final configs = await database.getPointConfigsForZone(widget.zone.id);
     if (configs.isEmpty) {
-      // Genera posizioni predefinite
       _points = generateDefaultPointPositions(
         widget.zone.numberOfPoints,
         widget.zone.type,
@@ -620,7 +627,6 @@ class _ZoneDetailCardState extends ConsumerState<_ZoneDetailCard> {
       );
     } else {
       _points = configs.map((c) => c.toPositionedPoint()).toList();
-      // Aggiungi punti mancanti
       for (var i = configs.length + 1; i <= widget.zone.numberOfPoints; i++) {
         final defaults = generateDefaultPointPositions(
           widget.zone.numberOfPoints,
@@ -635,7 +641,23 @@ class _ZoneDetailCardState extends ConsumerState<_ZoneDetailCard> {
       }
     }
 
+    // Carica storico utilizzo
+    _usageHistory = await database.getPointUsageHistory(widget.zone.id);
+
     if (mounted) setState(() => _isLoading = false);
+  }
+
+  List<_PointHistoryItem> _buildHistoryItems() {
+    final items = <_PointHistoryItem>[];
+    for (var i = 1; i <= widget.zone.numberOfPoints; i++) {
+      items.add(_PointHistoryItem(
+        pointNumber: i,
+        pointLabel: widget.zone.pointLabel(i),
+        lastUsed: _usageHistory[i],
+        isBlacklisted: _blacklistedNumbers.contains(i),
+      ));
+    }
+    return items;
   }
 
   Set<int> get _blacklistedNumbers {
@@ -749,6 +771,44 @@ class _ZoneDetailCardState extends ConsumerState<_ZoneDetailCard> {
                 ),
               ),
             ],
+
+            // Point usage history section
+            const SizedBox(height: 24),
+            const Divider(),
+            const SizedBox(height: 16),
+
+            Row(
+              children: [
+                Icon(
+                  Icons.history,
+                  color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Storico d\'uso',
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'I punti sono ordinati dal meno usato (consigliato) al più recente',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            _PointHistoryList(
+              items: _buildHistoryItems(),
+              selectedPoint: selectedPoint,
+              isDark: isDark,
+              onPointTap: onPointTap,
+            ),
           ],
         ),
       ),
@@ -808,6 +868,257 @@ class _PointSelectionSilhouette extends StatelessWidget {
           onPointTap(pointNumber);
         }
       },
+    );
+  }
+}
+
+/// Enum per indicare il livello di utilizzo del punto
+enum PointUsageLevel {
+  neverUsed, // Mai usato - verde
+  safe, // >14 giorni - verde
+  caution, // 7-14 giorni - giallo
+  warning, // 3-7 giorni - arancione
+  avoid, // <3 giorni - rosso
+}
+
+extension PointUsageLevelExtension on PointUsageLevel {
+  Color getColor(bool isDark) {
+    return switch (this) {
+      PointUsageLevel.neverUsed => isDark ? AppColors.darkPine : AppColors.dawnPine,
+      PointUsageLevel.safe => isDark ? AppColors.darkPine : AppColors.dawnPine,
+      PointUsageLevel.caution => isDark ? AppColors.darkGold : AppColors.dawnGold,
+      PointUsageLevel.warning => Colors.orange,
+      PointUsageLevel.avoid => isDark ? AppColors.darkLove : AppColors.dawnLove,
+    };
+  }
+
+  String get label => switch (this) {
+    PointUsageLevel.neverUsed => 'Mai usato',
+    PointUsageLevel.safe => 'Consigliato',
+    PointUsageLevel.caution => 'Attenzione',
+    PointUsageLevel.warning => 'Recente',
+    PointUsageLevel.avoid => 'Evitare',
+  };
+
+  IconData get icon => switch (this) {
+    PointUsageLevel.neverUsed => Icons.star,
+    PointUsageLevel.safe => Icons.check_circle,
+    PointUsageLevel.caution => Icons.info,
+    PointUsageLevel.warning => Icons.warning,
+    PointUsageLevel.avoid => Icons.block,
+  };
+
+  static PointUsageLevel fromDaysSinceLastUse(int? days) {
+    if (days == null) return PointUsageLevel.neverUsed;
+    if (days > 14) return PointUsageLevel.safe;
+    if (days >= 7) return PointUsageLevel.caution;
+    if (days >= 3) return PointUsageLevel.warning;
+    return PointUsageLevel.avoid;
+  }
+}
+
+/// Point history item with usage indicator
+class _PointHistoryItem {
+  final int pointNumber;
+  final String pointLabel;
+  final DateTime? lastUsed;
+  final int? daysSinceLastUse;
+  final PointUsageLevel usageLevel;
+  final bool isBlacklisted;
+
+  _PointHistoryItem({
+    required this.pointNumber,
+    required this.pointLabel,
+    required this.lastUsed,
+    required this.isBlacklisted,
+  })  : daysSinceLastUse = lastUsed != null
+            ? DateTime.now().difference(lastUsed).inDays
+            : null,
+        usageLevel = PointUsageLevelExtension.fromDaysSinceLastUse(
+          lastUsed != null ? DateTime.now().difference(lastUsed).inDays : null,
+        );
+}
+
+/// Widget for displaying point usage history
+class _PointHistoryList extends StatelessWidget {
+  const _PointHistoryList({
+    required this.items,
+    required this.selectedPoint,
+    required this.isDark,
+    required this.onPointTap,
+  });
+
+  final List<_PointHistoryItem> items;
+  final int? selectedPoint;
+  final bool isDark;
+  final void Function(int) onPointTap;
+
+  @override
+  Widget build(BuildContext context) {
+    // Ordina per data di utilizzo: mai usati prima, poi dal meno recente
+    final sortedItems = List<_PointHistoryItem>.from(items)
+      ..sort((a, b) {
+        // Blacklisted punti sempre alla fine
+        if (a.isBlacklisted && !b.isBlacklisted) return 1;
+        if (!a.isBlacklisted && b.isBlacklisted) return -1;
+
+        // Mai usati prima
+        if (a.lastUsed == null && b.lastUsed == null) {
+          return a.pointNumber.compareTo(b.pointNumber);
+        }
+        if (a.lastUsed == null) return -1;
+        if (b.lastUsed == null) return 1;
+
+        // Ordina per data (meno recente prima)
+        return a.lastUsed!.compareTo(b.lastUsed!);
+      });
+
+    return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: sortedItems.length,
+      separatorBuilder: (context, index) => const SizedBox(height: 8),
+      itemBuilder: (context, index) {
+        final item = sortedItems[index];
+        return _PointHistoryCard(
+          item: item,
+          isSelected: item.pointNumber == selectedPoint,
+          isDark: isDark,
+          onTap: item.isBlacklisted ? null : () => onPointTap(item.pointNumber),
+        );
+      },
+    );
+  }
+}
+
+/// Card for a single point in the history list
+class _PointHistoryCard extends StatelessWidget {
+  const _PointHistoryCard({
+    required this.item,
+    required this.isSelected,
+    required this.isDark,
+    this.onTap,
+  });
+
+  final _PointHistoryItem item;
+  final bool isSelected;
+  final bool isDark;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final usageColor = item.usageLevel.getColor(isDark);
+
+    return Material(
+      color: isSelected
+          ? usageColor.withValues(alpha: 0.2)
+          : (isDark ? AppColors.darkOverlay : AppColors.dawnOverlay),
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: isSelected
+                ? Border.all(color: usageColor, width: 2)
+                : Border.all(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.1)
+                        : Colors.black.withValues(alpha: 0.1),
+                  ),
+          ),
+          child: Row(
+            children: [
+              // Usage indicator
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: item.isBlacklisted
+                      ? Colors.grey.withValues(alpha: 0.3)
+                      : usageColor.withValues(alpha: 0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  item.isBlacklisted ? Icons.block : item.usageLevel.icon,
+                  color: item.isBlacklisted ? Colors.grey : usageColor,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              // Point info
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.pointLabel,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        decoration:
+                            item.isBlacklisted ? TextDecoration.lineThrough : null,
+                        color: item.isBlacklisted
+                            ? (isDark ? AppColors.darkMuted : AppColors.dawnMuted)
+                            : null,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      item.isBlacklisted
+                          ? 'Punto escluso'
+                          : (item.lastUsed != null
+                              ? 'Ultima: ${DateFormat('d MMM yyyy', 'it').format(item.lastUsed!)}'
+                              : 'Mai usato'),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Days indicator
+              if (!item.isBlacklisted) ...[
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: usageColor.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        item.daysSinceLastUse != null
+                            ? '${item.daysSinceLastUse} gg fa'
+                            : '★ Nuovo',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: usageColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      item.usageLevel.label,
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: usageColor,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(width: 8),
+                Icon(
+                  Icons.chevron_right,
+                  color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

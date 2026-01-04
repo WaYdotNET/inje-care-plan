@@ -89,7 +89,7 @@ class StatisticsScreen extends ConsumerWidget {
           const SizedBox(height: 24),
 
           // Grafico aderenza mensile
-          _SectionTitle(title: 'Aderenza Mensile', icon: Icons.bar_chart),
+          const _SectionTitle(title: 'Aderenza Mensile', icon: Icons.bar_chart),
           const SizedBox(height: 12),
           Card(
             child: Padding(
@@ -104,7 +104,7 @@ class StatisticsScreen extends ConsumerWidget {
           const SizedBox(height: 24),
 
           // Trend settimanale
-          _SectionTitle(title: 'Trend Settimanale', icon: Icons.show_chart),
+          const _SectionTitle(title: 'Trend Settimanale', icon: Icons.show_chart),
           const SizedBox(height: 12),
           Card(
             child: Padding(
@@ -119,7 +119,7 @@ class StatisticsScreen extends ConsumerWidget {
           const SizedBox(height: 24),
 
           // Heatmap zone
-          _SectionTitle(title: 'Utilizzo Zone', icon: Icons.pie_chart),
+          const _SectionTitle(title: 'Utilizzo Zone', icon: Icons.pie_chart),
           const SizedBox(height: 12),
           Card(
             child: Padding(
@@ -131,7 +131,7 @@ class StatisticsScreen extends ConsumerWidget {
           const SizedBox(height: 24),
 
           // Dettaglio zone
-          _SectionTitle(title: 'Dettaglio Zone', icon: Icons.location_on),
+          const _SectionTitle(title: 'Dettaglio Zone', icon: Icons.location_on),
           const SizedBox(height: 12),
           ...stats.zoneUsage.take(5).map((zone) => Padding(
             padding: const EdgeInsets.only(bottom: 8),

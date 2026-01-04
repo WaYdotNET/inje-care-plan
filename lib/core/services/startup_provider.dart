@@ -1,12 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'backup_provider.dart';
 import 'startup_service.dart';
 
 /// Provider per StartupService
 final startupServiceProvider = Provider<StartupService>((ref) {
-  final backupService = ref.watch(backupServiceProvider);
-  return StartupService(backupService: backupService);
+  return StartupService();
 });
 
 /// Provider per lo stato iniziale dell'app

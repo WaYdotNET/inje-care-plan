@@ -1,51 +1,30 @@
 import 'package:drift/drift.dart';
-import 'package:flutter/foundation.dart' show debugPrint;
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:local_auth/local_auth.dart';
 
 import '../../core/database/app_database.dart';
 
-/// Exception for Google Sign-In errors
-class GoogleSignInException implements Exception {
-  final String message;
-  GoogleSignInException(this.message);
-  
-  @override
-  String toString() => message;
-}
-
-/// Rappresentazione locale dell'utente (senza Firebase)
+/// Rappresentazione locale dell'utente
 class LocalUser {
   final String id;
   final String? displayName;
   final String? email;
   final String? photoUrl;
 
-  LocalUser({required this.id, this.displayName, this.email, this.photoUrl});
-
-  factory LocalUser.fromGoogleSignIn(GoogleSignInAccount account) {
-    return LocalUser(
-      id: account.id,
-      displayName: account.displayName,
-      email: account.email,
-      photoUrl: account.photoUrl,
-    );
-  }
+  const LocalUser({
+    required this.id,
+    this.displayName,
+    this.email,
+    this.photoUrl,
+  });
 }
 
-/// Authentication repository - versione offline-first senza Firebase
+/// Authentication repository - versione offline-first senza Google
 class AuthRepository {
-  AuthRepository({
-    LocalAuthentication? localAuth,
-    required GoogleSignIn googleSignIn,
-  })  : _localAuth = localAuth ?? LocalAuthentication(),
-        _googleSignIn = googleSignIn;
+  AuthRepository({LocalAuthentication? localAuth})
+      : _localAuth = localAuth ?? LocalAuthentication();
 
   final LocalAuthentication _localAuth;
-  final GoogleSignIn _googleSignIn;
-
   LocalUser? _currentUser;
-  GoogleSignInAccount? _googleAccount;
 
   /// Get current user (locale)
   LocalUser? get currentUser => _currentUser;
@@ -55,9 +34,8 @@ class AuthRepository {
 
   /// Initialize auth state from stored data
   Future<void> initialize(AppDatabase db) async {
-    // Prova a recuperare il profilo salvato
     final profile = await db.getUserProfile();
-    if (profile != null && profile.email.isNotEmpty) {
+    if (profile != null) {
       _currentUser = LocalUser(
         id: profile.id.toString(),
         displayName: profile.displayName,
@@ -65,72 +43,45 @@ class AuthRepository {
         photoUrl: profile.photoUrl,
       );
     }
-
-    // Prova login silenzioso per rinnovare token Google
-    try {
-      final googleUser = await _googleSignIn.signInSilently();
-      if (googleUser != null) {
-        _googleAccount = googleUser;
-      }
-    } catch (_) {
-      // Ignora errori di login silenzioso
-    }
   }
 
-  /// Sign in with Google (solo per Google Drive access)
-  Future<LocalUser?> signInWithGoogle(AppDatabase db) async {
-    try {
-      final googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) {
-        // Login annullato dall'utente
-        throw GoogleSignInException('Login annullato dall\'utente');
-      }
-
-      _googleAccount = googleUser;
-      _currentUser = LocalUser.fromGoogleSignIn(googleUser);
-      await _saveUserProfile(db, googleUser);
-
-      return _currentUser;
-    } catch (e) {
-      // Log errore per debug
-      debugPrint('Google Sign-In error: $e');
-      rethrow;
-    }
-  }
-
-  /// Save user profile to local database
-  Future<void> _saveUserProfile(
-    AppDatabase db,
-    GoogleSignInAccount googleUser,
-  ) async {
+  /// Salva profilo utente locale
+  Future<LocalUser> saveLocalProfile(
+    AppDatabase db, {
+    required String displayName,
+    String? email,
+  }) async {
     final existingProfile = await db.getUserProfile();
 
     if (existingProfile != null) {
       await db.updateUserProfile(
         UserProfilesCompanion(
           id: Value(existingProfile.id),
-          displayName: Value(googleUser.displayName ?? ''),
-          email: Value(googleUser.email),
-          photoUrl: Value(googleUser.photoUrl ?? ''),
+          displayName: Value(displayName),
+          email: Value(email ?? ''),
           updatedAt: Value(DateTime.now()),
         ),
       );
+      _currentUser = LocalUser(
+        id: existingProfile.id.toString(),
+        displayName: displayName,
+        email: email,
+      );
     } else {
-      await db.insertUserProfile(
+      final id = await db.insertUserProfile(
         UserProfilesCompanion.insert(
-          displayName: Value(googleUser.displayName ?? ''),
-          email: Value(googleUser.email),
-          photoUrl: Value(googleUser.photoUrl ?? ''),
+          displayName: Value(displayName),
+          email: Value(email ?? ''),
         ),
       );
+      _currentUser = LocalUser(
+        id: id.toString(),
+        displayName: displayName,
+        email: email,
+      );
     }
-  }
 
-  /// Sign out
-  Future<void> signOut() async {
-    await _googleSignIn.signOut();
-    _currentUser = null;
-    _googleAccount = null;
+    return _currentUser!;
   }
 
   /// Check if biometric authentication is available
@@ -154,7 +105,7 @@ class AuthRepository {
     }
   }
 
-  /// Enable biometric authentication (saved in local DB)
+  /// Enable biometric authentication
   Future<void> setBiometricEnabled(AppDatabase db, bool enabled) async {
     final profile = await db.getUserProfile();
     if (profile == null) return;
@@ -168,12 +119,9 @@ class AuthRepository {
     );
   }
 
-  /// Check if biometric is enabled for user
+  /// Check if biometric is enabled
   Future<bool> isBiometricEnabled(AppDatabase db) async {
     final profile = await db.getUserProfile();
     return profile?.biometricEnabled ?? false;
   }
-
-  /// Get Google account for API access (Drive, Calendar)
-  GoogleSignInAccount? get googleAccount => _googleAccount;
 }

@@ -442,7 +442,7 @@ class _ContextualTooltipState extends State<ContextualTooltip> {
     final hasShown = prefs.getBool(key) ?? false;
 
     if (!hasShown && mounted) {
-      await Future.delayed(const Duration(milliseconds: 500));
+      await Future<void>.delayed(const Duration(milliseconds: 500));
       if (mounted) {
         _showTooltip();
         await prefs.setBool(key, true);

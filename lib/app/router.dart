@@ -6,7 +6,6 @@ import '../features/auth/login_screen.dart';
 import '../features/auth/auth_provider.dart';
 import '../features/home/home_screen.dart';
 import '../features/calendar/calendar_screen.dart';
-// Note: BodyMapScreen deprecated, using PointSelectionScreen instead
 import '../features/injection/zone_detail_screen.dart';
 import '../features/injection/record_screen.dart';
 import '../features/history/history_screen.dart';

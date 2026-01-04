@@ -1,29 +1,18 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/database/database_provider.dart';
 import 'auth_repository.dart';
 
-/// Scopes per Google Drive (condivisi tra auth e backup)
-const googleDriveScopes = [drive.DriveApi.driveFileScope];
-
-/// Provider singleton per GoogleSignIn - condiviso tra AuthRepository e BackupService
-final googleSignInProvider = Provider<GoogleSignIn>((ref) {
-  return GoogleSignIn(scopes: googleDriveScopes);
-});
-
 /// Auth repository provider
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  final googleSignIn = ref.watch(googleSignInProvider);
-  return AuthRepository(googleSignIn: googleSignIn);
+  return AuthRepository();
 });
 
 /// Chiave per salvare lo stato dell'onboarding
 const _onboardingCompletedKey = 'onboarding_completed';
 
-/// Stato di autenticazione
+/// Stato di autenticazione (semplificato, senza Google)
 class AuthState {
   final LocalUser? user;
   final bool isLoading;
@@ -53,21 +42,16 @@ class AuthState {
   }
 
   /// L'utente può accedere all'app se ha completato l'onboarding
-  /// (con o senza login Google)
   bool get canAccessApp => hasCompletedOnboarding;
 
-  /// L'utente ha un account Google collegato (per backup)
-  bool get hasGoogleAccount => user != null;
-
-  // Manteniamo isAuthenticated per retrocompatibilità
+  /// Manteniamo isAuthenticated per retrocompatibilità
   bool get isAuthenticated => hasCompletedOnboarding;
 }
 
-/// Notifier per gestire lo stato di autenticazione (Riverpod 3.x)
+/// Notifier per gestire lo stato di autenticazione
 class AuthNotifier extends Notifier<AuthState> {
   @override
   AuthState build() {
-    // Avvia l'inizializzazione automaticamente
     Future.microtask(() => initialize());
     return const AuthState(isLoading: true);
   }
@@ -78,7 +62,6 @@ class AuthNotifier extends Notifier<AuthState> {
   Future<void> initialize() async {
     state = state.copyWith(isLoading: true);
     try {
-      // Carica lo stato dell'onboarding
       final prefs = await SharedPreferences.getInstance();
       final hasCompletedOnboarding =
           prefs.getBool(_onboardingCompletedKey) ?? false;
@@ -95,11 +78,10 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
-  /// Continua senza account Google (modalità offline)
+  /// Continua (completa onboarding)
   Future<void> continueWithoutAccount() async {
     state = state.copyWith(isLoading: true);
     try {
-      // Salva che l'utente ha completato l'onboarding
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(_onboardingCompletedKey, true);
 
@@ -109,73 +91,31 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
-  /// Login con Google (opzionale, per backup)
-  Future<bool> signInWithGoogle() async {
-    state = state.copyWith(isLoading: true, error: null);
+  /// Salva profilo utente locale
+  Future<void> saveUserProfile({
+    required String displayName,
+    String? email,
+  }) async {
+    state = state.copyWith(isLoading: true);
     try {
       final db = ref.read(databaseProvider);
-      final user = await _repository.signInWithGoogle(db);
-      if (user != null) {
-        // Segna anche l'onboarding come completato
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setBool(_onboardingCompletedKey, true);
+      final user = await _repository.saveLocalProfile(
+        db,
+        displayName: displayName,
+        email: email,
+      );
 
-        state = AuthState(user: user, hasCompletedOnboarding: true);
-        return true;
-      } else {
-        state = state.copyWith(isLoading: false, error: 'Login annullato');
-        return false;
-      }
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_onboardingCompletedKey, true);
+
+      state = AuthState(user: user, hasCompletedOnboarding: true);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
-      return false;
     }
   }
 
-  /// Collega account Google (dopo aver iniziato in modalità offline)
-  Future<bool> linkGoogleAccount() async {
-    state = state.copyWith(isLoading: true, error: null);
-    try {
-      final db = ref.read(databaseProvider);
-      final user = await _repository.signInWithGoogle(db);
-      if (user != null) {
-        // Forza aggiornamento completo dello stato
-        state = AuthState(
-          user: user,
-          isLoading: false,
-          hasCompletedOnboarding: state.hasCompletedOnboarding,
-        );
-        return true;
-      } else {
-        state = state.copyWith(
-          isLoading: false,
-          error: 'Collegamento annullato',
-        );
-        return false;
-      }
-    } catch (e) {
-      // Messaggio di errore più chiaro
-      String errorMessage = e.toString();
-      if (errorMessage.contains('PlatformException') || 
-          errorMessage.contains('sign_in_failed') ||
-          errorMessage.contains('ApiException')) {
-        errorMessage = 'Google Sign-In non configurato. '
-            'Verifica google-services.json e OAuth credentials.';
-      }
-      state = state.copyWith(isLoading: false, error: errorMessage);
-      return false;
-    }
-  }
-
-  /// Scollega account Google
-  Future<void> unlinkGoogleAccount() async {
-    await _repository.signOut();
-    state = state.copyWith(user: null);
-  }
-
-  /// Logout completo (reset onboarding)
+  /// Logout (reset onboarding)
   Future<void> signOut() async {
-    await _repository.signOut();
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_onboardingCompletedKey);
     state = const AuthState();
@@ -186,7 +126,7 @@ class AuthNotifier extends Notifier<AuthState> {
     return _repository.authenticateWithBiometrics();
   }
 
-  /// Reset onboarding (per rivederlo)
+  /// Reset onboarding
   Future<void> resetOnboarding() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_onboardingCompletedKey);

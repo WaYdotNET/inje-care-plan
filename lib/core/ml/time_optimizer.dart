@@ -6,13 +6,13 @@ class TimeOptimizer {
   TimeRecommendation analyze(TimePatternData timeData, AdherenceData adherenceData) {
     // Se non ci sono dati sufficienti, usa valori predefiniti
     if (timeData.preferredHours.isEmpty) {
-      return TimeRecommendation(
+      return const TimeRecommendation(
         suggestedHour: 9,
         suggestedMinute: 0,
         confidence: 0.3,
         reason: 'Orario consigliato basato su pratiche standard',
-        alternativeHours: const [8, 10, 20],
-        factors: const {},
+        alternativeHours: [8, 10, 20],
+        factors: {},
       );
     }
 

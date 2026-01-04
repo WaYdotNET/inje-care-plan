@@ -639,10 +639,7 @@ class _SettingsTile extends StatelessWidget {
 
 /// Header con info app
 class _AppInfoHeader extends StatelessWidget {
-  const _AppInfoHeader({
-    required this.isDark,
-    required this.onReset,
-  });
+  const _AppInfoHeader({required this.isDark, required this.onReset});
 
   final bool isDark;
   final VoidCallback onReset;
@@ -657,7 +654,9 @@ class _AppInfoHeader extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 30,
-            backgroundColor: isDark ? AppColors.darkOverlay : AppColors.dawnOverlay,
+            backgroundColor: isDark
+                ? AppColors.darkOverlay
+                : AppColors.dawnOverlay,
             child: Icon(
               Icons.favorite,
               size: 30,

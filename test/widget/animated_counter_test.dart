@@ -126,12 +126,14 @@ void main() {
         const MaterialApp(
           home: Scaffold(
             body: FadeInWidget(
+              duration: Duration.zero,
               child: Text('Hello'),
             ),
           ),
         ),
       );
 
+      await tester.pumpAndSettle();
       expect(find.byType(FadeInWidget), findsOneWidget);
       expect(find.text('Hello'), findsOneWidget);
     });
@@ -141,15 +143,14 @@ void main() {
         const MaterialApp(
           home: Scaffold(
             body: FadeInWidget(
-              delay: Duration(milliseconds: 100),
-              duration: Duration(milliseconds: 100),
+              delay: Duration.zero,
+              duration: Duration.zero,
               child: Text('Delayed'),
             ),
           ),
         ),
       );
 
-      // Wait for delay and animation
       await tester.pumpAndSettle();
       expect(find.text('Delayed'), findsOneWidget);
     });
@@ -161,6 +162,8 @@ void main() {
         const MaterialApp(
           home: Scaffold(
             body: StaggeredList(
+              staggerDelay: Duration.zero,
+              initialDelay: Duration.zero,
               children: [
                 Text('Item 1'),
                 Text('Item 2'),
@@ -186,12 +189,14 @@ void main() {
           home: Scaffold(
             body: BounceAnimation(
               animate: false,
+              duration: Duration.zero,
               child: Text('Bounce'),
             ),
           ),
         ),
       );
 
+      await tester.pumpAndSettle();
       expect(find.text('Bounce'), findsOneWidget);
     });
 
@@ -201,7 +206,7 @@ void main() {
           home: Scaffold(
             body: BounceAnimation(
               animate: true,
-              duration: Duration(milliseconds: 100),
+              duration: Duration.zero,
               child: Text('Bounce'),
             ),
           ),
@@ -220,12 +225,14 @@ void main() {
           home: Scaffold(
             body: PulseAnimation(
               enabled: false,
+              duration: Duration.zero,
               child: Text('Pulse'),
             ),
           ),
         ),
       );
 
+      await tester.pumpAndSettle();
       expect(find.text('Pulse'), findsOneWidget);
     });
   });

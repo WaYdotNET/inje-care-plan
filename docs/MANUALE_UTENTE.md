@@ -11,10 +11,11 @@
 3. [Dashboard Home](#dashboard-home)
 4. [Registrare un'Iniezione](#registrare-uniniezione)
 5. [Calendario](#calendario)
-6. [Storico](#storico)
-7. [Impostazioni](#impostazioni)
-8. [Privacy e Sicurezza](#privacy-e-sicurezza)
-9. [Domande Frequenti (FAQ)](#domande-frequenti-faq)
+6. [Statistiche](#statistiche)
+7. [Storico](#storico)
+8. [Impostazioni](#impostazioni)
+9. [Privacy e Sicurezza](#privacy-e-sicurezza)
+10. [Domande Frequenti (FAQ)](#domande-frequenti-faq)
 
 ---
 
@@ -26,10 +27,11 @@
 
 - **Calendario intelligente**: Pianifica automaticamente le tue iniezioni
 - **Mappa del corpo interattiva**: Ruota i punti di iniezione per evitare sovrapposizioni
+- **Suggerimenti AI**: Raccomandazioni intelligenti per zone e orari ottimali
+- **Statistiche avanzate**: Grafici aderenza, heatmap zone, trend settimanali
 - **Promemoria configurabili**: Non dimenticare mai una dose
 - **Storico completo**: Tieni traccia di tutte le iniezioni
-- **100% Offline**: I tuoi dati restano sul tuo dispositivo
-- **Backup cifrato**: Opzionale, su Google Drive con password
+- **100% Offline**: I tuoi dati restano esclusivamente sul tuo dispositivo
 
 ---
 
@@ -38,16 +40,16 @@
 Al primo avvio dell'app, vedrai una breve introduzione alle funzionalità principali.
 
 <p align="center">
-  <img src="../assets/screenshots/login.png" width="280" alt="Schermata di Login">
+  <img src="../assets/screenshots/onboarding.png" width="280" alt="Schermata di Onboarding">
 </p>
 
-### Opzioni di Avvio
+### Avvio Rapido
 
-1. **"Inizia"** - Usa l'app completamente offline, senza account Google. I tuoi dati restano solo sul dispositivo.
+1. Scorri le schermate introduttive per scoprire le funzionalità
+2. Tocca **"Inizia"** per entrare nell'app
+3. Completa la configurazione iniziale del piano terapeutico
 
-2. **"Accedi con Google per backup"** - Collega il tuo account Google per abilitare il backup cifrato su Google Drive.
-
-> **Nota**: Puoi sempre collegare Google in seguito dalle Impostazioni.
+> **Nota**: L'app funziona completamente offline. I tuoi dati non lasciano mai il dispositivo.
 
 ---
 
@@ -63,11 +65,20 @@ Dopo il primo avvio, verrai accolto dalla schermata principale.
 
 | Elemento | Descrizione |
 |----------|-------------|
-| **Prossima Iniezione** | Data, ora e punto suggerito per la prossima iniezione |
-| **Registra ora** | Pulsante rapido per registrare l'iniezione |
+| **Suggerimento AI** | Raccomandazione intelligente basata sui tuoi pattern |
+| **Appuntamenti Settimanali** | Le prossime iniezioni programmate nella settimana |
 | **Aderenza** | Percentuale di aderenza negli ultimi 30 giorni |
-| **Calendario** | Accesso rapido alla vista calendario |
-| **Storico** | Accesso rapido allo storico iniezioni |
+| **Registra ora** | Pulsante rapido per registrare l'iniezione |
+
+### Suggerimenti Intelligenti
+
+L'app analizza i tuoi dati per fornirti raccomandazioni personalizzate:
+
+- **Zona suggerita**: La zona meno utilizzata di recente
+- **Orario ottimale**: Basato sui tuoi pattern di successo
+- **Avvisi aderenza**: Se l'aderenza cala sotto l'80%
+
+Tocca la card del suggerimento per seguire la raccomandazione.
 
 ### Barra di Navigazione
 
@@ -83,10 +94,10 @@ In basso trovi quattro schede:
 
 ### Passo 1: Seleziona la Zona
 
-Tocca "Registra ora" o "Nuova" per aprire la mappa del corpo.
+Tocca "Registra ora" o "Nuova" per aprire la selezione punti.
 
 <p align="center">
-  <img src="../assets/screenshots/body_map.png" width="280" alt="Mappa del Corpo">
+  <img src="../assets/screenshots/body_map.png" width="280" alt="Selezione Punto">
 </p>
 
 Il corpo è diviso in **8 zone**:
@@ -102,21 +113,17 @@ Il corpo è diviso in **8 zone**:
 | GD | Gluteo Destro | 4 |
 | GS | Gluteo Sinistro | 4 |
 
-La zona **suggerita** è evidenziata in base alla rotazione automatica.
+La zona **suggerita** dall'AI è evidenziata in verde.
 
 ### Passo 2: Seleziona il Punto
 
-Tocca una zona per vedere i punti disponibili.
+Usa la silhouette interattiva per selezionare il punto esatto.
 
-<p align="center">
-  <img src="../assets/screenshots/zone_detail.png" width="280" alt="Dettaglio Zona">
-</p>
-
-- **Punti verdi**: Disponibili
+- **Punti verdi**: Disponibili e suggeriti
 - **Punti arancioni**: Usati di recente
-- **Punti rossi**: Esclusi (blacklist)
+- **Punti grigi**: Esclusi (blacklist)
 
-Tocca **"Usa"** sul punto desiderato.
+Tocca il punto desiderato sulla silhouette.
 
 ### Passo 3: Conferma l'Iniezione
 
@@ -157,7 +164,43 @@ La vista calendario mostra tutte le iniezioni programmate e completate.
 
 - **Tocca un giorno**: Vedi i dettagli delle iniezioni
 - **Scorri sinistra/destra**: Cambia mese
-- **Tocca un evento**: Apri i dettagli
+- **Tocca un evento**: Modifica o elimina l'iniezione
+- **Pulsante +**: Aggiungi iniezione nel giorno selezionato
+
+### Modifica Eventi
+
+Toccando un evento puoi:
+- Cambiare il punto di iniezione
+- Segnare come "Saltata" con motivo
+- Eliminare l'evento
+
+---
+
+## Statistiche
+
+Accedi alle statistiche avanzate dal menu laterale o dalle impostazioni.
+
+<p align="center">
+  <img src="../assets/screenshots/statistics.png" width="280" alt="Statistiche">
+</p>
+
+### Grafici Disponibili
+
+| Grafico | Descrizione |
+|---------|-------------|
+| **Trend Aderenza** | Andamento mensile dell'aderenza in percentuale |
+| **Heatmap Zone** | Mappa visiva dell'utilizzo di ogni zona |
+| **Distribuzione Settimanale** | Iniezioni per giorno della settimana |
+| **Storico Mensile** | Confronto tra mesi |
+
+### Filtri Periodo
+
+Puoi filtrare le statistiche per:
+- Ultima settimana
+- Ultimo mese
+- Ultimi 3 mesi
+- Ultimo anno
+- Tutto
 
 ---
 
@@ -182,6 +225,7 @@ Il report esportato include:
 - Punto utilizzato
 - Note ed effetti collaterali
 - Statistiche di aderenza
+- Grafici riassuntivi (solo PDF)
 
 Ideale per condividere con il tuo neurologo.
 
@@ -190,15 +234,10 @@ Ideale per condividere con il tuo neurologo.
 ## Impostazioni
 
 <p align="center">
-  <img src="../assets/screenshots/notifications.png" width="280" alt="Impostazioni">
+  <img src="../assets/screenshots/settings.png" width="280" alt="Impostazioni">
 </p>
 
 ### Sezioni Impostazioni
-
-#### Modalità Offline / Account Google
-
-- **Modalità offline**: I dati sono salvati solo sul dispositivo
-- **Collega account Google**: Abilita backup cifrato su Drive
 
 #### Piano Terapeutico
 
@@ -210,7 +249,8 @@ Ideale per condividere con il tuo neurologo.
 
 #### Zone e Punti
 
-- **Configura zone**: Personalizza le zone del corpo
+- **Gestione zone**: Visualizza e configura le zone del corpo
+- **Editor punti**: Personalizza posizione e nome dei punti con la silhouette interattiva
 - **Punti esclusi**: Gestisci i punti in blacklist
 
 <p align="center">
@@ -226,84 +266,81 @@ Ideale per condividere con il tuo neurologo.
 | **Promemoria iniezione** | Attiva/disattiva promemoria |
 | **Anticipo** | Minuti prima dell'orario (es. 30 min) |
 
----
+#### Aspetto
 
-## Backup e Ripristino
+| Opzione | Descrizione |
+|---------|-------------|
+| **Tema** | Chiaro, Scuro o Automatico (segue il sistema) |
+| **Lingua** | Italiano, English, Deutsch, Français, Español |
 
-### Creare un Backup
+#### Sicurezza
 
-1. Vai in **Impostazioni**
-2. Collega il tuo account Google (se non già fatto)
-3. Scorri fino a **Backup e Ripristino**
-4. Tocca **"Backup su Google Drive"**
-5. Inserisci una **password sicura** (minimo 8 caratteri)
-6. Conferma
-
-Il backup viene cifrato con AES-256 prima di essere caricato su Drive.
-
-### Ripristinare su Nuovo Dispositivo
-
-1. Installa InjeCare Plan sul nuovo dispositivo
-2. Accedi con lo stesso account Google
-3. L'app rileva automaticamente il backup esistente
-4. Inserisci la **stessa password** usata per il backup
-5. I dati vengono ripristinati
-
-> **IMPORTANTE**: La password non viene mai salvata. Se la dimentichi, non potrai recuperare il backup.
+| Opzione | Descrizione |
+|---------|-------------|
+| **Sblocco biometrico** | Richiedi Face ID / Touch ID all'avvio |
 
 ---
 
 ## Privacy e Sicurezza
 
-### Dati Locali
+### Dati 100% Locali
 
-- Tutti i dati sono salvati **localmente** sul dispositivo
+- Tutti i dati sono salvati **esclusivamente** sul dispositivo
 - Utilizziamo **SQLite** (Drift) per massima affidabilità
-- Nessun dato viene inviato a server esterni
-
-### Backup Cifrato
-
-- Cifratura **AES-256** con chiave derivata dalla password
-- La chiave usa **PBKDF2** con 100.000 iterazioni
-- Il backup su Drive contiene solo dati cifrati
+- **Nessun dato viene mai inviato** a server esterni
+- **Nessuna connessione internet richiesta**
 
 ### Privacy nell'Interfaccia
 
 - L'app **non mostra riferimenti espliciti** alla patologia
 - Ideale per utilizzo in pubblico
-- Possibilità di sblocco biometrico
+- Possibilità di sblocco biometrico per privacy aggiuntiva
+
+### Export Sicuro
+
+- I file PDF/CSV esportati restano sul tuo dispositivo
+- Condividili solo con chi desideri tu
 
 ---
 
 ## Domande Frequenti (FAQ)
 
-### Posso usare l'app senza account Google?
+### L'app richiede connessione internet?
 
-**Sì!** L'app funziona completamente offline. L'account Google è opzionale e serve solo per il backup su Drive.
+**No!** L'app funziona completamente offline. Non richiede mai connessione internet.
 
-### Cosa succede se dimentico la password del backup?
+### Come faccio il backup dei dati?
 
-Purtroppo **non è possibile recuperare il backup** senza la password corretta. Questo è intenzionale per garantire la massima sicurezza dei tuoi dati.
+Puoi esportare tutti i dati in formato CSV dalla sezione Storico. Il file può essere salvato dove preferisci (cloud personale, email, etc.).
 
 ### Posso esportare i dati per il mio medico?
 
-**Sì!** Vai in Storico e tocca l'icona di export in alto a destra. Puoi generare un PDF o CSV con tutto lo storico.
+**Sì!** Vai in Storico e tocca l'icona di export in alto a destra. Puoi generare un PDF con grafici o un CSV con i dati grezzi.
 
 ### L'app funziona su tablet?
 
 **Sì!** L'interfaccia si adatta automaticamente a schermi più grandi.
 
-### I dati sono sincronizzati tra dispositivi?
-
-Solo se usi il backup su Google Drive. Il backup è manuale: devi fare backup sul dispositivo originale e ripristino sul nuovo dispositivo.
-
 ### Posso modificare le zone di iniezione?
 
-**Sì!** Vai in Impostazioni → Configura zone per personalizzare le zone e i punti.
+**Sì!** Vai in Impostazioni → Gestione Zone per personalizzare le zone e i punti. Puoi anche spostare i punti sulla silhouette.
 
 ### L'app invia notifiche?
 
 **Sì!** Puoi configurare promemoria per ogni iniezione. Le notifiche sono locali e non richiedono connessione internet.
+
+### Come funzionano i suggerimenti AI?
+
+L'app analizza localmente i tuoi dati di utilizzo per suggerire:
+- La zona meno utilizzata di recente
+- L'orario in cui hai maggior successo
+- Avvisi se l'aderenza sta calando
+
+Tutto avviene sul dispositivo, nessun dato viene inviato a server esterni.
+
+### Posso escludere dei punti di iniezione?
+
+**Sì!** Vai in Impostazioni → Gestione Zone → seleziona una zona → Punti esclusi. Puoi specificare il motivo dell'esclusione (reazione, cicatrice, difficile accesso).
 
 ---
 

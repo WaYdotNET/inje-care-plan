@@ -11,10 +11,11 @@ AppDatabase createTestDatabase() {
 }
 
 /// Creates a ProviderContainer for testing with optional overrides
+/// Uses dynamic list to avoid type issues with Override in different Riverpod versions
 ProviderContainer createContainer({
-  List<Override> overrides = const [],
+  List<dynamic> overrides = const [],
 }) {
-  return ProviderContainer(overrides: overrides);
+  return ProviderContainer(overrides: overrides.cast());
 }
 
 /// Wraps a widget with MaterialApp for testing
@@ -25,12 +26,13 @@ Widget testableWidget(Widget widget) {
 }
 
 /// Wraps a widget with MaterialApp and ProviderScope
+/// Uses dynamic list to avoid type issues with Override in different Riverpod versions
 Widget testableScopedWidget(
   Widget widget, {
-  List<Override> overrides = const [],
+  List<dynamic> overrides = const [],
 }) {
   return ProviderScope(
-    overrides: overrides,
+    overrides: overrides.cast(),
     child: MaterialApp(
       home: widget,
     ),

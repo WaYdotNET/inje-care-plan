@@ -32,12 +32,14 @@ Applicazione Flutter per la gestione delle iniezioni di Interferone beta-1a per 
 - 📊 **Statistiche avanzate**: Grafici aderenza, heatmap zone, trend settimanali
 - 🤖 **Suggerimenti AI**: Raccomandazioni intelligenti per zone e orari
 - 📤 **Export PDF/CSV**: Condivisione report con il medico
+- 📥 **Import CSV**: Importazione storico da file esterno
+- 🎯 **Dati demo**: Opzione per provare l'app con dati di esempio
 
 ### Privacy-First (Offline-Only)
 - 🔒 **100% Offline**: Tutti i dati restano sul tuo dispositivo
 - 🛡️ **Nessun cloud**: Nessuna dipendenza da servizi esterni
 - 👁️ **Privacy UI**: Nessun riferimento esplicito alla patologia
-- 🔐 **Sblocco biometrico**: Supporto Face ID / Touch ID
+- 📥 **Import/Export CSV**: Formato semplice per backup e migrazione
 
 ## Stack Tecnologico
 

@@ -1,10 +1,14 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:file_picker/file_picker.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/theme_provider.dart';
 import '../../core/services/export_service.dart';
+import '../../core/services/import_service.dart';
 import '../../core/services/notification_settings_provider.dart';
 import '../../core/database/app_database.dart' hide TherapyPlan;
 import '../../core/database/database_provider.dart';
@@ -172,9 +176,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             onTap: () => _showThemeSelector(context),
           ),
 
-          const _SectionHeader(title: 'SICUREZZA'),
-          _BiometricTile(),
-
           const _SectionHeader(title: 'DATI'),
           injectionsAsync.when(
             loading: () => const SizedBox(),
@@ -221,6 +222,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
               ],
             ),
+          ),
+          _SettingsTile(
+            icon: Icons.upload_file,
+            title: 'Importa da CSV',
+            onTap: () => _importFromCsv(context),
           ),
           _SettingsTile(
             title: 'Elimina tutti i dati',
@@ -519,6 +525,112 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
+  Future<void> _importFromCsv(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final db = ref.read(databaseProvider);
+
+    try {
+      // Pick CSV file
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['csv'],
+        allowMultiple: false,
+      );
+
+      if (result == null || result.files.isEmpty) return;
+
+      final file = File(result.files.first.path!);
+      
+      // Show loading dialog
+      if (mounted) {
+        showDialog<void>(
+          context: context,
+          barrierDismissible: false,
+          builder: (ctx) => const AlertDialog(
+            content: Row(
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(width: 24),
+                Text('Importazione in corso...'),
+              ],
+            ),
+          ),
+        );
+      }
+
+      // Import
+      final importResult = await ImportService.instance.importFromFile(db, file);
+
+      // Close loading dialog
+      if (mounted) {
+        Navigator.pop(context);
+      }
+
+      // Refresh providers
+      ref.invalidate(injectionsProvider);
+      ref.invalidate(adherenceStatsProvider);
+
+      // Show result
+      if (mounted) {
+        if (importResult.hasErrors) {
+          showDialog<void>(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              title: const Text('Importazione completata con errori'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Importate: ${importResult.successCount}'),
+                  Text('Errori: ${importResult.errorCount}'),
+                  const SizedBox(height: 16),
+                  const Text('Dettagli errori:'),
+                  const SizedBox(height: 8),
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxHeight: 150),
+                    child: SingleChildScrollView(
+                      child: Text(
+                        importResult.errors.take(10).join('\n'),
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text('OK'),
+                ),
+              ],
+            ),
+          );
+        } else {
+          messenger.showSnackBar(
+            SnackBar(
+              content: Text('Importate ${importResult.successCount} iniezioni'),
+              backgroundColor: Theme.of(context).colorScheme.primary,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      // Close loading dialog if still showing
+      if (mounted && Navigator.canPop(context)) {
+        Navigator.pop(context);
+      }
+      
+      if (mounted) {
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text('Errore: $e'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    }
+  }
+
   void _showDeleteConfirmation(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final messenger = ScaffoldMessenger.of(context);
@@ -686,62 +798,6 @@ class _AppInfoHeader extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-/// Tile per sblocco biometrico
-class _BiometricTile extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final biometricEnabled = ref.watch(biometricEnabledProvider);
-    final biometricAvailable = ref.watch(biometricAvailableProvider);
-
-    return biometricAvailable.when(
-      loading: () => const SwitchListTile(
-        title: Text('Sblocco biometrico'),
-        subtitle: Text('Verifica disponibilità...'),
-        value: false,
-        onChanged: null,
-      ),
-      error: (e, st) => const SwitchListTile(
-        title: Text('Sblocco biometrico'),
-        subtitle: Text('Non disponibile'),
-        value: false,
-        onChanged: null,
-      ),
-      data: (isAvailable) {
-        if (!isAvailable) {
-          return const SwitchListTile(
-            title: Text('Sblocco biometrico'),
-            subtitle: Text('Non supportato su questo dispositivo'),
-            value: false,
-            onChanged: null,
-          );
-        }
-
-        return SwitchListTile(
-          title: const Text('Sblocco biometrico'),
-          subtitle: Text(
-            biometricEnabled
-                ? 'Richiedi Face ID / Touch ID all\'avvio'
-                : 'Disattivato',
-          ),
-          value: biometricEnabled,
-          onChanged: (value) async {
-            final notifier = ref.read(authNotifierProvider.notifier);
-            final success = await notifier.setBiometricEnabled(value);
-
-            if (!success && context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Impossibile attivare lo sblocco biometrico'),
-                ),
-              );
-            }
-          },
-        );
-      },
     );
   }
 }

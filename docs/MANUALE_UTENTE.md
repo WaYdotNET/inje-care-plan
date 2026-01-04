@@ -32,6 +32,8 @@
 - **Promemoria configurabili**: Non dimenticare mai una dose
 - **Storico completo**: Tieni traccia di tutte le iniezioni
 - **100% Offline**: I tuoi dati restano esclusivamente sul tuo dispositivo
+- **Import/Export CSV**: Backup e importazione dati in formato semplice
+- **Dati demo**: Opzione per provare l'app con dati di esempio
 
 ---
 
@@ -46,10 +48,20 @@ Al primo avvio dell'app, vedrai una breve introduzione alle funzionalità princi
 ### Avvio Rapido
 
 1. Scorri le schermate introduttive per scoprire le funzionalità
-2. Tocca **"Inizia"** per entrare nell'app
-3. Completa la configurazione iniziale del piano terapeutico
+2. Scegli se inserire **dati demo** (~12 iniezioni nell'ultimo mese) o iniziare da zero
+3. Tocca **"Inizia"** per entrare nell'app
+4. Completa la configurazione iniziale del piano terapeutico
 
 > **Nota**: L'app funziona completamente offline. I tuoi dati non lasciano mai il dispositivo.
+
+### Dati Demo
+
+Durante l'onboarding puoi scegliere di inserire dati di prova per esplorare le funzionalità:
+- **~12 iniezioni** distribuite nell'ultimo mese
+- **3 iniezioni a settimana** (Lunedì, Mercoledì, Venerdì)
+- Tutte le zone vengono utilizzate in rotazione
+
+Questa opzione è utile per vedere come funzionano le statistiche e i suggerimenti AI.
 
 ---
 
@@ -273,17 +285,28 @@ Ideale per condividere con il tuo neurologo.
 | **Tema** | Chiaro, Scuro o Automatico (segue il sistema) |
 | **Lingua** | Italiano, English, Deutsch, Français, Español |
 
-#### Sicurezza
+#### Dati
 
 | Opzione | Descrizione |
 |---------|-------------|
-| **Sblocco biometrico** | Richiedi Face ID / Touch ID all'avvio |
+| **Esporta storico (PDF)** | Export completo con grafici per il medico |
+| **Esporta storico (CSV)** | Export in formato semplice per backup |
+| **Importa da CSV** | Importa iniezioni da un file CSV |
+| **Elimina tutti i dati** | Rimuove tutti i dati (irreversibile) |
 
-> **Come attivare lo sblocco biometrico:**
-> 1. Vai in Impostazioni → Sicurezza
-> 2. Attiva "Sblocco biometrico"
-> 3. Conferma con la tua impronta o volto
-> 4. All'avvio successivo, l'app richiederà l'autenticazione biometrica
+### Import CSV
+
+Puoi importare iniezioni da un file CSV con questo formato:
+
+```
+data,zona,punto,stato
+2024-07-15 20:00,CD,3,completed
+2024-07-17 20:00,CS,1,completed
+```
+
+**Zone disponibili:** CD, CS, BD, BS, AD, AS, GD, GS
+
+**Stati:** completed, scheduled, skipped, delayed
 
 ---
 
@@ -300,7 +323,6 @@ Ideale per condividere con il tuo neurologo.
 
 - L'app **non mostra riferimenti espliciti** alla patologia
 - Ideale per utilizzo in pubblico
-- Possibilità di sblocco biometrico per privacy aggiuntiva
 
 ### Export Sicuro
 

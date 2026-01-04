@@ -5,6 +5,27 @@ Tutte le modifiche rilevanti a InjeCare Plan sono documentate in questo file.
 Il formato segue [Keep a Changelog](https://keepachangelog.com/it/1.0.0/),
 e il progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 
+## [3.2.0] - 2026-01-04
+
+### Aggiunto
+- **Dati demo in onboarding**: Opzione per inserire ~12 iniezioni demo nell'ultimo mese
+- **Import CSV**: Possibilità di importare iniezioni da file CSV
+- **Formato CSV unificato**: Export e import usano lo stesso formato semplice
+
+### Cambiato
+- **Iniezioni future**: Se la data è nel futuro, lo stato è automaticamente "scheduled"
+- **Formato export CSV semplificato**: `data,zona,punto,stato`
+- **Onboarding**: Nuova pagina 4 per scegliere se inserire dati demo
+
+### Rimosso
+- **Sblocco biometrico**: Rimosso per problemi di compatibilità (local_auth)
+
+### Corretto
+- Fix parametri Drift in test fixtures
+- Fix test helpers con Override type
+
+---
+
 ## [3.1.0] - 2026-01-04
 
 ### Aggiunto

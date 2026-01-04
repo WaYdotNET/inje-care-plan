@@ -130,26 +130,23 @@ class ExportService {
     );
   }
 
-  /// Export injections to CSV (accepts Drift Injection type)
+  /// Export injections to CSV (formato semplice per import/export)
+  /// Formato: data,zona,punto,stato
   Future<void> exportToCsv(List<dynamic> injections) async {
     final buffer = StringBuffer();
 
-    // Header
-    buffer.writeln('Data,Ora,Zona,Punto,Codice,Stato,Note,Effetti Collaterali');
+    // Header semplice
+    buffer.writeln('data,zona,punto,stato');
 
-    // Data rows
+    // Data rows - formato semplice
     for (final inj in injections) {
       if (inj is Injection) {
         final date = inj.completedAt ?? inj.scheduledAt;
         buffer.writeln([
-          DateFormat('dd/MM/yyyy').format(date),
-          DateFormat('HH:mm').format(date),
-          _getZoneName(inj.zoneId),
+          DateFormat('yyyy-MM-dd HH:mm').format(date),
+          inj.pointCode.split('-').first, // Zone code (es. CD, CS, BD, BS, AD, AS, GD, GS)
           inj.pointNumber,
-          inj.pointCode,
-          _statusLabel(inj.status),
-          '"${inj.notes.replaceAll('"', '""')}"',
-          '"${inj.sideEffects}"',
+          inj.status,
         ].join(','));
       }
     }

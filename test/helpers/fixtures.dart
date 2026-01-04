@@ -1,28 +1,35 @@
 import 'package:injecare_plan/core/database/app_database.dart';
-import 'package:injecare_plan/models/body_zone.dart';
 
 /// Test fixtures for common test data
 class Fixtures {
-  // Sample zones
-  static const zones = BodyZone.values;
+  /// Sample zone IDs (matching database defaults)
+  static const zoneIds = [1, 2, 3, 4, 5, 6, 7, 8]; // CD, CS, BD, BS, AD, AS, GD, GS
 
   // Sample injection data
   static Injection createInjection({
     int id = 1,
-    String zoneCode = 'CD',
+    int zoneId = 1,
     int pointNumber = 1,
     DateTime? date,
     String? notes,
     bool completed = true,
   }) {
+    final now = DateTime.now();
+    final scheduledAt = date ?? now;
     return Injection(
       id: id,
-      zoneCode: zoneCode,
+      zoneId: zoneId,
       pointNumber: pointNumber,
-      scheduledDate: date ?? DateTime.now(),
-      actualDate: completed ? (date ?? DateTime.now()) : null,
+      pointCode: 'CD-$pointNumber',
+      pointLabel: 'Coscia Dx · $pointNumber',
+      scheduledAt: scheduledAt,
+      completedAt: completed ? scheduledAt : null,
       status: completed ? 'completed' : 'scheduled',
-      notes: notes,
+      notes: notes ?? '',
+      sideEffects: '',
+      calendarEventId: '',
+      createdAt: now,
+      updatedAt: now,
     );
   }
 
@@ -30,14 +37,14 @@ class Fixtures {
   static List<Injection> createInjectionHistory({
     int count = 10,
     DateTime? startDate,
-    String zoneCode = 'CD',
+    int zoneId = 1,
   }) {
     final start =
         startDate ?? DateTime.now().subtract(const Duration(days: 30));
     return List.generate(count, (i) {
       return createInjection(
         id: i + 1,
-        zoneCode: zoneCode,
+        zoneId: zoneId,
         pointNumber: (i % 6) + 1,
         date: start.add(Duration(days: i * 3)),
         completed: i % 4 != 0, // 75% completion rate
@@ -48,35 +55,44 @@ class Fixtures {
   // Sample point config
   static PointConfig createPointConfig({
     int id = 1,
-    String zoneCode = 'CD',
+    int zoneId = 1,
     int pointNumber = 1,
     double x = 0.5,
     double y = 0.5,
     String? customName,
   }) {
+    final now = DateTime.now();
     return PointConfig(
       id: id,
-      zoneCode: zoneCode,
+      zoneId: zoneId,
       pointNumber: pointNumber,
-      xPosition: x,
-      yPosition: y,
-      customName: customName,
+      customName: customName ?? '',
+      positionX: x,
+      positionY: y,
+      bodyView: 'front',
+      createdAt: now,
+      updatedAt: now,
     );
   }
 
   // Sample blacklisted point
-  static BlacklistedPointEntry createBlacklistedPoint({
+  static BlacklistedPoint createBlacklistedPoint({
     int id = 1,
-    String zoneCode = 'CD',
+    int zoneId = 1,
     int pointNumber = 1,
     String reason = 'Test reason',
   }) {
-    return BlacklistedPointEntry(
+    final now = DateTime.now();
+    return BlacklistedPoint(
       id: id,
-      zoneCode: zoneCode,
+      pointCode: 'CD-$pointNumber',
+      pointLabel: 'Coscia Dx · $pointNumber',
+      zoneId: zoneId,
       pointNumber: pointNumber,
       reason: reason,
-      excludedAt: DateTime.now(),
+      notes: '',
+      blacklistedAt: now,
+      createdAt: now,
     );
   }
 

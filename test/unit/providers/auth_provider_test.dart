@@ -13,8 +13,6 @@ void main() {
 
       expect(state.isLoading, false);
       expect(state.hasCompletedOnboarding, false);
-      expect(state.biometricEnabled, false);
-      expect(state.biometricUnlocked, true);
       expect(state.error, null);
       expect(state.isAuthenticated, false);
     });
@@ -24,15 +22,11 @@ void main() {
       final updated = original.copyWith(
         isLoading: true,
         hasCompletedOnboarding: true,
-        biometricEnabled: true,
-        biometricUnlocked: false,
         error: 'test error',
       );
 
       expect(updated.isLoading, true);
       expect(updated.hasCompletedOnboarding, true);
-      expect(updated.biometricEnabled, true);
-      expect(updated.biometricUnlocked, false);
       expect(updated.error, 'test error');
     });
 
@@ -40,16 +34,14 @@ void main() {
       const original = AppState(
         isLoading: true,
         hasCompletedOnboarding: true,
-        biometricEnabled: true,
       );
       final updated = original.copyWith(isLoading: false);
 
       expect(updated.isLoading, false);
       expect(updated.hasCompletedOnboarding, true);
-      expect(updated.biometricEnabled, true);
     });
 
-    test('isAuthenticated returns true when onboarding completed and biometric disabled', () {
+    test('isAuthenticated returns true when onboarding completed', () {
       const state = AppState(hasCompletedOnboarding: true);
       expect(state.isAuthenticated, true);
     });
@@ -57,50 +49,6 @@ void main() {
     test('isAuthenticated returns false when onboarding not completed', () {
       const state = AppState(hasCompletedOnboarding: false);
       expect(state.isAuthenticated, false);
-    });
-
-    test('isAuthenticated returns true when biometric enabled and unlocked', () {
-      const state = AppState(
-        hasCompletedOnboarding: true,
-        biometricEnabled: true,
-        biometricUnlocked: true,
-      );
-      expect(state.isAuthenticated, true);
-    });
-
-    test('isAuthenticated returns false when biometric enabled but not unlocked', () {
-      const state = AppState(
-        hasCompletedOnboarding: true,
-        biometricEnabled: true,
-        biometricUnlocked: false,
-      );
-      expect(state.isAuthenticated, false);
-    });
-
-    test('requiresBiometricUnlock returns true when needed', () {
-      const state = AppState(
-        hasCompletedOnboarding: true,
-        biometricEnabled: true,
-        biometricUnlocked: false,
-      );
-      expect(state.requiresBiometricUnlock, true);
-    });
-
-    test('requiresBiometricUnlock returns false when already unlocked', () {
-      const state = AppState(
-        hasCompletedOnboarding: true,
-        biometricEnabled: true,
-        biometricUnlocked: true,
-      );
-      expect(state.requiresBiometricUnlock, false);
-    });
-
-    test('requiresBiometricUnlock returns false when biometric disabled', () {
-      const state = AppState(
-        hasCompletedOnboarding: true,
-        biometricEnabled: false,
-      );
-      expect(state.requiresBiometricUnlock, false);
     });
   });
 

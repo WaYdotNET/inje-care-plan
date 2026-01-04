@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../features/auth/login_screen.dart';
 import '../features/auth/auth_provider.dart';
 import '../features/home/home_screen.dart';
+import '../features/home/home_minimal_screen.dart';
 import '../features/calendar/calendar_screen.dart';
 import '../features/injection/zone_detail_screen.dart';
 import '../features/injection/record_screen.dart';
@@ -80,7 +81,13 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: AppRoutes.home,
             name: 'home',
-            builder: (context, state) => const HomeScreen(),
+            builder: (context, state) {
+              // Seleziona la home in base alla preferenza
+              final homeStyle = authState.homeStyle;
+              return homeStyle == HomeStyle.minimal
+                  ? const HomeMinimalScreen()
+                  : const HomeScreen();
+            },
           ),
           GoRoute(
             path: AppRoutes.calendar,

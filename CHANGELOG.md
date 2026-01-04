@@ -5,6 +5,28 @@ Tutte le modifiche rilevanti a InjeCare Plan sono documentate in questo file.
 Il formato segue [Keep a Changelog](https://keepachangelog.com/it/1.0.0/),
 e il progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 
+## [4.0.0] - 2026-01-04
+
+### Aggiunto
+- **Due stili di Home**: L'utente può scegliere tra due visualizzazioni
+  - **Classica**: Vista completa con tutte le informazioni, statistiche, azioni rapide
+  - **Minimalista**: Focus solo sulla prossima iniezione con silhouette interattiva
+- **Selettore stile home**: Nuova opzione in Impostazioni > Aspetto per cambiare stile
+- Provider `homeStyleProvider` per gestione preferenza
+- Persistenza della preferenza in SharedPreferences
+- `HomeMinimalScreen` con:
+  - Data corrente e prossima iniezione
+  - Silhouette con punto suggerito evidenziato
+  - Tap per registrare direttamente
+  - Indicatore pattern e confidenza AI
+
+### Migliorato
+- Router condizionale che mostra la home corretta in base alla preferenza
+- Info screen aggiornata con versione 4.0
+- Settings screen riorganizzata con sezione Aspetto migliorata
+
+---
+
 ## [3.5.0] - 2026-01-04
 
 ### Nuovo

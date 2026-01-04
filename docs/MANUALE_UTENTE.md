@@ -68,13 +68,15 @@ Questa opzione è utile per vedere come funzionano le statistiche e i suggerimen
 
 ## Dashboard Home
 
-Dopo il primo avvio, verrai accolto dalla schermata principale.
+Dopo il primo avvio, verrai accolto dalla schermata principale. Puoi scegliere tra **due stili** di home nelle Impostazioni > Aspetto.
+
+### Stile Classico
+
+Vista completa con tutte le informazioni e statistiche.
 
 <p align="center">
-  <img src="../assets/screenshots/home.png" width="280" alt="Dashboard Home">
+  <img src="../assets/screenshots/home.png" width="280" alt="Dashboard Home Classica">
 </p>
-
-### Elementi della Dashboard
 
 | Elemento | Descrizione |
 |----------|-------------|
@@ -83,6 +85,23 @@ Dopo il primo avvio, verrai accolto dalla schermata principale.
 | **Appuntamenti Settimanali** | Le iniezioni programmate con suggerimenti AI |
 | **Aderenza** | Percentuale di aderenza negli ultimi 30 giorni |
 | **Registra ora** | Pulsante rapido per registrare l'iniezione |
+
+### Stile Minimalista
+
+Vista semplificata con focus solo sulla prossima iniezione.
+
+<p align="center">
+  <img src="../assets/screenshots/home_minimal.png" width="280" alt="Dashboard Home Minimalista">
+</p>
+
+| Elemento | Descrizione |
+|----------|-------------|
+| **Data corrente** | Giorno e data odierna |
+| **Silhouette corpo** | Mostra il punto suggerito per la prossima iniezione |
+| **Zona e orario** | Nome della zona e orario consigliato |
+| **Confidenza** | Pattern attivo e livello di confidenza del suggerimento |
+
+**Tocca la card** per registrare direttamente l'iniezione nella zona suggerita.
 
 ### Piano Settimanale
 

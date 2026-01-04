@@ -50,7 +50,7 @@ class InfoScreen extends ConsumerWidget {
 
             // Version
             Text(
-              'Versione 1.0.0',
+              'Versione 4.0.0',
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
               ),
@@ -151,8 +151,8 @@ class InfoScreen extends ConsumerWidget {
                     Text(
                       '• I tuoi dati sono salvati localmente sul dispositivo\n'
                       '• Nessun dato viene inviato a server esterni\n'
-                      '• Backup opzionale e crittografato su Google Drive\n'
-                      '• Sblocco biometrico disponibile\n'
+                      '• Esportazione dati in PDF e CSV\n'
+                      '• Suggerimenti AI per la rotazione dei punti\n'
                       '• Nessun riferimento esplicito a condizioni mediche nell\'interfaccia',
                       style: theme.textTheme.bodyMedium,
                     ),

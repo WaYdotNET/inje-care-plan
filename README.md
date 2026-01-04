@@ -35,6 +35,9 @@ Applicazione Flutter per la gestione delle iniezioni di Interferone beta-1a per 
   - Alternanza sinistra/destra
   - Rotazione settimanale per tipo
   - Sequenza personalizzata drag-and-drop
+- 🏠 **Due stili di Home**: Scegli la visualizzazione preferita
+  - Classica: Vista completa con statistiche e azioni rapide
+  - Minimalista: Solo prossima iniezione con silhouette interattiva
 - 🔔 **Promemoria avanzati**: Notifiche configurabili
 - 📊 **Statistiche avanzate**: Grafici aderenza, heatmap zone, trend settimanali
 - 🤖 **Suggerimenti AI**: Raccomandazioni intelligenti per zone e orari

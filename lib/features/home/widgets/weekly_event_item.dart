@@ -285,7 +285,7 @@ class WeeklyEventsCard extends StatelessWidget {
     final theme = Theme.of(context);
     final suggestedCount = events.where((e) => e.isSuggested && !e.isPast).length;
     final completedCount = events.where((e) => e.confirmedEvent?.status == 'completed').length;
-    final therapyDaysCount = events.where((e) => 
+    final therapyDaysCount = events.where((e) =>
       e.confirmedEvent != null || e.suggestion != null).length;
 
     return Card(

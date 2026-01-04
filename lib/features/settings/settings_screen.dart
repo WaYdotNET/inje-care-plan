@@ -175,6 +175,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
 
           const _SectionHeader(title: 'ASPETTO'),
+          _HomeStyleSelector(),
           ListTile(
             title: const Text('Tema'),
             subtitle: Text(_themeModeLabel),
@@ -261,7 +262,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           // App version
           Center(
             child: Text(
-              'InjeCare Plan v1.0.0',
+              'InjeCare Plan v4.0.0',
               style: theme.textTheme.bodySmall,
             ),
           ),
@@ -1062,6 +1063,175 @@ class _RotationPatternSection extends ConsumerWidget {
                 },
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Selettore per lo stile della home
+class _HomeStyleSelector extends ConsumerWidget {
+  const _HomeStyleSelector();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final homeStyle = ref.watch(homeStyleProvider);
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return ListTile(
+      title: const Text('Stile Home'),
+      subtitle: Text(homeStyle.displayName),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: () => _showHomeStyleSelector(context, ref, homeStyle, isDark),
+    );
+  }
+
+  void _showHomeStyleSelector(
+    BuildContext context,
+    WidgetRef ref,
+    HomeStyle currentStyle,
+    bool isDark,
+  ) {
+    final theme = Theme.of(context);
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Handle
+              Center(
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+
+              Text(
+                'Scegli lo stile della Home',
+                style: theme.textTheme.titleLarge,
+              ),
+              const SizedBox(height: 16),
+
+              // Home Classica
+              _HomeStyleOption(
+                style: HomeStyle.classic,
+                isSelected: currentStyle == HomeStyle.classic,
+                isDark: isDark,
+                onTap: () {
+                  ref.read(authNotifierProvider.notifier).setHomeStyle(HomeStyle.classic);
+                  Navigator.pop(ctx);
+                },
+              ),
+
+              const SizedBox(height: 12),
+
+              // Home Minimalista
+              _HomeStyleOption(
+                style: HomeStyle.minimal,
+                isSelected: currentStyle == HomeStyle.minimal,
+                isDark: isDark,
+                onTap: () {
+                  ref.read(authNotifierProvider.notifier).setHomeStyle(HomeStyle.minimal);
+                  Navigator.pop(ctx);
+                },
+              ),
+
+              const SizedBox(height: 16),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Opzione per lo stile della home
+class _HomeStyleOption extends StatelessWidget {
+  const _HomeStyleOption({
+    required this.style,
+    required this.isSelected,
+    required this.isDark,
+    required this.onTap,
+  });
+
+  final HomeStyle style;
+  final bool isSelected;
+  final bool isDark;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final primaryColor = isDark ? AppColors.darkPine : AppColors.dawnPine;
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: isSelected ? primaryColor : (isDark ? AppColors.darkMuted : AppColors.dawnMuted),
+            width: isSelected ? 2 : 1,
+          ),
+          borderRadius: BorderRadius.circular(12),
+          color: isSelected
+              ? primaryColor.withValues(alpha: 0.1)
+              : null,
+        ),
+        child: Row(
+          children: [
+            // Preview icon
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: (isDark ? AppColors.darkSurface : AppColors.dawnSurface),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                style == HomeStyle.classic ? Icons.dashboard : Icons.center_focus_strong,
+                size: 28,
+                color: isSelected ? primaryColor : (isDark ? AppColors.darkText : AppColors.dawnText),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    style.displayName,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      color: isSelected ? primaryColor : null,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    style.description,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (isSelected)
+              Icon(Icons.check_circle, color: primaryColor),
           ],
         ),
       ),

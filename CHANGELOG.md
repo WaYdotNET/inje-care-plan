@@ -107,4 +107,3 @@ e il progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 - Export PDF/CSV
 - Backup cifrato su Google Drive
 - Tema Rosé Pine (light/dark)
-

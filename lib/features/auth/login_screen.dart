@@ -168,7 +168,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       await _requestNotificationPermissions();
 
       final notifier = ref.read(authNotifierProvider.notifier);
-      await notifier.continueWithoutAccount();
+      await notifier.completeOnboarding();
 
       if (mounted) {
         context.go(AppRoutes.home);

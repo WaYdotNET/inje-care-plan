@@ -18,13 +18,13 @@ class TimeOptimizer {
 
     // Trova l'ora con più completamenti
     final bestHour = timeData.preferredHours.first;
-    
+
     // Calcola la confidenza basata sulla coerenza
     final confidence = _calculateConfidence(timeData);
-    
+
     // Genera spiegazione
     final reason = _generateReason(timeData, bestHour);
-    
+
     // Orari alternativi
     final alternatives = timeData.preferredHours.skip(1).take(2).toList();
 
@@ -86,7 +86,7 @@ class TimeOptimizer {
     }
 
     final avgHour = data.averageCompletionHour!.round();
-    
+
     // Crea una finestra di 2 ore centrata sull'ora media
     final startHour = (avgHour - 1).clamp(6, 22);
     final endHour = (avgHour + 1).clamp(7, 23);
@@ -111,7 +111,7 @@ class TimeOptimizer {
 
   double _calculateConfidence(TimePatternData data) {
     final totalCompletions = data.completionByHour.values.fold<int>(0, (a, b) => a + b);
-    
+
     if (totalCompletions < 5) return 0.3;
     if (totalCompletions < 10) return 0.5;
     if (totalCompletions < 20) return 0.7;
@@ -121,11 +121,11 @@ class TimeOptimizer {
   String _generateReason(TimePatternData data, int hour) {
     final completions = data.completionByHour[hour] ?? 0;
     final total = data.completionByHour.values.fold<int>(0, (a, b) => a + b);
-    
+
     if (total == 0) return 'Orario suggerito';
-    
+
     final percentage = (completions / total * 100).round();
-    
+
     if (percentage > 50) {
       return 'Completi il $percentage% delle iniezioni alle ore $hour:00';
     } else if (percentage > 30) {
@@ -155,7 +155,7 @@ class TimeRecommendation {
   });
 
   /// Orario formattato (es. "09:00")
-  String get formattedTime => 
+  String get formattedTime =>
       '${suggestedHour.toString().padLeft(2, '0')}:${suggestedMinute.toString().padLeft(2, '0')}';
 
   /// Livello di confidenza testuale
@@ -198,7 +198,6 @@ class TimeWindow {
   });
 
   /// Range formattato (es. "08:00 - 10:00")
-  String get formattedRange => 
+  String get formattedRange =>
       '${startHour.toString().padLeft(2, '0')}:00 - ${endHour.toString().padLeft(2, '0')}:00';
 }
-

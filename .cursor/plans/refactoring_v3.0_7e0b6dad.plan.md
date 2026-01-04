@@ -31,7 +31,7 @@ todos:
     status: cancelled
   - id: version-bump
     content: Aggiornare versione a 3.0.0 e creare PR
-    status: in_progress
+    status: completed
 ---
 
 # Refactoring InjeCare v3.0 - Best Practices

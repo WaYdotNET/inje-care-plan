@@ -43,7 +43,7 @@ class ErrorCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Card(
       color: isDark ? AppColors.darkLove.withAlpha(50) : AppColors.dawnLove.withAlpha(50),
       child: Padding(
@@ -303,4 +303,3 @@ class EmptyStateCard extends StatelessWidget {
     );
   }
 }
-

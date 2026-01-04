@@ -309,4 +309,3 @@ enum InsightType {
   warning,
   info,
 }
-

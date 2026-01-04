@@ -11,7 +11,6 @@ import '../../core/database/database_provider.dart';
 import '../../app/router.dart';
 import '../../models/therapy_plan.dart';
 import '../auth/auth_provider.dart';
-import '../auth/auth_repository.dart' show LocalUser;
 import '../injection/injection_provider.dart';
 
 /// Settings screen
@@ -29,7 +28,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final user = ref.watch(currentUserProvider);
     final therapyPlanAsync = ref.watch(therapyPlanProvider);
     final blacklistAsync = ref.watch(blacklistedPointsProvider);
     final injectionsAsync = ref.watch(injectionsProvider);
@@ -39,12 +37,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       appBar: AppBar(title: const Text('Impostazioni')),
       body: ListView(
         children: [
-          // User info
-          _UserInfoSection(
-            user: user,
-            isDark: isDark,
-            onSignOut: () => _signOut(context),
-          ),
+          // Header
+          _AppInfoHeader(isDark: isDark, onReset: () => _signOut(context)),
 
           const Divider(),
 
@@ -125,12 +119,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       TextButton(
                         onPressed: () async {
                           final messenger = ScaffoldMessenger.of(context);
-                          final notifier = ref.read(notificationSettingsProvider.notifier);
+                          final notifier = ref.read(
+                            notificationSettingsProvider.notifier,
+                          );
                           final granted = await notifier.requestPermissions();
                           if (mounted && !granted) {
                             messenger.showSnackBar(
                               const SnackBar(
-                                content: Text('Permessi non concessi. Abilitali dalle impostazioni del dispositivo.'),
+                                content: Text(
+                                  'Permessi non concessi. Abilitali dalle impostazioni del dispositivo.',
+                                ),
                               ),
                             );
                           }
@@ -146,19 +144,26 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: const Text('Promemoria iniezione'),
             value: notificationSettings.enabled,
             onChanged: notificationSettings.permissionsGranted
-                ? (value) => ref.read(notificationSettingsProvider.notifier).setEnabled(value)
+                ? (value) => ref
+                      .read(notificationSettingsProvider.notifier)
+                      .setEnabled(value)
                 : null,
           ),
           _SettingsTile(
             title: 'Anticipo',
             trailing: Text('${notificationSettings.minutesBefore} min'),
-            onTap: () => _editNotificationMinutes(context, notificationSettings.minutesBefore),
+            onTap: () => _editNotificationMinutes(
+              context,
+              notificationSettings.minutesBefore,
+            ),
           ),
           SwitchListTile(
             title: const Text('Reminder dose saltata'),
             value: notificationSettings.missedDoseReminder,
             onChanged: notificationSettings.permissionsGranted
-                ? (value) => ref.read(notificationSettingsProvider.notifier).setMissedDoseReminder(value)
+                ? (value) => ref
+                      .read(notificationSettingsProvider.notifier)
+                      .setMissedDoseReminder(value)
                 : null,
           ),
 
@@ -174,9 +179,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: const Text('Sblocco biometrico'),
             value: _biometricEnabled,
             onChanged: (value) async {
-              final repository = ref.read(authRepositoryProvider);
-              final db = ref.read(databaseProvider);
-              await repository.setBiometricEnabled(db, value);
+              // TODO: Implementare con SharedPreferences se necessario
               setState(() => _biometricEnabled = value);
             },
           ),
@@ -292,8 +295,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   Future<void> _signOut(BuildContext context) async {
     final router = GoRouter.of(context);
-    final authNotifier = ref.read(authNotifierProvider.notifier);
-    await authNotifier.signOut();
+    final notifier = ref.read(authNotifierProvider.notifier);
+    await notifier.resetOnboarding();
     if (mounted) {
       router.go(AppRoutes.login);
     }
@@ -349,12 +352,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [1, 2, 3, 4, 5]
-                    .map(
-                      (n) => RadioListTile<int>(
-                        title: Text('$n'),
-                        value: n,
-                      ),
-                    )
+                    .map((n) => RadioListTile<int>(title: Text('$n'), value: n))
                     .toList(),
               ),
             ),
@@ -465,7 +463,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 children: [15, 30, 45, 60, 120]
                     .map(
                       (n) => RadioListTile<int>(
-                        title: Text(n < 60 ? '$n minuti' : '${n ~/ 60} ${n == 60 ? 'ora' : 'ore'}'),
+                        title: Text(
+                          n < 60
+                              ? '$n minuti'
+                              : '${n ~/ 60} ${n == 60 ? 'ora' : 'ore'}',
+                        ),
                         value: n,
                       ),
                     )
@@ -481,7 +483,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ElevatedButton(
               onPressed: () {
                 Navigator.pop(context);
-                ref.read(notificationSettingsProvider.notifier).setMinutesBefore(value);
+                ref
+                    .read(notificationSettingsProvider.notifier)
+                    .setMinutesBefore(value);
               },
               child: const Text('Salva'),
             ),
@@ -565,9 +569,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 );
               }
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: errorColor,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: errorColor),
             child: const Text('Elimina'),
           ),
         ],
@@ -635,17 +637,15 @@ class _SettingsTile extends StatelessWidget {
   }
 }
 
-/// Widget per mostrare le informazioni utente
-class _UserInfoSection extends StatelessWidget {
-  const _UserInfoSection({
-    required this.user,
+/// Header con info app
+class _AppInfoHeader extends StatelessWidget {
+  const _AppInfoHeader({
     required this.isDark,
-    required this.onSignOut,
+    required this.onReset,
   });
 
-  final LocalUser? user;
   final bool isDark;
-  final VoidCallback onSignOut;
+  final VoidCallback onReset;
 
   @override
   Widget build(BuildContext context) {
@@ -659,9 +659,9 @@ class _UserInfoSection extends StatelessWidget {
             radius: 30,
             backgroundColor: isDark ? AppColors.darkOverlay : AppColors.dawnOverlay,
             child: Icon(
-              Icons.person,
+              Icons.favorite,
               size: 30,
-              color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+              color: isDark ? AppColors.darkPine : AppColors.dawnPine,
             ),
           ),
           const SizedBox(width: 16),
@@ -669,12 +669,7 @@ class _UserInfoSection extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  user?.displayName ?? 'Utente',
-                  style: theme.textTheme.titleMedium,
-                ),
-                if (user?.email != null && user!.email!.isNotEmpty)
-                  Text(user!.email!, style: theme.textTheme.bodySmall),
+                Text('InjeCare Plan', style: theme.textTheme.titleMedium),
                 Row(
                   children: [
                     Icon(
@@ -695,9 +690,9 @@ class _UserInfoSection extends StatelessWidget {
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Esci',
-            onPressed: onSignOut,
+            icon: const Icon(Icons.restart_alt),
+            tooltip: 'Reset app',
+            onPressed: onReset,
           ),
         ],
       ),

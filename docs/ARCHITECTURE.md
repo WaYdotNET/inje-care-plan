@@ -213,4 +213,3 @@ Supporto multilingua tramite ARB files:
 3. Aggiungi test per nuove funzionalità
 4. Usa i widget comuni da `core/widgets/`
 5. Mantieni le feature isolate
-

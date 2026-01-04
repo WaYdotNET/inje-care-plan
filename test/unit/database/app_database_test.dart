@@ -752,7 +752,7 @@ void main() {
   group('AppDatabase - Stream Watchers', () {
     test('watchEnabledZones emits updates when zone is disabled', () async {
       final zones = await db.getAllZones();
-      
+
       final expectation = expectLater(
         db.watchEnabledZones(),
         emitsInOrder([
@@ -767,7 +767,7 @@ void main() {
 
     test('watchAllBlacklistedPoints emits updates', () async {
       final zones = await db.getAllZones();
-      
+
       final expectation = expectLater(
         db.watchAllBlacklistedPoints(),
         emitsInOrder([
@@ -788,7 +788,7 @@ void main() {
     test('watchPointConfigsForZone emits updates', () async {
       final zones = await db.getAllZones();
       final zoneId = zones.first.id;
-      
+
       final expectation = expectLater(
         db.watchPointConfigsForZone(zoneId),
         emitsInOrder([

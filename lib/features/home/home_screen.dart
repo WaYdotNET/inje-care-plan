@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../app/router.dart';
 import '../../models/body_zone.dart';
-import '../auth/auth_provider.dart';
 import '../injection/injection_provider.dart';
 import '../injection/zone_provider.dart';
 import '../../core/services/missed_injection_service.dart';
@@ -20,7 +19,6 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final user = ref.watch(currentUserProvider);
     final adherenceAsync = ref.watch(adherenceStatsProvider);
     final weeklyEventsAsync = ref.watch(weeklyEventsProvider);
     final zonesAsync = ref.watch(zonesProvider);
@@ -28,21 +26,14 @@ class HomeScreen extends ConsumerWidget {
     // Controlla iniezioni mancate all'avvio (eseguito una volta)
     ref.watch(checkMissedInjectionsProvider);
 
-    final displayName = user?.displayName?.split(' ').first ?? 'Utente';
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('InjeCare Plan'),
         actions: [
           IconButton(
-            icon: CircleAvatar(
+            icon: const CircleAvatar(
               radius: 16,
-              backgroundImage: user?.photoUrl != null
-                  ? NetworkImage(user!.photoUrl!)
-                  : null,
-              child: user?.photoUrl == null
-                  ? const Icon(Icons.person, size: 20)
-                  : null,
+              child: Icon(Icons.settings, size: 18),
             ),
             onPressed: () => context.go(AppRoutes.settings),
           ),
@@ -62,20 +53,16 @@ class HomeScreen extends ConsumerWidget {
                 children: [
                   CircleAvatar(
                     radius: 32,
-                    backgroundImage: user?.photoUrl != null
-                        ? NetworkImage(user!.photoUrl!)
-                        : null,
-                    child: user?.photoUrl == null
-                        ? const Icon(Icons.person, size: 32)
-                        : null,
+                    backgroundColor: isDark ? AppColors.darkOverlay : AppColors.dawnOverlay,
+                    child: Icon(
+                      Icons.favorite,
+                      size: 32,
+                      color: isDark ? AppColors.darkPine : AppColors.dawnPine,
+                    ),
                   ),
                   const SizedBox(height: 12),
-                  Text(
-                    'Ciao, $displayName',
-                    style: theme.textTheme.titleMedium,
-                  ),
-                  if (user?.email != null)
-                    Text(user!.email!, style: theme.textTheme.bodySmall),
+                  Text('InjeCare Plan', style: theme.textTheme.titleMedium),
+                  Text('La tua terapia, sotto controllo', style: theme.textTheme.bodySmall),
                 ],
               ),
             ),
@@ -157,7 +144,7 @@ class HomeScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Greeting
-              Text('Ciao, $displayName', style: theme.textTheme.headlineMedium),
+              Text('Ciao!', style: theme.textTheme.headlineMedium),
 
               const SizedBox(height: 16),
 

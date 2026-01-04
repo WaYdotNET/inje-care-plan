@@ -7,7 +7,7 @@ import '../../core/services/notification_settings_provider.dart';
 import '../../app/router.dart';
 import 'auth_provider.dart';
 
-/// Login screen with Google Sign-in
+/// Onboarding screen
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
@@ -72,7 +72,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
               const SizedBox(height: 48),
 
-              // Action buttons
+              // Action button
               SizedBox(
                 width: double.infinity,
                 child: _currentPage < 2
@@ -80,47 +80,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         onPressed: () => setState(() => _currentPage++),
                         child: const Text('Continua'),
                       )
-                    : Column(
-                        children: [
-                          // Pulsante principale: Continua senza account
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton.icon(
-                              onPressed: _isLoading ? null : _continueWithoutAccount,
-                              icon: _isLoading
-                                  ? const SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: Colors.white,
-                                      ),
-                                    )
-                                  : const Icon(Icons.arrow_forward),
-                              label: const Text('Inizia'),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          // Pulsante secondario: Login Google (opzionale)
-                          SizedBox(
-                            width: double.infinity,
-                            child: OutlinedButton.icon(
-                              onPressed: _isLoading ? null : _signInWithGoogle,
-                              icon: const Icon(Icons.cloud_outlined),
-                              label: const Text('Accedi con Google per backup'),
-                            ),
-                          ),
-                        ],
+                    : ElevatedButton.icon(
+                        onPressed: _isLoading ? null : _continueToApp,
+                        icon: _isLoading
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Icon(Icons.arrow_forward),
+                        label: const Text('Inizia'),
                       ),
               ),
 
               const SizedBox(height: 16),
 
-              // Terms
+              // Info text
               Text(
                 _currentPage < 2
                     ? 'Continuando, accetti i Termini di Servizio\ne la Privacy Policy'
-                    : 'Puoi collegare Google in seguito\nper il backup su Drive',
+                    : 'I tuoi dati sono salvati localmente\nsul tuo dispositivo',
                 style: theme.textTheme.bodySmall,
                 textAlign: TextAlign.center,
               ),
@@ -177,8 +159,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
-  /// Continua senza account Google (modalità offline)
-  Future<void> _continueWithoutAccount() async {
+  /// Continua all'app
+  Future<void> _continueToApp() async {
     setState(() => _isLoading = true);
 
     try {
@@ -186,7 +168,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       await _requestNotificationPermissions();
 
       final notifier = ref.read(authNotifierProvider.notifier);
-      await notifier.continueWithoutAccount();
+      await notifier.completeOnboarding();
 
       if (mounted) {
         context.go(AppRoutes.home);
@@ -214,36 +196,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     if (shouldRequest) {
       await notificationNotifier.requestPermissions();
-    }
-  }
-
-  /// Login con Google (opzionale, per backup)
-  Future<void> _signInWithGoogle() async {
-    setState(() => _isLoading = true);
-
-    try {
-      // Request notification permissions
-      await _requestNotificationPermissions();
-
-      final notifier = ref.read(authNotifierProvider.notifier);
-      final success = await notifier.signInWithGoogle();
-
-      if (success && mounted) {
-        context.go(AppRoutes.home);
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Errore di accesso: $e'),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
     }
   }
 }

@@ -21,7 +21,8 @@ class SmartSuggestionCard extends ConsumerWidget {
     return suggestionAsync.when(
       loading: () => _buildLoadingCard(context, isDark),
       error: (error, stack) => _buildErrorCard(context, isDark, error),
-      data: (suggestion) => _buildSuggestionCard(context, isDark, suggestion, ref),
+      data: (suggestion) =>
+          _buildSuggestionCard(context, isDark, suggestion, ref),
     );
   }
 
@@ -78,15 +79,16 @@ class SmartSuggestionCard extends ConsumerWidget {
     WidgetRef ref,
   ) {
     final theme = Theme.of(context);
-    
+
     return Card(
       elevation: 0,
       color: isDark ? AppColors.darkSurface : AppColors.dawnSurface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
-          color: (isDark ? AppColors.darkHighlightMed : AppColors.dawnHighlightMed)
-              .withOpacity(0.3),
+          color:
+              (isDark ? AppColors.darkHighlightMed : AppColors.dawnHighlightMed)
+                  .withValues(alpha: 0.3),
         ),
       ),
       child: InkWell(
@@ -106,7 +108,7 @@ class SmartSuggestionCard extends ConsumerWidget {
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: (isDark ? AppColors.darkIris : AppColors.dawnIris)
-                          .withOpacity(0.2),
+                          .withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
@@ -129,7 +131,9 @@ class SmartSuggestionCard extends ConsumerWidget {
                         Text(
                           'Confidenza: ${suggestion.confidenceLevel}',
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                            color: isDark
+                                ? AppColors.darkMuted
+                                : AppColors.dawnMuted,
                           ),
                         ),
                       ],
@@ -141,19 +145,19 @@ class SmartSuggestionCard extends ConsumerWidget {
                   ),
                 ],
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               // Messaggio principale
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: (isDark ? AppColors.darkPine : AppColors.dawnPine)
-                      .withOpacity(0.1),
+                      .withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: (isDark ? AppColors.darkPine : AppColors.dawnPine)
-                        .withOpacity(0.3),
+                        .withValues(alpha: 0.3),
                   ),
                 ),
                 child: Row(
@@ -179,7 +183,9 @@ class SmartSuggestionCard extends ConsumerWidget {
                             Text(
                               suggestion.topZonePrediction!.reason,
                               style: theme.textTheme.bodySmall?.copyWith(
-                                color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                                color: isDark
+                                    ? AppColors.darkMuted
+                                    : AppColors.dawnMuted,
                               ),
                             ),
                         ],
@@ -189,53 +195,62 @@ class SmartSuggestionCard extends ConsumerWidget {
                       Icon(
                         Icons.arrow_forward_ios,
                         size: 16,
-                        color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                        color: isDark
+                            ? AppColors.darkMuted
+                            : AppColors.dawnMuted,
                       ),
                   ],
                 ),
               ),
-              
+
               // Dettagli aggiuntivi
               if (suggestion.hasEnoughData) ...[
                 const SizedBox(height: 12),
-                
+
                 // Predizioni zona alternative
                 if (suggestion.allZonePredictions.length > 1)
                   _buildAlternativeZones(context, isDark, suggestion),
-                
+
                 // Score aderenza
                 if (suggestion.adherenceScore != null)
-                  _buildAdherenceInsights(context, isDark, suggestion.adherenceScore!),
-                
+                  _buildAdherenceInsights(
+                    context,
+                    isDark,
+                    suggestion.adherenceScore!,
+                  ),
+
                 // Raccomandazione orario
                 if (suggestion.hasTimeSuggestion)
                   _buildTimeRecommendation(context, isDark, suggestion),
               ],
-              
+
               // Suggerimenti secondari
               if (suggestion.secondarySuggestions.isNotEmpty) ...[
                 const SizedBox(height: 12),
                 const Divider(),
                 const SizedBox(height: 8),
-                ...suggestion.secondarySuggestions.take(2).map((s) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 2),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.lightbulb_outline,
-                        size: 14,
-                        color: isDark ? AppColors.darkGold : AppColors.dawnGold,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          s,
-                          style: theme.textTheme.bodySmall,
+                ...suggestion.secondarySuggestions
+                    .take(2)
+                    .map(
+                      (s) => Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 2),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.lightbulb_outline,
+                              size: 14,
+                              color: isDark
+                                  ? AppColors.darkGold
+                                  : AppColors.dawnGold,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(s, style: theme.textTheme.bodySmall),
+                            ),
+                          ],
                         ),
                       ),
-                    ],
-                  ),
-                )),
+                    ),
               ],
             ],
           ),
@@ -250,22 +265,31 @@ class SmartSuggestionCard extends ConsumerWidget {
     SmartSuggestion suggestion,
   ) {
     final alternatives = suggestion.allZonePredictions.skip(1).take(3).toList();
-    
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Wrap(
         spacing: 8,
         runSpacing: 4,
-        children: alternatives.map((pred) => Chip(
-          avatar: Text(pred.zone.emoji, style: const TextStyle(fontSize: 14)),
-          label: Text(
-            pred.zone.displayName,
-            style: const TextStyle(fontSize: 12),
-          ),
-          backgroundColor: (isDark ? AppColors.darkOverlay : AppColors.dawnOverlay),
-          padding: EdgeInsets.zero,
-          visualDensity: VisualDensity.compact,
-        )).toList(),
+        children: alternatives
+            .map(
+              (pred) => Chip(
+                avatar: Text(
+                  pred.zone.emoji,
+                  style: const TextStyle(fontSize: 14),
+                ),
+                label: Text(
+                  pred.zone.displayName,
+                  style: const TextStyle(fontSize: 12),
+                ),
+                backgroundColor: (isDark
+                    ? AppColors.darkOverlay
+                    : AppColors.dawnOverlay),
+                padding: EdgeInsets.zero,
+                visualDensity: VisualDensity.compact,
+              ),
+            )
+            .toList(),
       ),
     );
   }
@@ -281,21 +305,25 @@ class SmartSuggestionCard extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
-        children: insights.map((insight) => Expanded(
-          child: Row(
-            children: [
-              Text(insight.icon, style: const TextStyle(fontSize: 16)),
-              const SizedBox(width: 4),
-              Flexible(
-                child: Text(
-                  insight.title,
-                  style: Theme.of(context).textTheme.bodySmall,
-                  overflow: TextOverflow.ellipsis,
+        children: insights
+            .map(
+              (insight) => Expanded(
+                child: Row(
+                  children: [
+                    Text(insight.icon, style: const TextStyle(fontSize: 16)),
+                    const SizedBox(width: 4),
+                    Flexible(
+                      child: Text(
+                        insight.title,
+                        style: Theme.of(context).textTheme.bodySmall,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
-        )).toList(),
+            )
+            .toList(),
       ),
     );
   }
@@ -306,11 +334,13 @@ class SmartSuggestionCard extends ConsumerWidget {
     SmartSuggestion suggestion,
   ) {
     final time = suggestion.timeRecommendation!;
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: (isDark ? AppColors.darkFoam : AppColors.dawnFoam).withOpacity(0.1),
+        color: (isDark ? AppColors.darkFoam : AppColors.dawnFoam).withValues(
+          alpha: 0.1,
+        ),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -336,7 +366,7 @@ class SmartSuggestionCard extends ConsumerWidget {
 
   void _navigateToInjection(BuildContext context, SmartSuggestion suggestion) {
     if (!suggestion.hasZoneSuggestion) return;
-    
+
     context.push(
       AppRoutes.selectPoint,
       extra: {
@@ -346,4 +376,3 @@ class SmartSuggestionCard extends ConsumerWidget {
     );
   }
 }
-

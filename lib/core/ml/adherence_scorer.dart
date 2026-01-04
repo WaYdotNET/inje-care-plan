@@ -155,14 +155,14 @@ class AdherenceScorer {
 
     // Trend
     if (data.trendDirection > 0.1) {
-      insights.add(AdherenceInsight(
+      insights.add(const AdherenceInsight(
         type: InsightType.positive,
         title: 'In miglioramento',
         description: 'L\'aderenza sta migliorando rispetto alle settimane precedenti',
         icon: '📈',
       ));
     } else if (data.trendDirection < -0.1) {
-      insights.add(AdherenceInsight(
+      insights.add(const AdherenceInsight(
         type: InsightType.warning,
         title: 'In calo',
         description: 'L\'aderenza è diminuita recentemente',
@@ -309,4 +309,3 @@ enum InsightType {
   warning,
   info,
 }
-

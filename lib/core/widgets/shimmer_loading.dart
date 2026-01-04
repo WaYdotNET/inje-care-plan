@@ -170,22 +170,22 @@ class ShimmerStats extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ShimmerLoading(
+    return const ShimmerLoading(
       child: Column(
         children: [
           // Overview card
-          const ShimmerCard(height: 180),
-          const SizedBox(height: 16),
+          ShimmerCard(height: 180),
+          SizedBox(height: 16),
 
           // Chart
-          const ShimmerCard(height: 200),
-          const SizedBox(height: 16),
+          ShimmerCard(height: 200),
+          SizedBox(height: 16),
 
           // Stats row
           Row(
             children: [
               Expanded(child: ShimmerCard(height: 100)),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               Expanded(child: ShimmerCard(height: 100)),
             ],
           ),

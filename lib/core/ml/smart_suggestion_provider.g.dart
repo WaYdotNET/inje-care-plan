@@ -371,11 +371,13 @@ final class AdherenceScoreProvider
 String _$adherenceScoreHash() => r'071b9b2de20a3493a109645bec70abcea8a68856';
 
 /// Provider principale che combina tutte le predizioni in un suggerimento smart
+/// Usa il pattern di rotazione configurato dall'utente
 
 @ProviderFor(smartSuggestion)
 final smartSuggestionProvider = SmartSuggestionProvider._();
 
 /// Provider principale che combina tutte le predizioni in un suggerimento smart
+/// Usa il pattern di rotazione configurato dall'utente
 
 final class SmartSuggestionProvider
     extends
@@ -386,6 +388,7 @@ final class SmartSuggestionProvider
         >
     with $FutureModifier<SmartSuggestion>, $FutureProvider<SmartSuggestion> {
   /// Provider principale che combina tutte le predizioni in un suggerimento smart
+  /// Usa il pattern di rotazione configurato dall'utente
   SmartSuggestionProvider._()
     : super(
         from: null,
@@ -412,4 +415,4 @@ final class SmartSuggestionProvider
   }
 }
 
-String _$smartSuggestionHash() => r'80ded6972b39af2dec05c3fdb11f072d46923d8d';
+String _$smartSuggestionHash() => r'cdf006c2ea7fcf5006ef8be4630565de91f94010';

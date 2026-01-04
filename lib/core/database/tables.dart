@@ -27,6 +27,21 @@ class TherapyPlans extends Table {
   TextColumn get preferredTime =>
       text().withDefault(const Constant('20:00'))();
   DateTimeColumn get startDate => dateTime()();
+
+  // Pattern di rotazione
+  TextColumn get rotationPatternType =>
+      text().withDefault(const Constant('smart'))(); // smart, sequential, alternateSides, weeklyRotation, custom
+  TextColumn get customPatternSequence =>
+      text().withDefault(const Constant(''))(); // CSV di zone IDs per pattern custom
+  IntColumn get patternCurrentIndex =>
+      integer().withDefault(const Constant(0))(); // Indice corrente nella sequenza
+  IntColumn get patternLastZoneId =>
+      integer().nullable()(); // Ultimo ID zona utilizzato
+  TextColumn get patternLastSide =>
+      text().withDefault(const Constant(''))(); // Ultimo lato utilizzato (left/right)
+  DateTimeColumn get patternWeekStartDate =>
+      dateTime().nullable()(); // Data inizio settimana per weeklyRotation
+
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
 }

@@ -15,6 +15,7 @@ import '../features/help/help_screen.dart';
 import '../features/injection/point_selection_screen.dart';
 import '../features/settings/zone_management_screen.dart';
 import '../features/settings/zone_points_editor_screen.dart';
+import '../features/settings/custom_pattern_screen.dart';
 import '../features/home/weekly_proposals_screen.dart';
 import '../features/statistics/statistics_screen.dart';
 
@@ -36,6 +37,7 @@ sealed class AppRoutes {
   static const zonePointsEditor = '/zone-points-editor/:zoneId';
   static const weeklyProposals = '/weekly-proposals';
   static const statistics = '/statistics';
+  static const customPattern = '/custom-pattern';
 }
 
 /// Router provider
@@ -187,6 +189,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.statistics,
         name: 'statistics',
         builder: (context, state) => const StatisticsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.customPattern,
+        name: 'customPattern',
+        builder: (context, state) => const CustomPatternScreen(),
       ),
     ],
   );

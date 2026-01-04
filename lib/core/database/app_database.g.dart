@@ -754,6 +754,75 @@ class $TherapyPlansTable extends TherapyPlans
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _rotationPatternTypeMeta =
+      const VerificationMeta('rotationPatternType');
+  @override
+  late final GeneratedColumn<String> rotationPatternType =
+      GeneratedColumn<String>(
+        'rotation_pattern_type',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant('smart'),
+      );
+  static const VerificationMeta _customPatternSequenceMeta =
+      const VerificationMeta('customPatternSequence');
+  @override
+  late final GeneratedColumn<String> customPatternSequence =
+      GeneratedColumn<String>(
+        'custom_pattern_sequence',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant(''),
+      );
+  static const VerificationMeta _patternCurrentIndexMeta =
+      const VerificationMeta('patternCurrentIndex');
+  @override
+  late final GeneratedColumn<int> patternCurrentIndex = GeneratedColumn<int>(
+    'pattern_current_index',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _patternLastZoneIdMeta = const VerificationMeta(
+    'patternLastZoneId',
+  );
+  @override
+  late final GeneratedColumn<int> patternLastZoneId = GeneratedColumn<int>(
+    'pattern_last_zone_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _patternLastSideMeta = const VerificationMeta(
+    'patternLastSide',
+  );
+  @override
+  late final GeneratedColumn<String> patternLastSide = GeneratedColumn<String>(
+    'pattern_last_side',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _patternWeekStartDateMeta =
+      const VerificationMeta('patternWeekStartDate');
+  @override
+  late final GeneratedColumn<DateTime> patternWeekStartDate =
+      GeneratedColumn<DateTime>(
+        'pattern_week_start_date',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -785,6 +854,12 @@ class $TherapyPlansTable extends TherapyPlans
     weekDays,
     preferredTime,
     startDate,
+    rotationPatternType,
+    customPatternSequence,
+    patternCurrentIndex,
+    patternLastZoneId,
+    patternLastSide,
+    patternWeekStartDate,
     createdAt,
     updatedAt,
   ];
@@ -835,6 +910,60 @@ class $TherapyPlansTable extends TherapyPlans
     } else if (isInserting) {
       context.missing(_startDateMeta);
     }
+    if (data.containsKey('rotation_pattern_type')) {
+      context.handle(
+        _rotationPatternTypeMeta,
+        rotationPatternType.isAcceptableOrUnknown(
+          data['rotation_pattern_type']!,
+          _rotationPatternTypeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('custom_pattern_sequence')) {
+      context.handle(
+        _customPatternSequenceMeta,
+        customPatternSequence.isAcceptableOrUnknown(
+          data['custom_pattern_sequence']!,
+          _customPatternSequenceMeta,
+        ),
+      );
+    }
+    if (data.containsKey('pattern_current_index')) {
+      context.handle(
+        _patternCurrentIndexMeta,
+        patternCurrentIndex.isAcceptableOrUnknown(
+          data['pattern_current_index']!,
+          _patternCurrentIndexMeta,
+        ),
+      );
+    }
+    if (data.containsKey('pattern_last_zone_id')) {
+      context.handle(
+        _patternLastZoneIdMeta,
+        patternLastZoneId.isAcceptableOrUnknown(
+          data['pattern_last_zone_id']!,
+          _patternLastZoneIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('pattern_last_side')) {
+      context.handle(
+        _patternLastSideMeta,
+        patternLastSide.isAcceptableOrUnknown(
+          data['pattern_last_side']!,
+          _patternLastSideMeta,
+        ),
+      );
+    }
+    if (data.containsKey('pattern_week_start_date')) {
+      context.handle(
+        _patternWeekStartDateMeta,
+        patternWeekStartDate.isAcceptableOrUnknown(
+          data['pattern_week_start_date']!,
+          _patternWeekStartDateMeta,
+        ),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -876,6 +1005,30 @@ class $TherapyPlansTable extends TherapyPlans
         DriftSqlType.dateTime,
         data['${effectivePrefix}start_date'],
       )!,
+      rotationPatternType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}rotation_pattern_type'],
+      )!,
+      customPatternSequence: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}custom_pattern_sequence'],
+      )!,
+      patternCurrentIndex: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}pattern_current_index'],
+      )!,
+      patternLastZoneId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}pattern_last_zone_id'],
+      ),
+      patternLastSide: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}pattern_last_side'],
+      )!,
+      patternWeekStartDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}pattern_week_start_date'],
+      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -899,6 +1052,12 @@ class TherapyPlan extends DataClass implements Insertable<TherapyPlan> {
   final String weekDays;
   final String preferredTime;
   final DateTime startDate;
+  final String rotationPatternType;
+  final String customPatternSequence;
+  final int patternCurrentIndex;
+  final int? patternLastZoneId;
+  final String patternLastSide;
+  final DateTime? patternWeekStartDate;
   final DateTime createdAt;
   final DateTime updatedAt;
   const TherapyPlan({
@@ -907,6 +1066,12 @@ class TherapyPlan extends DataClass implements Insertable<TherapyPlan> {
     required this.weekDays,
     required this.preferredTime,
     required this.startDate,
+    required this.rotationPatternType,
+    required this.customPatternSequence,
+    required this.patternCurrentIndex,
+    this.patternLastZoneId,
+    required this.patternLastSide,
+    this.patternWeekStartDate,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -918,6 +1083,16 @@ class TherapyPlan extends DataClass implements Insertable<TherapyPlan> {
     map['week_days'] = Variable<String>(weekDays);
     map['preferred_time'] = Variable<String>(preferredTime);
     map['start_date'] = Variable<DateTime>(startDate);
+    map['rotation_pattern_type'] = Variable<String>(rotationPatternType);
+    map['custom_pattern_sequence'] = Variable<String>(customPatternSequence);
+    map['pattern_current_index'] = Variable<int>(patternCurrentIndex);
+    if (!nullToAbsent || patternLastZoneId != null) {
+      map['pattern_last_zone_id'] = Variable<int>(patternLastZoneId);
+    }
+    map['pattern_last_side'] = Variable<String>(patternLastSide);
+    if (!nullToAbsent || patternWeekStartDate != null) {
+      map['pattern_week_start_date'] = Variable<DateTime>(patternWeekStartDate);
+    }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     return map;
@@ -930,6 +1105,16 @@ class TherapyPlan extends DataClass implements Insertable<TherapyPlan> {
       weekDays: Value(weekDays),
       preferredTime: Value(preferredTime),
       startDate: Value(startDate),
+      rotationPatternType: Value(rotationPatternType),
+      customPatternSequence: Value(customPatternSequence),
+      patternCurrentIndex: Value(patternCurrentIndex),
+      patternLastZoneId: patternLastZoneId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(patternLastZoneId),
+      patternLastSide: Value(patternLastSide),
+      patternWeekStartDate: patternWeekStartDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(patternWeekStartDate),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
@@ -946,6 +1131,20 @@ class TherapyPlan extends DataClass implements Insertable<TherapyPlan> {
       weekDays: serializer.fromJson<String>(json['weekDays']),
       preferredTime: serializer.fromJson<String>(json['preferredTime']),
       startDate: serializer.fromJson<DateTime>(json['startDate']),
+      rotationPatternType: serializer.fromJson<String>(
+        json['rotationPatternType'],
+      ),
+      customPatternSequence: serializer.fromJson<String>(
+        json['customPatternSequence'],
+      ),
+      patternCurrentIndex: serializer.fromJson<int>(
+        json['patternCurrentIndex'],
+      ),
+      patternLastZoneId: serializer.fromJson<int?>(json['patternLastZoneId']),
+      patternLastSide: serializer.fromJson<String>(json['patternLastSide']),
+      patternWeekStartDate: serializer.fromJson<DateTime?>(
+        json['patternWeekStartDate'],
+      ),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
@@ -959,6 +1158,14 @@ class TherapyPlan extends DataClass implements Insertable<TherapyPlan> {
       'weekDays': serializer.toJson<String>(weekDays),
       'preferredTime': serializer.toJson<String>(preferredTime),
       'startDate': serializer.toJson<DateTime>(startDate),
+      'rotationPatternType': serializer.toJson<String>(rotationPatternType),
+      'customPatternSequence': serializer.toJson<String>(customPatternSequence),
+      'patternCurrentIndex': serializer.toJson<int>(patternCurrentIndex),
+      'patternLastZoneId': serializer.toJson<int?>(patternLastZoneId),
+      'patternLastSide': serializer.toJson<String>(patternLastSide),
+      'patternWeekStartDate': serializer.toJson<DateTime?>(
+        patternWeekStartDate,
+      ),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
@@ -970,6 +1177,12 @@ class TherapyPlan extends DataClass implements Insertable<TherapyPlan> {
     String? weekDays,
     String? preferredTime,
     DateTime? startDate,
+    String? rotationPatternType,
+    String? customPatternSequence,
+    int? patternCurrentIndex,
+    Value<int?> patternLastZoneId = const Value.absent(),
+    String? patternLastSide,
+    Value<DateTime?> patternWeekStartDate = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
   }) => TherapyPlan(
@@ -978,6 +1191,16 @@ class TherapyPlan extends DataClass implements Insertable<TherapyPlan> {
     weekDays: weekDays ?? this.weekDays,
     preferredTime: preferredTime ?? this.preferredTime,
     startDate: startDate ?? this.startDate,
+    rotationPatternType: rotationPatternType ?? this.rotationPatternType,
+    customPatternSequence: customPatternSequence ?? this.customPatternSequence,
+    patternCurrentIndex: patternCurrentIndex ?? this.patternCurrentIndex,
+    patternLastZoneId: patternLastZoneId.present
+        ? patternLastZoneId.value
+        : this.patternLastZoneId,
+    patternLastSide: patternLastSide ?? this.patternLastSide,
+    patternWeekStartDate: patternWeekStartDate.present
+        ? patternWeekStartDate.value
+        : this.patternWeekStartDate,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
@@ -992,6 +1215,24 @@ class TherapyPlan extends DataClass implements Insertable<TherapyPlan> {
           ? data.preferredTime.value
           : this.preferredTime,
       startDate: data.startDate.present ? data.startDate.value : this.startDate,
+      rotationPatternType: data.rotationPatternType.present
+          ? data.rotationPatternType.value
+          : this.rotationPatternType,
+      customPatternSequence: data.customPatternSequence.present
+          ? data.customPatternSequence.value
+          : this.customPatternSequence,
+      patternCurrentIndex: data.patternCurrentIndex.present
+          ? data.patternCurrentIndex.value
+          : this.patternCurrentIndex,
+      patternLastZoneId: data.patternLastZoneId.present
+          ? data.patternLastZoneId.value
+          : this.patternLastZoneId,
+      patternLastSide: data.patternLastSide.present
+          ? data.patternLastSide.value
+          : this.patternLastSide,
+      patternWeekStartDate: data.patternWeekStartDate.present
+          ? data.patternWeekStartDate.value
+          : this.patternWeekStartDate,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -1005,6 +1246,12 @@ class TherapyPlan extends DataClass implements Insertable<TherapyPlan> {
           ..write('weekDays: $weekDays, ')
           ..write('preferredTime: $preferredTime, ')
           ..write('startDate: $startDate, ')
+          ..write('rotationPatternType: $rotationPatternType, ')
+          ..write('customPatternSequence: $customPatternSequence, ')
+          ..write('patternCurrentIndex: $patternCurrentIndex, ')
+          ..write('patternLastZoneId: $patternLastZoneId, ')
+          ..write('patternLastSide: $patternLastSide, ')
+          ..write('patternWeekStartDate: $patternWeekStartDate, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -1018,6 +1265,12 @@ class TherapyPlan extends DataClass implements Insertable<TherapyPlan> {
     weekDays,
     preferredTime,
     startDate,
+    rotationPatternType,
+    customPatternSequence,
+    patternCurrentIndex,
+    patternLastZoneId,
+    patternLastSide,
+    patternWeekStartDate,
     createdAt,
     updatedAt,
   );
@@ -1030,6 +1283,12 @@ class TherapyPlan extends DataClass implements Insertable<TherapyPlan> {
           other.weekDays == this.weekDays &&
           other.preferredTime == this.preferredTime &&
           other.startDate == this.startDate &&
+          other.rotationPatternType == this.rotationPatternType &&
+          other.customPatternSequence == this.customPatternSequence &&
+          other.patternCurrentIndex == this.patternCurrentIndex &&
+          other.patternLastZoneId == this.patternLastZoneId &&
+          other.patternLastSide == this.patternLastSide &&
+          other.patternWeekStartDate == this.patternWeekStartDate &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -1040,6 +1299,12 @@ class TherapyPlansCompanion extends UpdateCompanion<TherapyPlan> {
   final Value<String> weekDays;
   final Value<String> preferredTime;
   final Value<DateTime> startDate;
+  final Value<String> rotationPatternType;
+  final Value<String> customPatternSequence;
+  final Value<int> patternCurrentIndex;
+  final Value<int?> patternLastZoneId;
+  final Value<String> patternLastSide;
+  final Value<DateTime?> patternWeekStartDate;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   const TherapyPlansCompanion({
@@ -1048,6 +1313,12 @@ class TherapyPlansCompanion extends UpdateCompanion<TherapyPlan> {
     this.weekDays = const Value.absent(),
     this.preferredTime = const Value.absent(),
     this.startDate = const Value.absent(),
+    this.rotationPatternType = const Value.absent(),
+    this.customPatternSequence = const Value.absent(),
+    this.patternCurrentIndex = const Value.absent(),
+    this.patternLastZoneId = const Value.absent(),
+    this.patternLastSide = const Value.absent(),
+    this.patternWeekStartDate = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
   });
@@ -1057,6 +1328,12 @@ class TherapyPlansCompanion extends UpdateCompanion<TherapyPlan> {
     this.weekDays = const Value.absent(),
     this.preferredTime = const Value.absent(),
     required DateTime startDate,
+    this.rotationPatternType = const Value.absent(),
+    this.customPatternSequence = const Value.absent(),
+    this.patternCurrentIndex = const Value.absent(),
+    this.patternLastZoneId = const Value.absent(),
+    this.patternLastSide = const Value.absent(),
+    this.patternWeekStartDate = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
   }) : startDate = Value(startDate);
@@ -1066,6 +1343,12 @@ class TherapyPlansCompanion extends UpdateCompanion<TherapyPlan> {
     Expression<String>? weekDays,
     Expression<String>? preferredTime,
     Expression<DateTime>? startDate,
+    Expression<String>? rotationPatternType,
+    Expression<String>? customPatternSequence,
+    Expression<int>? patternCurrentIndex,
+    Expression<int>? patternLastZoneId,
+    Expression<String>? patternLastSide,
+    Expression<DateTime>? patternWeekStartDate,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
   }) {
@@ -1075,6 +1358,16 @@ class TherapyPlansCompanion extends UpdateCompanion<TherapyPlan> {
       if (weekDays != null) 'week_days': weekDays,
       if (preferredTime != null) 'preferred_time': preferredTime,
       if (startDate != null) 'start_date': startDate,
+      if (rotationPatternType != null)
+        'rotation_pattern_type': rotationPatternType,
+      if (customPatternSequence != null)
+        'custom_pattern_sequence': customPatternSequence,
+      if (patternCurrentIndex != null)
+        'pattern_current_index': patternCurrentIndex,
+      if (patternLastZoneId != null) 'pattern_last_zone_id': patternLastZoneId,
+      if (patternLastSide != null) 'pattern_last_side': patternLastSide,
+      if (patternWeekStartDate != null)
+        'pattern_week_start_date': patternWeekStartDate,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
     });
@@ -1086,6 +1379,12 @@ class TherapyPlansCompanion extends UpdateCompanion<TherapyPlan> {
     Value<String>? weekDays,
     Value<String>? preferredTime,
     Value<DateTime>? startDate,
+    Value<String>? rotationPatternType,
+    Value<String>? customPatternSequence,
+    Value<int>? patternCurrentIndex,
+    Value<int?>? patternLastZoneId,
+    Value<String>? patternLastSide,
+    Value<DateTime?>? patternWeekStartDate,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
   }) {
@@ -1095,6 +1394,13 @@ class TherapyPlansCompanion extends UpdateCompanion<TherapyPlan> {
       weekDays: weekDays ?? this.weekDays,
       preferredTime: preferredTime ?? this.preferredTime,
       startDate: startDate ?? this.startDate,
+      rotationPatternType: rotationPatternType ?? this.rotationPatternType,
+      customPatternSequence:
+          customPatternSequence ?? this.customPatternSequence,
+      patternCurrentIndex: patternCurrentIndex ?? this.patternCurrentIndex,
+      patternLastZoneId: patternLastZoneId ?? this.patternLastZoneId,
+      patternLastSide: patternLastSide ?? this.patternLastSide,
+      patternWeekStartDate: patternWeekStartDate ?? this.patternWeekStartDate,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -1118,6 +1424,30 @@ class TherapyPlansCompanion extends UpdateCompanion<TherapyPlan> {
     if (startDate.present) {
       map['start_date'] = Variable<DateTime>(startDate.value);
     }
+    if (rotationPatternType.present) {
+      map['rotation_pattern_type'] = Variable<String>(
+        rotationPatternType.value,
+      );
+    }
+    if (customPatternSequence.present) {
+      map['custom_pattern_sequence'] = Variable<String>(
+        customPatternSequence.value,
+      );
+    }
+    if (patternCurrentIndex.present) {
+      map['pattern_current_index'] = Variable<int>(patternCurrentIndex.value);
+    }
+    if (patternLastZoneId.present) {
+      map['pattern_last_zone_id'] = Variable<int>(patternLastZoneId.value);
+    }
+    if (patternLastSide.present) {
+      map['pattern_last_side'] = Variable<String>(patternLastSide.value);
+    }
+    if (patternWeekStartDate.present) {
+      map['pattern_week_start_date'] = Variable<DateTime>(
+        patternWeekStartDate.value,
+      );
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -1135,6 +1465,12 @@ class TherapyPlansCompanion extends UpdateCompanion<TherapyPlan> {
           ..write('weekDays: $weekDays, ')
           ..write('preferredTime: $preferredTime, ')
           ..write('startDate: $startDate, ')
+          ..write('rotationPatternType: $rotationPatternType, ')
+          ..write('customPatternSequence: $customPatternSequence, ')
+          ..write('patternCurrentIndex: $patternCurrentIndex, ')
+          ..write('patternLastZoneId: $patternLastZoneId, ')
+          ..write('patternLastSide: $patternLastSide, ')
+          ..write('patternWeekStartDate: $patternWeekStartDate, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -4635,6 +4971,12 @@ typedef $$TherapyPlansTableCreateCompanionBuilder =
       Value<String> weekDays,
       Value<String> preferredTime,
       required DateTime startDate,
+      Value<String> rotationPatternType,
+      Value<String> customPatternSequence,
+      Value<int> patternCurrentIndex,
+      Value<int?> patternLastZoneId,
+      Value<String> patternLastSide,
+      Value<DateTime?> patternWeekStartDate,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
     });
@@ -4645,6 +4987,12 @@ typedef $$TherapyPlansTableUpdateCompanionBuilder =
       Value<String> weekDays,
       Value<String> preferredTime,
       Value<DateTime> startDate,
+      Value<String> rotationPatternType,
+      Value<String> customPatternSequence,
+      Value<int> patternCurrentIndex,
+      Value<int?> patternLastZoneId,
+      Value<String> patternLastSide,
+      Value<DateTime?> patternWeekStartDate,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
     });
@@ -4680,6 +5028,36 @@ class $$TherapyPlansTableFilterComposer
 
   ColumnFilters<DateTime> get startDate => $composableBuilder(
     column: $table.startDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get rotationPatternType => $composableBuilder(
+    column: $table.rotationPatternType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get customPatternSequence => $composableBuilder(
+    column: $table.customPatternSequence,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get patternCurrentIndex => $composableBuilder(
+    column: $table.patternCurrentIndex,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get patternLastZoneId => $composableBuilder(
+    column: $table.patternLastZoneId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get patternLastSide => $composableBuilder(
+    column: $table.patternLastSide,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get patternWeekStartDate => $composableBuilder(
+    column: $table.patternWeekStartDate,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -4728,6 +5106,36 @@ class $$TherapyPlansTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get rotationPatternType => $composableBuilder(
+    column: $table.rotationPatternType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get customPatternSequence => $composableBuilder(
+    column: $table.customPatternSequence,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get patternCurrentIndex => $composableBuilder(
+    column: $table.patternCurrentIndex,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get patternLastZoneId => $composableBuilder(
+    column: $table.patternLastZoneId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get patternLastSide => $composableBuilder(
+    column: $table.patternLastSide,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get patternWeekStartDate => $composableBuilder(
+    column: $table.patternWeekStartDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -4766,6 +5174,36 @@ class $$TherapyPlansTableAnnotationComposer
 
   GeneratedColumn<DateTime> get startDate =>
       $composableBuilder(column: $table.startDate, builder: (column) => column);
+
+  GeneratedColumn<String> get rotationPatternType => $composableBuilder(
+    column: $table.rotationPatternType,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get customPatternSequence => $composableBuilder(
+    column: $table.customPatternSequence,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get patternCurrentIndex => $composableBuilder(
+    column: $table.patternCurrentIndex,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get patternLastZoneId => $composableBuilder(
+    column: $table.patternLastZoneId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get patternLastSide => $composableBuilder(
+    column: $table.patternLastSide,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get patternWeekStartDate => $composableBuilder(
+    column: $table.patternWeekStartDate,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -4810,6 +5248,12 @@ class $$TherapyPlansTableTableManager
                 Value<String> weekDays = const Value.absent(),
                 Value<String> preferredTime = const Value.absent(),
                 Value<DateTime> startDate = const Value.absent(),
+                Value<String> rotationPatternType = const Value.absent(),
+                Value<String> customPatternSequence = const Value.absent(),
+                Value<int> patternCurrentIndex = const Value.absent(),
+                Value<int?> patternLastZoneId = const Value.absent(),
+                Value<String> patternLastSide = const Value.absent(),
+                Value<DateTime?> patternWeekStartDate = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
               }) => TherapyPlansCompanion(
@@ -4818,6 +5262,12 @@ class $$TherapyPlansTableTableManager
                 weekDays: weekDays,
                 preferredTime: preferredTime,
                 startDate: startDate,
+                rotationPatternType: rotationPatternType,
+                customPatternSequence: customPatternSequence,
+                patternCurrentIndex: patternCurrentIndex,
+                patternLastZoneId: patternLastZoneId,
+                patternLastSide: patternLastSide,
+                patternWeekStartDate: patternWeekStartDate,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
               ),
@@ -4828,6 +5278,12 @@ class $$TherapyPlansTableTableManager
                 Value<String> weekDays = const Value.absent(),
                 Value<String> preferredTime = const Value.absent(),
                 required DateTime startDate,
+                Value<String> rotationPatternType = const Value.absent(),
+                Value<String> customPatternSequence = const Value.absent(),
+                Value<int> patternCurrentIndex = const Value.absent(),
+                Value<int?> patternLastZoneId = const Value.absent(),
+                Value<String> patternLastSide = const Value.absent(),
+                Value<DateTime?> patternWeekStartDate = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
               }) => TherapyPlansCompanion.insert(
@@ -4836,6 +5292,12 @@ class $$TherapyPlansTableTableManager
                 weekDays: weekDays,
                 preferredTime: preferredTime,
                 startDate: startDate,
+                rotationPatternType: rotationPatternType,
+                customPatternSequence: customPatternSequence,
+                patternCurrentIndex: patternCurrentIndex,
+                patternLastZoneId: patternLastZoneId,
+                patternLastSide: patternLastSide,
+                patternWeekStartDate: patternWeekStartDate,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
               ),

@@ -12,7 +12,9 @@ import '../../core/services/import_service.dart';
 import '../../core/services/notification_settings_provider.dart';
 import '../../core/database/app_database.dart' hide TherapyPlan;
 import '../../core/database/database_provider.dart';
+import '../../core/ml/rotation_pattern_engine.dart';
 import '../../app/router.dart';
+import '../../models/rotation_pattern.dart';
 import '../../models/therapy_plan.dart';
 import '../auth/auth_provider.dart';
 import '../injection/injection_provider.dart';
@@ -72,6 +74,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               );
             },
           ),
+
+          const _SectionHeader(title: 'PATTERN DI ROTAZIONE'),
+          _RotationPatternSection(),
 
           const _SectionHeader(title: 'ZONE E PUNTI'),
           _SettingsTile(
@@ -797,6 +802,212 @@ class _AppInfoHeader extends StatelessWidget {
             onPressed: onReset,
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Sezione Pattern di Rotazione
+class _RotationPatternSection extends ConsumerWidget {
+  const _RotationPatternSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final patternAsync = ref.watch(currentRotationPatternProvider);
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return patternAsync.when(
+      loading: () => const ListTile(
+        leading: CircularProgressIndicator(strokeWidth: 2),
+        title: Text('Caricamento...'),
+      ),
+      error: (e, _) => ListTile(
+        leading: const Icon(Icons.error),
+        title: Text('Errore: $e'),
+      ),
+      data: (pattern) => Column(
+        children: [
+          // Current pattern display
+          ListTile(
+            leading: Text(
+              pattern.type.icon,
+              style: const TextStyle(fontSize: 24),
+            ),
+            title: Text(pattern.type.displayName),
+            subtitle: Text(
+              pattern.type.description,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.bodySmall,
+            ),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => _showPatternSelector(context, ref, pattern),
+          ),
+
+          // Info card for current pattern
+          if (pattern.type != RotationPatternType.smart)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Card(
+                color: isDark ? AppColors.darkOverlay : AppColors.dawnOverlay,
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.info_outline,
+                        size: 20,
+                        color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          _getPatternStatus(pattern),
+                          style: theme.textTheme.bodySmall,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+          // Custom sequence button
+          if (pattern.type == RotationPatternType.custom)
+            _SettingsTile(
+              icon: Icons.reorder,
+              title: 'Modifica sequenza',
+              trailing: Text(
+                pattern.customSequence != null
+                    ? '${pattern.customSequence!.length} zone'
+                    : 'Non configurata',
+              ),
+              onTap: () => context.push(AppRoutes.customPattern),
+            ),
+        ],
+      ),
+    );
+  }
+
+  String _getPatternStatus(RotationPattern pattern) {
+    return switch (pattern.type) {
+      RotationPatternType.smart => '',
+      RotationPatternType.sequential =>
+        'Posizione nella sequenza: ${pattern.currentIndex + 1}/8',
+      RotationPatternType.alternateSides =>
+        pattern.lastSide != null
+            ? 'Ultimo lato: ${pattern.lastSide == 'left' ? 'sinistro' : 'destro'}'
+            : 'Inizierà dal lato sinistro',
+      RotationPatternType.weeklyRotation =>
+        pattern.weekStartDate != null
+            ? 'Settimana iniziata il ${_formatDate(pattern.weekStartDate!)}'
+            : 'Inizierà dalla prossima iniezione',
+      RotationPatternType.custom =>
+        pattern.customSequence != null
+            ? 'Posizione: ${pattern.currentIndex + 1}/${pattern.customSequence!.length}'
+            : 'Sequenza non configurata',
+    };
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.day}/${date.month}/${date.year}';
+  }
+
+  void _showPatternSelector(
+    BuildContext context,
+    WidgetRef ref,
+    RotationPattern currentPattern,
+  ) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        maxChildSize: 0.9,
+        minChildSize: 0.5,
+        expand: false,
+        builder: (context, scrollController) => Column(
+          children: [
+            // Handle
+            Container(
+              margin: const EdgeInsets.symmetric(vertical: 12),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+
+            // Title
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Text(
+                'Seleziona Pattern di Rotazione',
+                style: theme.textTheme.titleLarge,
+              ),
+            ),
+
+            const Divider(),
+
+            // Pattern options
+            Expanded(
+              child: ListView(
+                controller: scrollController,
+                children: RotationPatternType.values.map((type) {
+                  final isSelected = currentPattern.type == type;
+                  return RadioListTile<RotationPatternType>(
+                    value: type,
+                    groupValue: currentPattern.type,
+                    onChanged: (value) async {
+                      if (value == null) return;
+                      final service = ref.read(rotationPatternServiceProvider);
+
+                      if (value == RotationPatternType.weeklyRotation) {
+                        await service.initWeeklyRotation();
+                      } else {
+                        await service.setPatternType(value);
+                      }
+
+                      ref.invalidate(currentRotationPatternProvider);
+                      ref.invalidate(patternBasedZoneSuggestionProvider);
+
+                      if (context.mounted) {
+                        Navigator.pop(ctx);
+                      }
+                    },
+                    title: Row(
+                      children: [
+                        Text(type.icon, style: const TextStyle(fontSize: 20)),
+                        const SizedBox(width: 12),
+                        Text(
+                          type.displayName,
+                          style: TextStyle(
+                            fontWeight:
+                                isSelected ? FontWeight.bold : FontWeight.normal,
+                          ),
+                        ),
+                      ],
+                    ),
+                    subtitle: Padding(
+                      padding: const EdgeInsets.only(left: 32),
+                      child: Text(
+                        type.description,
+                        style: theme.textTheme.bodySmall,
+                      ),
+                    ),
+                    selected: isSelected,
+                    activeColor: isDark ? AppColors.darkIris : AppColors.dawnIris,
+                  );
+                }).toList(),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

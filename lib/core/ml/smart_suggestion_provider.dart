@@ -5,6 +5,9 @@ import 'ml_data_collector.dart';
 import 'zone_prediction_model.dart';
 import 'time_optimizer.dart';
 import 'adherence_scorer.dart';
+import 'rotation_pattern_engine.dart';
+import '../../models/rotation_pattern.dart';
+import '../../models/body_zone.dart' as body_zone_model;
 
 part 'smart_suggestion_provider.g.dart';
 
@@ -70,15 +73,53 @@ Future<AdherenceScore> adherenceScore(Ref ref) async {
 }
 
 /// Provider principale che combina tutte le predizioni in un suggerimento smart
+/// Usa il pattern di rotazione configurato dall'utente
 @riverpod
 Future<SmartSuggestion> smartSuggestion(Ref ref) async {
   try {
-    final zonePredictions = await ref.watch(zonePredictionsProvider.future);
+    // Ottieni il pattern configurato
+    final pattern = await ref.watch(currentRotationPatternProvider.future);
     final timeRec = await ref.watch(timeRecommendationProvider.future);
     final adherenceScore = await ref.watch(adherenceScoreProvider.future);
 
-    // Prendi la zona migliore
-    final topZone = zonePredictions.isNotEmpty ? zonePredictions.first : null;
+    // In base al pattern, usa il motore appropriato
+    ZonePrediction? topZone;
+    List<ZonePrediction> allPredictions = [];
+
+    if (pattern.type == RotationPatternType.smart) {
+      // Usa il modello ML standard
+      final zonePredictions = await ref.watch(zonePredictionsProvider.future);
+      topZone = zonePredictions.isNotEmpty ? zonePredictions.first : null;
+      allPredictions = zonePredictions;
+    } else {
+      // Usa il pattern engine configurato
+      final patternSuggestion = await ref.watch(patternBasedZoneSuggestionProvider.future);
+      if (patternSuggestion != null) {
+        final zones = await ref.watch(bodyZonesProvider.future);
+        final dbZone = zones.firstWhere(
+          (z) => z.id == patternSuggestion.zoneId,
+          orElse: () => zones.first,
+        );
+        // Converti il BodyZone del database in BodyZone del modello
+        final modelZone = body_zone_model.BodyZone(
+          id: dbZone.id,
+          code: dbZone.code,
+          name: dbZone.name,
+          type: dbZone.type,
+          side: dbZone.side,
+          numberOfPoints: dbZone.numberOfPoints,
+          isEnabled: dbZone.isEnabled,
+          sortOrder: dbZone.sortOrder,
+        );
+        topZone = ZonePrediction(
+          zone: modelZone,
+          score: patternSuggestion.confidence,
+          confidence: patternSuggestion.confidence,
+          reason: patternSuggestion.reason,
+        );
+        allPredictions = [topZone];
+      }
+    }
 
     // Calcola la confidenza complessiva
     double overallConfidence = 0.5;
@@ -93,6 +134,10 @@ Future<SmartSuggestion> smartSuggestion(Ref ref) async {
       if (timeRec.confidence > 0.5) {
         mainMessage += ' alle ${timeRec.formattedTime}';
       }
+      // Aggiungi info sul pattern
+      if (pattern.type != RotationPatternType.smart) {
+        mainMessage += ' (${pattern.type.displayName})';
+      }
     } else {
       mainMessage = 'Nessun suggerimento disponibile';
     }
@@ -100,9 +145,12 @@ Future<SmartSuggestion> smartSuggestion(Ref ref) async {
     // Genera suggerimenti secondari
     final secondarySuggestions = <String>[];
     
-    if (zonePredictions.length > 1) {
+    // Mostra il motivo del pattern
+    if (topZone != null && pattern.type != RotationPatternType.smart) {
+      secondarySuggestions.add(topZone.reason);
+    } else if (allPredictions.length > 1) {
       secondarySuggestions.add(
-        'Alternative: ${zonePredictions.skip(1).take(2).map((z) => z.zone.displayName).join(", ")}'
+        'Alternative: ${allPredictions.skip(1).take(2).map((z) => z.zone.displayName).join(", ")}'
       );
     }
 
@@ -114,11 +162,12 @@ Future<SmartSuggestion> smartSuggestion(Ref ref) async {
       topZonePrediction: topZone,
       timeRecommendation: timeRec,
       adherenceScore: adherenceScore,
-      allZonePredictions: zonePredictions,
+      allZonePredictions: allPredictions,
       overallConfidence: overallConfidence,
       mainMessage: mainMessage,
       secondarySuggestions: secondarySuggestions,
-      hasEnoughData: zonePredictions.isNotEmpty,
+      hasEnoughData: allPredictions.isNotEmpty,
+      patternType: pattern.type,
     );
   } catch (e) {
     // In caso di errore, ritorna un suggerimento vuoto
@@ -136,6 +185,7 @@ class SmartSuggestion {
   final String mainMessage;
   final List<String> secondarySuggestions;
   final bool hasEnoughData;
+  final RotationPatternType patternType;
 
   const SmartSuggestion({
     this.topZonePrediction,
@@ -146,6 +196,7 @@ class SmartSuggestion {
     required this.mainMessage,
     this.secondarySuggestions = const [],
     required this.hasEnoughData,
+    this.patternType = RotationPatternType.smart,
   });
 
   factory SmartSuggestion.empty() {
@@ -155,6 +206,9 @@ class SmartSuggestion {
       hasEnoughData: false,
     );
   }
+
+  /// Nome del pattern attivo
+  String get patternName => patternType.displayName;
 
   /// Confidenza in percentuale
   int get confidencePercentage => (overallConfidence * 100).round();

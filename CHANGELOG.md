@@ -5,6 +5,29 @@ Tutte le modifiche rilevanti a InjeCare Plan sono documentate in questo file.
 Il formato segue [Keep a Changelog](https://keepachangelog.com/it/1.0.0/),
 e il progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 
+## [3.4.0] - 2026-01-04
+
+### Aggiunto
+- **Pattern di Rotazione Configurabili**: Nuova sezione in Impostazioni per scegliere lo schema di rotazione
+  - **Suggerimento AI**: L'AI suggerisce la zona migliore (comportamento precedente)
+  - **Sequenza zone**: Segue un ordine fisso predefinito (Coscia Sx → Coscia Dx → ...)
+  - **Alternanza Sx/Dx**: Alterna tra lato sinistro e destro del corpo
+  - **Rotazione settimanale**: Cambia tipo di zona ogni settimana
+  - **Personalizzato**: Definisci tu l'ordine delle zone con drag-and-drop
+- **Schermata sequenza personalizzata**: Riordina le zone per creare la tua sequenza
+- **Indicatori visivi silhouette**: Viso stilizzato sulla vista frontale, nuca/scapole sulla vista posteriore
+- **Etichette FRONTE/RETRO**: Testo indicativo su ogni silhouette
+- Modello `RotationPattern` con supporto JSON e database
+- `RotationPatternEngine` per gestire tutti i tipi di pattern
+- Test unitari per `RotationPattern` (13 test)
+
+### Migliorato
+- Silhouette corpo più riconoscibile (fronte vs retro)
+- Smart suggestions ora rispettano il pattern configurato
+- Sezione impostazioni riorganizzata
+
+---
+
 ## [3.3.0] - 2026-01-04
 
 ### Aggiunto

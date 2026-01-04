@@ -29,6 +29,12 @@ Applicazione Flutter per la gestione delle iniezioni di Interferone beta-1a per 
 - 📅 **Calendario intelligente**: Pianificazione automatica delle iniezioni
 - 🧍 **Mappa corpo interattiva**: 8 zone con rotazione automatica dei punti
 - 📜 **Storico punti**: Visualizza l'ultimo utilizzo di ogni punto con indicatori colorati (verde=consigliato, rosso=evitare)
+- 🔄 **Pattern di rotazione configurabili**: Scegli come ruotare le zone
+  - Suggerimento AI (predefinito)
+  - Sequenza zone fissa
+  - Alternanza sinistra/destra
+  - Rotazione settimanale per tipo
+  - Sequenza personalizzata drag-and-drop
 - 🔔 **Promemoria avanzati**: Notifiche configurabili
 - 📊 **Statistiche avanzate**: Grafici aderenza, heatmap zone, trend settimanali
 - 🤖 **Suggerimenti AI**: Raccomandazioni intelligenti per zone e orari

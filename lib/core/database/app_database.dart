@@ -71,8 +71,8 @@ class AppDatabase extends _$AppDatabase {
         // Aggiungi nuove colonne a TherapyPlans
         await m.addColumn(therapyPlans, therapyPlans.name);
         await m.addColumn(therapyPlans, therapyPlans.isActive);
-        // Crea i 5 piani predefiniti se non esistono
-        await _seedDefaultTherapyPlans();
+        // Migra i piani esistenti e crea quelli mancanti
+        await _migrateTherapyPlansToV4();
       }
     },
   );
@@ -151,7 +151,57 @@ class AppDatabase extends _$AppDatabase {
     });
   }
 
-  /// Inserisce i 5 piani terapeutici predefiniti
+  /// Mappa dei tipi di pattern ai nomi visualizzati
+  static const _patternTypeNames = {
+    'smart': 'Suggerimento AI',
+    'sequential': 'Sequenza Zone',
+    'alternateSides': 'Alternanza Sx/Dx',
+    'weeklyRotation': 'Rotazione Settimanale',
+    'custom': 'Personalizzato',
+  };
+
+  /// Migrazione da v3 a v4: aggiorna piani esistenti e crea quelli mancanti
+  Future<void> _migrateTherapyPlansToV4() async {
+    final existingPlans = await (select(therapyPlans)).get();
+    final now = DateTime.now();
+
+    // Trova quali tipi di pattern esistono già
+    final existingTypes = existingPlans.map((p) => p.rotationPatternType).toSet();
+
+    // Aggiorna i piani esistenti con nome corretto e imposta il primo come attivo
+    bool hasActivePlan = false;
+    for (final plan in existingPlans) {
+      final correctName = _patternTypeNames[plan.rotationPatternType] ?? 'Piano Smart';
+      final shouldBeActive = !hasActivePlan; // Il primo piano diventa attivo
+      
+      await (update(therapyPlans)..where((p) => p.id.equals(plan.id))).write(
+        TherapyPlansCompanion(
+          name: Value(correctName),
+          isActive: Value(shouldBeActive),
+          updatedAt: Value(now),
+        ),
+      );
+      
+      if (shouldBeActive) hasActivePlan = true;
+    }
+
+    // Crea i piani mancanti
+    final missingTypes = _patternTypeNames.keys.where((t) => !existingTypes.contains(t));
+    
+    for (final patternType in missingTypes) {
+      await into(therapyPlans).insert(
+        TherapyPlansCompanion.insert(
+          startDate: now,
+          name: Value(_patternTypeNames[patternType]!),
+          isActive: Value(!hasActivePlan), // Se non c'è ancora un piano attivo, attiva questo
+          rotationPatternType: Value(patternType),
+        ),
+      );
+      if (!hasActivePlan) hasActivePlan = true;
+    }
+  }
+
+  /// Inserisce i 5 piani terapeutici predefiniti (solo per nuove installazioni)
   Future<void> _seedDefaultTherapyPlans() async {
     // Verifica se esistono già piani
     final existingPlans = await (select(therapyPlans)).get();

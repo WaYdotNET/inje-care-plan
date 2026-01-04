@@ -391,6 +391,16 @@ Tutto avviene sul dispositivo, nessun dato viene inviato a server esterni.
 
 **Sì!** Vai in Impostazioni → Gestione Zone → seleziona una zona → Punti esclusi. Puoi specificare il motivo dell'esclusione (reazione, cicatrice, difficile accesso).
 
+### Cosa succede se aggiorno l'app?
+
+**I tuoi dati vengono preservati!** Puoi aggiornare l'app tranquillamente senza doverla disinstallare:
+- Tutte le iniezioni registrate rimangono
+- Le tue impostazioni sono mantenute
+- Le nuove funzionalità vengono aggiunte automaticamente
+- I pattern di rotazione mancanti vengono creati durante l'aggiornamento
+
+L'app gestisce automaticamente la migrazione dei dati tra una versione e l'altra.
+
 ---
 
 ## Supporto

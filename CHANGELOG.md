@@ -5,6 +5,17 @@ Tutte le modifiche rilevanti a InjeCare Plan sono documentate in questo file.
 Il formato segue [Keep a Changelog](https://keepachangelog.com/it/1.0.0/),
 e il progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 
+## [3.4.3] - 2026-01-04
+
+### Corretto
+- **Migrazione database ottimizzata**: L'app può essere aggiornata senza perdere i dati esistenti
+  - Gli utenti che aggiornano da versioni precedenti manterranno le loro iniezioni e impostazioni
+  - I piani mancanti vengono creati automaticamente durante la migrazione
+  - Il piano esistente viene mantenuto come attivo
+- Nuova funzione `_migrateTherapyPlansToV4()` per gestire aggiornamenti da versioni precedenti
+
+---
+
 ## [3.4.2] - 2026-01-04
 
 ### Migliorato

@@ -33,7 +33,7 @@ void main() {
       final zones = await db.getAllZones();
       // Disabilita una zona
       await db.toggleZoneEnabled(zones.first.id, false);
-      
+
       final enabled = await db.getEnabledZones();
       expect(enabled.length, 7);
       expect(enabled.any((z) => z.id == zones.first.id), isFalse);
@@ -42,7 +42,7 @@ void main() {
     test('getZoneById returns correct zone', () async {
       final zones = await db.getAllZones();
       final firstZone = zones.first;
-      
+
       final zone = await db.getZoneById(firstZone.id);
       expect(zone, isNotNull);
       expect(zone!.code, firstZone.code);
@@ -75,7 +75,7 @@ void main() {
       ));
 
       expect(id, greaterThan(0));
-      
+
       final zone = await db.getZoneByCode('CU');
       expect(zone, isNotNull);
       expect(zone!.name, 'Custom Zone');
@@ -85,7 +85,7 @@ void main() {
     test('updateZone modifies zone', () async {
       final zones = await db.getAllZones();
       final zone = zones.first;
-      
+
       await db.updateZone(BodyZonesCompanion(
         id: Value(zone.id),
         customName: const Value('My Custom Name'),
@@ -98,7 +98,7 @@ void main() {
     test('updateZonePointCount changes numberOfPoints', () async {
       final zones = await db.getAllZones();
       final zone = zones.first;
-      
+
       await db.updateZonePointCount(zone.id, 10);
 
       final updated = await db.getZoneById(zone.id);
@@ -108,7 +108,7 @@ void main() {
     test('updateZoneCustomName changes customName', () async {
       final zones = await db.getAllZones();
       final zone = zones.first;
-      
+
       await db.updateZoneCustomName(zone.id, 'New Name');
 
       final updated = await db.getZoneById(zone.id);
@@ -118,7 +118,7 @@ void main() {
     test('updateZoneIcon changes icon', () async {
       final zones = await db.getAllZones();
       final zone = zones.first;
-      
+
       await db.updateZoneIcon(zone.id, '🌟');
 
       final updated = await db.getZoneById(zone.id);
@@ -128,13 +128,13 @@ void main() {
     test('toggleZoneEnabled toggles isEnabled', () async {
       final zones = await db.getAllZones();
       final zone = zones.first;
-      
+
       expect(zone.isEnabled, isTrue);
-      
+
       await db.toggleZoneEnabled(zone.id, false);
       final updated = await db.getZoneById(zone.id);
       expect(updated!.isEnabled, isFalse);
-      
+
       await db.toggleZoneEnabled(zone.id, true);
       final reEnabled = await db.getZoneById(zone.id);
       expect(reEnabled!.isEnabled, isTrue);
@@ -144,7 +144,7 @@ void main() {
       final zones = await db.getAllZones();
       final originalOrder = zones.map((z) => z.id).toList();
       final reversedOrder = originalOrder.reversed.toList();
-      
+
       await db.reorderZones(reversedOrder);
 
       final reordered = await db.getAllZones();
@@ -169,7 +169,7 @@ void main() {
 
     test('watchAllZones emits updates', () async {
       final stream = db.watchAllZones();
-      
+
       expectLater(stream, emitsInOrder([
         isA<List<BodyZone>>().having((l) => l.length, 'length', 8),
         isA<List<BodyZone>>().having((l) => l.length, 'length', 9),
@@ -202,7 +202,7 @@ void main() {
 
     test('updateTherapyPlan modifies plan', () async {
       final id = await db.insertTherapyPlan(TestData.createTherapyPlan());
-      
+
       await db.updateTherapyPlan(TherapyPlansCompanion(
         id: Value(id),
         injectionsPerWeek: const Value(2),
@@ -223,7 +223,7 @@ void main() {
 
     test('insertInjection adds injection', () async {
       final zones = await db.getAllZones();
-      
+
       final id = await db.insertInjection(InjectionsCompanion.insert(
         zoneId: zones.first.id,
         pointNumber: 1,
@@ -233,7 +233,7 @@ void main() {
       ));
 
       expect(id, greaterThan(0));
-      
+
       final injections = await db.getAllInjections();
       expect(injections.length, 1);
       expect(injections.first.pointCode, 'CD-1');
@@ -241,7 +241,7 @@ void main() {
 
     test('getInjectionsByZone returns filtered injections', () async {
       final zones = await db.getAllZones();
-      
+
       // Aggiungi iniezioni per zone diverse
       await db.insertInjection(InjectionsCompanion.insert(
         zoneId: zones[0].id,
@@ -265,7 +265,7 @@ void main() {
 
     test('getInjectionsByDateRange returns filtered injections', () async {
       final zones = await db.getAllZones();
-      
+
       final day1 = DateTime(2024, 7, 10);
       final day2 = DateTime(2024, 7, 15);
       final day3 = DateTime(2024, 7, 20);
@@ -296,14 +296,14 @@ void main() {
         DateTime(2024, 7, 12),
         DateTime(2024, 7, 18),
       );
-      
+
       expect(range.length, 1);
       expect(range.first.pointCode, 'CD-2');
     });
 
     test('getLastInjectionForPoint returns most recent completed', () async {
       final zones = await db.getAllZones();
-      
+
       await db.insertInjection(InjectionsCompanion.insert(
         zoneId: zones.first.id,
         pointNumber: 1,
@@ -336,7 +336,7 @@ void main() {
 
     test('updateInjection modifies injection', () async {
       final zones = await db.getAllZones();
-      
+
       final id = await db.insertInjection(InjectionsCompanion.insert(
         zoneId: zones.first.id,
         pointNumber: 1,
@@ -357,7 +357,7 @@ void main() {
 
     test('deleteInjection removes injection', () async {
       final zones = await db.getAllZones();
-      
+
       final id = await db.insertInjection(InjectionsCompanion.insert(
         zoneId: zones.first.id,
         pointNumber: 1,
@@ -377,7 +377,7 @@ void main() {
       final zones = await db.getAllZones();
       final zone = zones.first;
       final now = DateTime.now();
-      
+
       // Usa punto 1 con data recente
       await db.insertInjection(InjectionsCompanion.insert(
         zoneId: zone.id,
@@ -399,7 +399,7 @@ void main() {
     test('findLeastUsedPoint skips blacklisted points', () async {
       final zones = await db.getAllZones();
       final zone = zones.first;
-      
+
       // Blacklist punti 1 e 2
       await db.insertBlacklistedPoint(BlacklistedPointsCompanion.insert(
         pointCode: 'CD-1',
@@ -433,7 +433,7 @@ void main() {
 
     test('insertBlacklistedPoint adds point', () async {
       final zones = await db.getAllZones();
-      
+
       final id = await db.insertBlacklistedPoint(
         BlacklistedPointsCompanion.insert(
           pointCode: 'CD-1',
@@ -454,7 +454,7 @@ void main() {
 
     test('getBlacklistedPointsForZone returns filtered points', () async {
       final zones = await db.getAllZones();
-      
+
       await db.insertBlacklistedPoint(BlacklistedPointsCompanion.insert(
         pointCode: 'CD-1',
         pointLabel: 'Test',
@@ -475,7 +475,7 @@ void main() {
 
     test('isPointBlacklisted returns true for blacklisted point', () async {
       final zones = await db.getAllZones();
-      
+
       await db.insertBlacklistedPoint(BlacklistedPointsCompanion.insert(
         pointCode: 'CD-1',
         pointLabel: 'Test',
@@ -494,7 +494,7 @@ void main() {
 
     test('removeBlacklistedPoint removes point', () async {
       final zones = await db.getAllZones();
-      
+
       await db.insertBlacklistedPoint(BlacklistedPointsCompanion.insert(
         pointCode: 'CD-1',
         pointLabel: 'Test',
@@ -518,7 +518,7 @@ void main() {
 
     test('setSetting and getSetting work together', () async {
       await db.setSetting('unique_theme_key', 'dark');
-      
+
       final value = await db.getSetting('unique_theme_key');
       expect(value, 'dark');
     });
@@ -537,7 +537,7 @@ void main() {
 
     test('insertPointConfig adds config', () async {
       final zones = await db.getAllZones();
-      
+
       final id = await db.insertPointConfig(PointConfigsCompanion.insert(
         zoneId: zones.first.id,
         pointNumber: 1,
@@ -555,7 +555,7 @@ void main() {
 
     test('getPointConfig returns specific config', () async {
       final zones = await db.getAllZones();
-      
+
       await db.insertPointConfig(PointConfigsCompanion.insert(
         zoneId: zones.first.id,
         pointNumber: 1,
@@ -574,7 +574,7 @@ void main() {
 
     test('updatePointPosition creates new config if not exists', () async {
       final zones = await db.getAllZones();
-      
+
       await db.updatePointPosition(zones.first.id, 1, 0.2, 0.8, 'back');
 
       final config = await db.getPointConfig(zones.first.id, 1);
@@ -586,7 +586,7 @@ void main() {
 
     test('updatePointPosition updates existing config', () async {
       final zones = await db.getAllZones();
-      
+
       await db.insertPointConfig(PointConfigsCompanion.insert(
         zoneId: zones.first.id,
         pointNumber: 1,
@@ -603,7 +603,7 @@ void main() {
 
     test('updatePointName creates new config if not exists', () async {
       final zones = await db.getAllZones();
-      
+
       await db.updatePointName(zones.first.id, 1, 'Custom Name');
 
       final config = await db.getPointConfig(zones.first.id, 1);
@@ -613,7 +613,7 @@ void main() {
 
     test('updatePointName updates existing config', () async {
       final zones = await db.getAllZones();
-      
+
       await db.insertPointConfig(PointConfigsCompanion.insert(
         zoneId: zones.first.id,
         pointNumber: 1,
@@ -628,7 +628,7 @@ void main() {
 
     test('deletePointConfig removes config', () async {
       final zones = await db.getAllZones();
-      
+
       final id = await db.insertPointConfig(PointConfigsCompanion.insert(
         zoneId: zones.first.id,
         pointNumber: 1,
@@ -643,7 +643,7 @@ void main() {
 
     test('deletePointConfigsForZone removes all configs for zone', () async {
       final zones = await db.getAllZones();
-      
+
       await db.insertPointConfig(PointConfigsCompanion.insert(
         zoneId: zones.first.id,
         pointNumber: 1,
@@ -709,7 +709,7 @@ void main() {
   group('AppDatabase - Utilities', () {
     test('deleteAllData clears data tables but keeps zones', () async {
       final zones = await db.getAllZones();
-      
+
       // Aggiungi dati
       await db.insertTherapyPlan(TestData.createTherapyPlan());
       await db.insertInjection(InjectionsCompanion.insert(
@@ -748,5 +748,167 @@ void main() {
       expect(zonesAfter.length, 8);
     });
   });
-}
 
+  group('AppDatabase - Stream Watchers', () {
+    test('watchEnabledZones emits updates when zone is disabled', () async {
+      final zones = await db.getAllZones();
+      
+      final expectation = expectLater(
+        db.watchEnabledZones(),
+        emitsInOrder([
+          hasLength(8), // All enabled initially
+          hasLength(7), // After disabling one
+        ]),
+      );
+
+      await db.toggleZoneEnabled(zones.first.id, false);
+      await expectation;
+    });
+
+    test('watchAllBlacklistedPoints emits updates', () async {
+      final zones = await db.getAllZones();
+      
+      final expectation = expectLater(
+        db.watchAllBlacklistedPoints(),
+        emitsInOrder([
+          hasLength(0), // Empty initially
+          hasLength(1), // After adding one
+        ]),
+      );
+
+      await db.insertBlacklistedPoint(BlacklistedPointsCompanion.insert(
+        pointCode: 'CD-1',
+        pointLabel: 'Test',
+        zoneId: zones.first.id,
+        pointNumber: 1,
+      ));
+      await expectation;
+    });
+
+    test('watchPointConfigsForZone emits updates', () async {
+      final zones = await db.getAllZones();
+      final zoneId = zones.first.id;
+      
+      final expectation = expectLater(
+        db.watchPointConfigsForZone(zoneId),
+        emitsInOrder([
+          hasLength(0), // Empty initially
+          hasLength(1), // After adding one
+        ]),
+      );
+
+      await db.insertPointConfig(PointConfigsCompanion.insert(
+        zoneId: zoneId,
+        pointNumber: 1,
+      ));
+      await expectation;
+    });
+  });
+
+  group('AppDatabase - PointConfig upsert', () {
+    test('upsertPointConfig inserts new config', () async {
+      final zones = await db.getAllZones();
+      final zoneId = zones.first.id;
+
+      await db.upsertPointConfig(PointConfigsCompanion.insert(
+        zoneId: zoneId,
+        pointNumber: 5,
+        customName: const Value('Punto Cinque'),
+        positionX: const Value(0.3),
+        positionY: const Value(0.4),
+      ));
+
+      final config = await db.getPointConfig(zoneId, 5);
+      expect(config, isNotNull);
+      expect(config!.customName, 'Punto Cinque');
+      expect(config.positionX, 0.3);
+    });
+
+    test('upsertPointConfig updates existing config via updatePointPosition', () async {
+      final zones = await db.getAllZones();
+      final zoneId = zones.first.id;
+
+      // Insert first
+      await db.insertPointConfig(PointConfigsCompanion.insert(
+        zoneId: zoneId,
+        pointNumber: 3,
+        customName: const Value('Original'),
+      ));
+
+      // Use updatePointPosition which handles upsert logic internally
+      await db.updatePointPosition(zoneId, 3, 0.5, 0.6, 'front');
+
+      final config = await db.getPointConfig(zoneId, 3);
+      expect(config, isNotNull);
+      expect(config!.positionX, 0.5);
+      expect(config.positionY, 0.6);
+      expect(config.bodyView, 'front');
+    });
+
+    test('updatePointConfig modifies existing config', () async {
+      final zones = await db.getAllZones();
+      final zoneId = zones.first.id;
+
+      // Insert a config
+      final id = await db.insertPointConfig(PointConfigsCompanion.insert(
+        zoneId: zoneId,
+        pointNumber: 1,
+        customName: const Value('Original'),
+      ));
+
+      // Update it
+      await db.updatePointConfig(PointConfigsCompanion(
+        id: Value(id),
+        customName: const Value('Modified'),
+        positionX: const Value(0.8),
+      ));
+
+      final config = await db.getPointConfig(zoneId, 1);
+      expect(config!.customName, 'Modified');
+      expect(config.positionX, 0.8);
+    });
+  });
+
+  group('AppDatabase - findLeastUsedPoint edge cases', () {
+    test('findLeastUsedPoint finds least recently used when all are used', () async {
+      final zones = await db.getAllZones();
+      final zone = zones.first;
+      final now = DateTime.now();
+
+      // Use all points, but point 3 was used longest ago
+      for (var i = 1; i <= zone.numberOfPoints; i++) {
+        final daysAgo = i == 3 ? 30 : (i * 2);
+        await db.insertInjection(InjectionsCompanion.insert(
+          zoneId: zone.id,
+          pointNumber: i,
+          pointCode: '${zone.code}-$i',
+          pointLabel: 'Test',
+          scheduledAt: now.subtract(Duration(days: daysAgo)),
+          completedAt: Value(now.subtract(Duration(days: daysAgo))),
+          status: const Value('completed'),
+        ));
+      }
+
+      final leastUsed = await db.findLeastUsedPoint(zone.id, days: 60);
+      expect(leastUsed, 3); // Point 3 was used 30 days ago
+    });
+
+    test('findLeastUsedPoint returns null when all points are blacklisted', () async {
+      final zones = await db.getAllZones();
+      final zone = zones.first;
+
+      // Blacklist all points
+      for (var i = 1; i <= zone.numberOfPoints; i++) {
+        await db.insertBlacklistedPoint(BlacklistedPointsCompanion.insert(
+          pointCode: '${zone.code}-$i',
+          pointLabel: 'Test',
+          zoneId: zone.id,
+          pointNumber: i,
+        ));
+      }
+
+      final leastUsed = await db.findLeastUsedPoint(zone.id);
+      expect(leastUsed, isNull);
+    });
+  });
+}

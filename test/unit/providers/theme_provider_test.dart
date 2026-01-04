@@ -282,7 +282,7 @@ void main() {
       await container.read(themeStateProvider.notifier).setAppThemeMode(AppThemeMode.dark);
       // Then back to system
       await container.read(themeStateProvider.notifier).setAppThemeMode(AppThemeMode.system);
-      
+
       expect(container.read(themeStateProvider).mode, AppThemeMode.system);
       expect(container.read(themeStateProvider).effectiveThemeMode, ThemeMode.system);
     });

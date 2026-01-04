@@ -21,7 +21,7 @@ void main() {
   group('ZoneInjectionData', () {
     test('neverUsed returns true when no injections', () async {
       final zoneData = await collector.getZoneInjectionData();
-      
+
       // All zones should have no injections initially
       for (final data in zoneData) {
         expect(data.neverUsed, isTrue);
@@ -311,7 +311,7 @@ void main() {
         // Calculate a Monday
         final daysUntilMonday = (DateTime.monday - now.weekday + 7) % 7;
         final monday = now.add(Duration(days: daysUntilMonday - 7 * (i + 1)));
-        
+
         await db.insertInjection(InjectionsCompanion.insert(
           zoneId: zones.first.id,
           pointNumber: 1,
@@ -325,7 +325,7 @@ void main() {
         // Calculate a Friday
         final daysUntilFriday = (DateTime.friday - now.weekday + 7) % 7;
         final friday = now.add(Duration(days: daysUntilFriday - 7 * (i + 1)));
-        
+
         await db.insertInjection(InjectionsCompanion.insert(
           zoneId: zones.first.id,
           pointNumber: 2,
@@ -373,7 +373,7 @@ void main() {
   group('MLDataCollector - Integration', () {
     test('getZoneInjectionData returns data for all zones', () async {
       final zoneData = await collector.getZoneInjectionData();
-      
+
       // Should have data for all 8 default zones
       expect(zoneData.length, 8);
     });

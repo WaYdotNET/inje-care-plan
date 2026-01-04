@@ -24,9 +24,9 @@ void main() {
   group('InjectionRepository - Injections', () {
     test('watchInjections returns stream of injections', () async {
       final zones = await db.getAllZones();
-      
+
       final stream = repository.watchInjections();
-      
+
       expectLater(stream, emitsInOrder([
         isEmpty,
         hasLength(1),
@@ -43,7 +43,7 @@ void main() {
 
     test('getInjections returns all injections', () async {
       final zones = await db.getAllZones();
-      
+
       await db.insertInjection(InjectionsCompanion.insert(
         zoneId: zones.first.id,
         pointNumber: 1,
@@ -59,7 +59,7 @@ void main() {
     test('getInjectionsInRange returns filtered injections', () async {
       final zones = await db.getAllZones();
       final now = DateTime.now();
-      
+
       await db.insertInjection(InjectionsCompanion.insert(
         zoneId: zones.first.id,
         pointNumber: 1,
@@ -86,7 +86,7 @@ void main() {
     test('watchInjectionsInRange returns stream', () async {
       final zones = await db.getAllZones();
       final now = DateTime.now();
-      
+
       final stream = repository.watchInjectionsInRange(
         now.subtract(const Duration(days: 10)),
         now.add(const Duration(days: 10)),
@@ -108,7 +108,7 @@ void main() {
 
     test('getInjectionsByZone returns filtered injections', () async {
       final zones = await db.getAllZones();
-      
+
       await db.insertInjection(InjectionsCompanion.insert(
         zoneId: zones[0].id,
         pointNumber: 1,
@@ -131,7 +131,7 @@ void main() {
 
     test('watchInjectionsByZone returns stream', () async {
       final zones = await db.getAllZones();
-      
+
       final stream = repository.watchInjectionsByZone(zones.first.id);
 
       expectLater(stream, emitsInOrder([
@@ -151,7 +151,7 @@ void main() {
     test('getLastInjectionForPoint returns most recent', () async {
       final zones = await db.getAllZones();
       final now = DateTime.now();
-      
+
       await db.insertInjection(InjectionsCompanion.insert(
         zoneId: zones.first.id,
         pointNumber: 1,
@@ -179,7 +179,7 @@ void main() {
     test('createInjection inserts new injection', () async {
       final zones = await db.getAllZones();
       final now = DateTime.now();
-      
+
       final record = models.InjectionRecord(
         zoneId: zones.first.id,
         pointNumber: 1,
@@ -199,7 +199,7 @@ void main() {
     test('updateInjection modifies injection', () async {
       final zones = await db.getAllZones();
       final now = DateTime.now();
-      
+
       final id = await db.insertInjection(InjectionsCompanion.insert(
         zoneId: zones.first.id,
         pointNumber: 1,
@@ -229,7 +229,7 @@ void main() {
 
     test('completeInjection marks as completed', () async {
       final zones = await db.getAllZones();
-      
+
       final id = await db.insertInjection(InjectionsCompanion.insert(
         zoneId: zones.first.id,
         pointNumber: 1,
@@ -248,7 +248,7 @@ void main() {
 
     test('skipInjection marks as skipped', () async {
       final zones = await db.getAllZones();
-      
+
       final id = await db.insertInjection(InjectionsCompanion.insert(
         zoneId: zones.first.id,
         pointNumber: 1,
@@ -265,7 +265,7 @@ void main() {
 
     test('deleteInjection removes injection', () async {
       final zones = await db.getAllZones();
-      
+
       final id = await db.insertInjection(InjectionsCompanion.insert(
         zoneId: zones.first.id,
         pointNumber: 1,
@@ -285,7 +285,7 @@ void main() {
   group('InjectionRepository - Blacklisted Points', () {
     test('watchBlacklistedPoints returns stream', () async {
       final zones = await db.getAllZones();
-      
+
       final stream = repository.watchBlacklistedPoints();
 
       expectLater(stream, emitsInOrder([
@@ -303,7 +303,7 @@ void main() {
 
     test('getBlacklistedPoints returns all points', () async {
       final zones = await db.getAllZones();
-      
+
       await db.insertBlacklistedPoint(BlacklistedPointsCompanion.insert(
         pointCode: 'CD-1',
         pointLabel: 'Test',
@@ -317,7 +317,7 @@ void main() {
 
     test('watchBlacklistedPointsByZone returns filtered stream', () async {
       final zones = await db.getAllZones();
-      
+
       final stream = repository.watchBlacklistedPointsByZone(zones.first.id);
 
       expectLater(stream, emitsInOrder([
@@ -335,7 +335,7 @@ void main() {
 
     test('isPointBlacklisted returns correct value', () async {
       final zones = await db.getAllZones();
-      
+
       await db.insertBlacklistedPoint(BlacklistedPointsCompanion.insert(
         pointCode: 'CD-1',
         pointLabel: 'Test',
@@ -349,7 +349,7 @@ void main() {
 
     test('blacklistPoint adds point', () async {
       final zones = await db.getAllZones();
-      
+
       final point = models.BlacklistedPoint(
         zoneId: zones.first.id,
         pointNumber: 1,
@@ -365,7 +365,7 @@ void main() {
 
     test('unblacklistPoint removes point', () async {
       final zones = await db.getAllZones();
-      
+
       await db.insertBlacklistedPoint(BlacklistedPointsCompanion.insert(
         pointCode: 'CD-1',
         pointLabel: 'Test',
@@ -383,7 +383,7 @@ void main() {
   group('InjectionRepository - Body Zones', () {
     test('watchBodyZones returns stream', () async {
       final stream = repository.watchBodyZones();
-      
+
       // Initial zones are already seeded
       expectLater(stream, emits(hasLength(8)));
     });
@@ -396,14 +396,14 @@ void main() {
     test('getEnabledZones returns only enabled zones', () async {
       final zones = await db.getAllZones();
       await db.toggleZoneEnabled(zones.first.id, false);
-      
+
       final enabled = await repository.getEnabledZones();
       expect(enabled.length, 7);
     });
 
     test('getZoneById returns correct zone', () async {
       final zones = await db.getAllZones();
-      
+
       final zone = await repository.getZoneById(zones.first.id);
       expect(zone, isNotNull);
       expect(zone!.code, zones.first.code);
@@ -417,9 +417,9 @@ void main() {
 
     test('updateBodyZone updates zone', () async {
       final zones = await db.getAllZones();
-      
+
       await repository.updateBodyZone(zones.first.id, isEnabled: false);
-      
+
       final updated = await repository.getZoneById(zones.first.id);
       expect(updated!.isEnabled, isFalse);
     });
@@ -428,7 +428,7 @@ void main() {
   group('InjectionRepository - Therapy Plan', () {
     test('watchTherapyPlan returns stream', () async {
       final stream = repository.watchTherapyPlan();
-      
+
       expectLater(stream, emitsInOrder([
         isNull,
         isNotNull,
@@ -487,7 +487,7 @@ void main() {
     test('getAdherenceStats returns correct stats', () async {
       final zones = await db.getAllZones();
       final now = DateTime.now();
-      
+
       // Add completed injections
       for (var i = 0; i < 8; i++) {
         await db.insertInjection(InjectionsCompanion.insert(
@@ -500,7 +500,7 @@ void main() {
           status: const Value('completed'),
         ));
       }
-      
+
       // Add skipped injections
       for (var i = 0; i < 2; i++) {
         await db.insertInjection(InjectionsCompanion.insert(
@@ -521,7 +521,7 @@ void main() {
 
     test('getSuggestedNextPoint returns unused point', () async {
       final zones = await db.getAllZones();
-      
+
       // Use point 1
       await db.insertInjection(InjectionsCompanion.insert(
         zoneId: zones.first.id,
@@ -540,10 +540,9 @@ void main() {
 
     test('findLeastUsedPoint returns correct point', () async {
       final zones = await db.getAllZones();
-      
+
       final leastUsed = await repository.findLeastUsedPoint(zones.first.id);
       expect(leastUsed, isNotNull);
     });
   });
 }
-

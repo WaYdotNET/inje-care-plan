@@ -211,7 +211,7 @@ void main() {
       final notifier = FocusedDayNotifier();
       final now = DateTime.now();
       final result = notifier.build();
-      
+
       expect(result.year, now.year);
       expect(result.month, now.month);
       expect(result.day, now.day);

@@ -219,7 +219,7 @@ void main() {
 
       // First set a custom name
       await zoneActions.updateCustomName(zone.id, 'Temp Name');
-      
+
       // Then clear it
       await zoneActions.updateCustomName(zone.id, null);
 
@@ -264,7 +264,7 @@ void main() {
     test('reorderZones updates sortOrder for all zones', () async {
       final zones = await db.getAllZones();
       final originalOrder = zones.map((z) => z.id).toList();
-      
+
       // Reverse the order
       final newOrder = originalOrder.reversed.toList();
 

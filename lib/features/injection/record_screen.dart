@@ -248,10 +248,12 @@ class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
       );
 
       // Se stiamo modificando un'iniezione esistente, aggiorna invece di creare
+      int injectionId;
       if (widget.existingInjectionId != null) {
         await repository.updateInjection(widget.existingInjectionId!, record);
+        injectionId = widget.existingInjectionId!;
       } else {
-        await repository.createInjection(record);
+        injectionId = await repository.createInjection(record);
       }
 
       // Schedule next injection notification if enabled
@@ -281,23 +283,68 @@ class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
 
       if (mounted) {
         final isUpdate = widget.existingInjectionId != null;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              isUpdate
-                  ? 'Iniezione modificata: ${zone.pointLabel(widget.pointNumber)}'
-                  : '${zone.pointLabel(widget.pointNumber)} programmata. Vai al calendario per segnarla come completata.',
+        
+        if (isUpdate) {
+          // Per le modifiche, vai direttamente alla home
+          ScaffoldMessenger.of(context)
+            ..clearSnackBars()
+            ..showSnackBar(
+              SnackBar(
+                content: Text('Iniezione modificata: ${zone.pointLabel(widget.pointNumber)}'),
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          context.go(AppRoutes.home);
+        } else {
+          // Per nuove iniezioni, chiedi se confermare subito
+          final shouldComplete = await showDialog<bool>(
+            context: context,
+            barrierDismissible: false,
+            builder: (ctx) => AlertDialog(
+              title: const Text('Iniezione programmata'),
+              content: Text(
+                '${zone.pointLabel(widget.pointNumber)} è stata programmata.\n\n'
+                'Vuoi segnarla come completata adesso?',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(false),
+                  child: const Text('No, dopo'),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.of(ctx).pop(true),
+                  child: const Text('Sì, completata'),
+                ),
+              ],
             ),
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            duration: const Duration(seconds: 4),
-            action: SnackBarAction(
-              label: 'Calendario',
-              textColor: Colors.white,
-              onPressed: () => context.go(AppRoutes.calendar),
-            ),
-          ),
-        );
-        context.go(AppRoutes.home);
+          );
+          
+          if (shouldComplete == true && mounted) {
+            // Segna come completata
+            final completedRecord = record.copyWith(
+              status: InjectionStatus.completed,
+              completedAt: DateTime.now(),
+            );
+            await repository.updateInjection(injectionId, completedRecord);
+            
+            if (mounted) {
+              ScaffoldMessenger.of(context)
+                ..clearSnackBars()
+                ..showSnackBar(
+                  SnackBar(
+                    content: Text('✓ ${zone.pointLabel(widget.pointNumber)} completata!'),
+                    backgroundColor: Colors.green,
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+            }
+          }
+          
+          if (mounted) {
+            context.go(AppRoutes.home);
+          }
+        }
       }
     } catch (e) {
       if (mounted) {

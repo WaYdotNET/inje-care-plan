@@ -42,14 +42,38 @@ class _PointSelectionScreenState extends ConsumerState<PointSelectionScreen> {
   final _reasonController = TextEditingController();
   late DateTime _scheduledDateTime;
   late TimeOfDay _scheduledTime;
+  bool _initializedWithPreferredTime = false;
 
   @override
   void initState() {
     super.initState();
     _selectedZoneId = widget.initialZoneId;
-    // Inizializza data/ora dalla prop o usa ora corrente
+    // Inizializza data dalla prop o usa oggi
     _scheduledDateTime = widget.scheduledDate ?? DateTime.now();
     _scheduledTime = TimeOfDay.fromDateTime(_scheduledDateTime);
+  }
+
+  /// Inizializza l'orario con quello preferito dal piano terapeutico
+  void _initializePreferredTime(String? preferredTime) {
+    if (_initializedWithPreferredTime || widget.scheduledDate != null) return;
+    _initializedWithPreferredTime = true;
+
+    if (preferredTime != null) {
+      final parts = preferredTime.split(':');
+      if (parts.length >= 2) {
+        final hour = int.tryParse(parts[0]) ?? 20;
+        final minute = int.tryParse(parts[1]) ?? 0;
+        final now = DateTime.now();
+        _scheduledDateTime = DateTime(
+          now.year,
+          now.month,
+          now.day,
+          hour,
+          minute,
+        );
+        _scheduledTime = TimeOfDay(hour: hour, minute: minute);
+      }
+    }
   }
 
   @override
@@ -94,6 +118,12 @@ class _PointSelectionScreenState extends ConsumerState<PointSelectionScreen> {
     final zonesAsync = ref.watch(enabledZonesProvider);
     final blacklistedAsync = ref.watch(blacklistedPointsProvider);
     final suggestedAsync = ref.watch(suggestedNextPointProvider);
+    final therapyPlanAsync = ref.watch(therapyPlanProvider);
+
+    // Inizializza orario con quello preferito dal piano terapeutico
+    therapyPlanAsync.whenData((plan) {
+      _initializePreferredTime(plan?.preferredTime);
+    });
 
     return Scaffold(
       appBar: AppBar(

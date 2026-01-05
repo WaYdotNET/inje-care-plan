@@ -7,7 +7,6 @@ import '../../core/theme/app_colors.dart';
 import '../../app/router.dart';
 import '../../models/body_zone.dart';
 import '../../models/injection_record.dart';
-import '../../models/therapy_plan.dart';
 import '../../core/services/notification_service.dart';
 import '../../core/services/notification_settings_provider.dart';
 import 'injection_provider.dart';
@@ -242,35 +241,28 @@ class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
       // Se stiamo modificando un'iniezione esistente, aggiorna invece di creare
       int injectionId;
       if (widget.existingInjectionId != null) {
+        // Cancella eventuali notifiche precedenti legate alla vecchia data/ora
+        final existing = await repository.getInjectionById(widget.existingInjectionId!);
+        if (existing != null) {
+          final oldNotifId = existing.scheduledAt.millisecondsSinceEpoch ~/ 1000;
+          await NotificationService.instance.cancelNotification(oldNotifId);
+        }
+
         await repository.updateInjection(widget.existingInjectionId!, record);
         injectionId = widget.existingInjectionId!;
       } else {
         injectionId = await repository.createInjection(record);
       }
 
-      // Schedule next injection notification if enabled
+      // Schedula notifiche per QUESTA iniezione (anche con app chiusa)
       final notificationSettings = ref.read(notificationSettingsProvider);
 
       if (notificationSettings.enabled && notificationSettings.permissionsGranted) {
-        // Schedule next injection notification using default plan
-        final therapyPlan = TherapyPlan.defaults;
-        final nextDate = therapyPlan.getNextInjectionDate(now.add(const Duration(hours: 1)));
-        final suggestedPoint = await repository.getSuggestedNextPoint();
-
-        if (suggestedPoint != null) {
-          final nextZone = zones.firstWhere(
-            (z) => z.id == suggestedPoint.zoneId,
-            orElse: () => zones.first,
-          );
-
-          // Schedule notification for next injection
-          await NotificationService.instance.scheduleInjectionReminder(
-            id: nextDate.millisecondsSinceEpoch ~/ 1000,
-            scheduledTime: nextDate,
-            pointLabel: nextZone.pointLabel(suggestedPoint.pointNumber),
-            minutesBefore: notificationSettings.minutesBefore,
-          );
-        }
+        await NotificationService.instance.scheduleInjectionNotifications(
+          injection: record,
+          minutesBefore: notificationSettings.minutesBefore,
+          missedDoseReminder: notificationSettings.missedDoseReminder,
+        );
       }
 
       if (mounted) {

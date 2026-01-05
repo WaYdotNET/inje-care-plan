@@ -34,21 +34,24 @@ class HelpScreen extends ConsumerWidget {
                 _HelpStep(
                   number: 1,
                   title: 'Configura il piano terapeutico',
-                  description: 'Vai in Impostazioni > Piano Iniezioni per impostare '
+                  description:
+                      'Vai in Impostazioni > Piano Iniezioni per impostare '
                       'i giorni della settimana e l\'orario delle iniezioni.',
                   isDark: isDark,
                 ),
                 _HelpStep(
                   number: 2,
                   title: 'Registra le iniezioni',
-                  description: 'Tocca il pulsante + o vai su "Nuova" per registrare '
+                  description:
+                      'Tocca il pulsante + o vai su "Nuova" per registrare '
                       'una nuova iniezione. Seleziona la zona e il punto sul corpo.',
                   isDark: isDark,
                 ),
                 _HelpStep(
                   number: 3,
                   title: 'Segui i promemoria',
-                  description: 'L\'app ti invierà promemoria prima di ogni iniezione '
+                  description:
+                      'L\'app ti invierà promemoria prima di ogni iniezione '
                       'programmata. Puoi personalizzare l\'anticipo nelle impostazioni.',
                   isDark: isDark,
                 ),
@@ -72,7 +75,8 @@ class HelpScreen extends ConsumerWidget {
                 const SizedBox(height: 12),
                 _InfoBox(
                   icon: Icons.lightbulb_outline,
-                  text: 'L\'app suggerisce automaticamente il prossimo punto '
+                  text:
+                      'L\'app suggerisce automaticamente il prossimo punto '
                       'basandosi sulla rotazione ottimale.',
                   isDark: isDark,
                 ),
@@ -102,9 +106,15 @@ class HelpScreen extends ConsumerWidget {
                   style: theme.textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 8),
-                _BulletPoint(text: 'Hai una cicatrice in quel punto', isDark: isDark),
+                _BulletPoint(
+                  text: 'Hai una cicatrice in quel punto',
+                  isDark: isDark,
+                ),
                 _BulletPoint(text: 'Hai avuto una reazione', isDark: isDark),
-                _BulletPoint(text: 'È difficile da raggiungere', isDark: isDark),
+                _BulletPoint(
+                  text: 'È difficile da raggiungere',
+                  isDark: isDark,
+                ),
                 const SizedBox(height: 12),
                 Text(
                   'Per escludere un punto: Impostazioni > Punti esclusi > Aggiungi',
@@ -130,6 +140,13 @@ class HelpScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 12),
                 _StatusLegend(isDark: isDark),
+                const SizedBox(height: 12),
+                _InfoBox(
+                  icon: Icons.warning_amber,
+                  text: 'Le iniezioni programmate diventano automaticamente "Mancate" '
+                      'dopo una tolleranza configurabile (Impostazioni > Notifiche).',
+                  isDark: isDark,
+                ),
               ],
             ),
           ),
@@ -147,12 +164,33 @@ class HelpScreen extends ConsumerWidget {
                   style: theme.textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 12),
-                _BulletPoint(text: 'Suggerimento AI: analizza lo storico per la scelta ottimale', isDark: isDark),
-                _BulletPoint(text: 'Sequenza Zone: ruota tra le 8 zone in ordine', isDark: isDark),
-                _BulletPoint(text: 'Alternanza Sx/Dx: alterna lato sinistro e destro', isDark: isDark),
-                _BulletPoint(text: 'Rotazione Settimanale: una zona diversa ogni settimana', isDark: isDark),
-                _BulletPoint(text: 'Orario/Antiorario: segue un percorso circolare sul corpo', isDark: isDark),
-                _BulletPoint(text: 'Personalizzato: crea la tua sequenza', isDark: isDark),
+                _BulletPoint(
+                  text:
+                      'Suggerimento AI: analizza lo storico per la scelta ottimale',
+                  isDark: isDark,
+                ),
+                _BulletPoint(
+                  text: 'Sequenza Zone: ruota tra le 8 zone in ordine',
+                  isDark: isDark,
+                ),
+                _BulletPoint(
+                  text: 'Alternanza Sx/Dx: alterna lato sinistro e destro',
+                  isDark: isDark,
+                ),
+                _BulletPoint(
+                  text:
+                      'Rotazione Settimanale: una zona diversa ogni settimana',
+                  isDark: isDark,
+                ),
+                _BulletPoint(
+                  text:
+                      'Orario/Antiorario: segue un percorso circolare sul corpo',
+                  isDark: isDark,
+                ),
+                _BulletPoint(
+                  text: 'Personalizzato: crea la tua sequenza',
+                  isDark: isDark,
+                ),
                 const SizedBox(height: 12),
                 Text(
                   'Per cambiare: Impostazioni > Pattern di Rotazione',
@@ -180,7 +218,8 @@ class HelpScreen extends ConsumerWidget {
                 _ExportFormat(
                   icon: Icons.dashboard,
                   title: 'Classica',
-                  description: 'Vista completa con panoramica settimanale, '
+                  description:
+                      'Vista completa con panoramica settimanale, '
                       'suggerimenti e statistiche.',
                   isDark: isDark,
                 ),
@@ -188,7 +227,8 @@ class HelpScreen extends ConsumerWidget {
                 _ExportFormat(
                   icon: Icons.center_focus_strong,
                   title: 'Minimalista',
-                  description: 'Solo la prossima iniezione con silhouette. '
+                  description:
+                      'Solo la prossima iniezione con silhouette. '
                       'Tocca per registrare subito.',
                   isDark: isDark,
                 ),
@@ -226,7 +266,8 @@ class HelpScreen extends ConsumerWidget {
                 _ExportFormat(
                   icon: Icons.picture_as_pdf,
                   title: 'PDF',
-                  description: 'Formato leggibile, ideale per condividere '
+                  description:
+                      'Formato leggibile, ideale per condividere '
                       'con il medico o stampare.',
                   isDark: isDark,
                 ),
@@ -234,7 +275,8 @@ class HelpScreen extends ConsumerWidget {
                 _ExportFormat(
                   icon: Icons.table_chart,
                   title: 'CSV',
-                  description: 'Formato dati per backup o trasferimento '
+                  description:
+                      'Formato dati per backup o trasferimento '
                       'su altro dispositivo.',
                   isDark: isDark,
                 ),
@@ -249,14 +291,16 @@ class HelpScreen extends ConsumerWidget {
                 _ExportFormat(
                   icon: Icons.file_upload_outlined,
                   title: 'CSV',
-                  description: 'Ripristina dati da un backup CSV esportato '
+                  description:
+                      'Ripristina dati da un backup CSV esportato '
                       'precedentemente.',
                   isDark: isDark,
                 ),
                 const SizedBox(height: 12),
                 _InfoBox(
                   icon: Icons.security,
-                  text: 'I tuoi dati restano sempre sul dispositivo. '
+                  text:
+                      'I tuoi dati restano sempre sul dispositivo. '
                       'Nessun dato viene inviato a server esterni.',
                   isDark: isDark,
                 ),
@@ -274,35 +318,40 @@ class HelpScreen extends ConsumerWidget {
               children: [
                 _FaqItem(
                   question: 'I miei dati sono sicuri?',
-                  answer: 'Sì, tutti i dati sono salvati solo sul tuo dispositivo. '
+                  answer:
+                      'Sì, tutti i dati sono salvati solo sul tuo dispositivo. '
                       'L\'app funziona completamente offline e non invia dati a server esterni.',
                   isDark: isDark,
                 ),
                 const SizedBox(height: 12),
                 _FaqItem(
                   question: 'Come faccio backup dei dati?',
-                  answer: 'Vai in Impostazioni > Esporta storico > CSV. '
+                  answer:
+                      'Vai in Impostazioni > Esporta storico > CSV. '
                       'Il file può essere reimportato su un nuovo dispositivo.',
                   isDark: isDark,
                 ),
                 const SizedBox(height: 12),
                 _FaqItem(
                   question: 'Come modifico un\'iniezione già registrata?',
-                  answer: 'Vai nel Calendario, tocca l\'iniezione e seleziona '
+                  answer:
+                      'Vai nel Calendario, tocca l\'iniezione e seleziona '
                       '"Modifica punto" per cambiare la zona o il punto.',
                   isDark: isDark,
                 ),
                 const SizedBox(height: 12),
                 _FaqItem(
                   question: 'Posso cambiare i giorni delle iniezioni?',
-                  answer: 'Sì, vai in Impostazioni > Piano Iniezioni > '
+                  answer:
+                      'Sì, vai in Impostazioni > Piano Iniezioni > '
                       'Giorni della settimana.',
                   isDark: isDark,
                 ),
                 const SizedBox(height: 12),
                 _FaqItem(
                   question: 'Cosa succede se aggiorno l\'app?',
-                  answer: 'I tuoi dati vengono preservati. L\'app è progettata '
+                  answer:
+                      'I tuoi dati vengono preservati. L\'app è progettata '
                       'per aggiornamenti senza perdita di dati.',
                   isDark: isDark,
                 ),
@@ -348,8 +397,8 @@ class _HelpSection extends StatelessWidget {
                   child: Text(
                     title,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],
@@ -407,9 +456,9 @@ class _HelpStep extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -441,12 +490,14 @@ class _InfoBox extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: (isDark ? AppColors.darkFoam : AppColors.dawnFoam)
-            .withValues(alpha: 0.1),
+        color: (isDark ? AppColors.darkFoam : AppColors.dawnFoam).withValues(
+          alpha: 0.1,
+        ),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: (isDark ? AppColors.darkFoam : AppColors.dawnFoam)
-              .withValues(alpha: 0.3),
+          color: (isDark ? AppColors.darkFoam : AppColors.dawnFoam).withValues(
+            alpha: 0.3,
+          ),
         ),
       ),
       child: Row(
@@ -459,10 +510,7 @@ class _InfoBox extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(
-              text,
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
+            child: Text(text, style: Theme.of(context).textTheme.bodySmall),
           ),
         ],
       ),
@@ -561,6 +609,11 @@ class _StatusLegend extends StatelessWidget {
         ),
         _LegendItem(
           color: isDark ? AppColors.darkLove : AppColors.dawnLove,
+          label: 'Mancata',
+          isDark: isDark,
+        ),
+        _LegendItem(
+          color: isDark ? AppColors.darkLove : AppColors.dawnLove,
           label: 'Saltata',
           isDark: isDark,
         ),
@@ -620,10 +673,7 @@ class _ExportFormat extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(
-          icon,
-          color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
-        ),
+        Icon(icon, color: isDark ? AppColors.darkFoam : AppColors.dawnFoam),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
@@ -631,14 +681,11 @@ class _ExportFormat extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
               ),
-              Text(
-                description,
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
+              Text(description, style: Theme.of(context).textTheme.bodySmall),
             ],
           ),
         ),
@@ -665,15 +712,12 @@ class _FaqItem extends StatelessWidget {
       children: [
         Text(
           question,
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 4),
-        Text(
-          answer,
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
+        Text(answer, style: Theme.of(context).textTheme.bodyMedium),
       ],
     );
   }

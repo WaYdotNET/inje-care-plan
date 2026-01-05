@@ -147,8 +147,11 @@ class NextInjectionData {
   });
 
   String get formattedDate {
+    // Confronto per giorno (non per ore), per evitare flakiness vicino a mezzanotte.
     final now = DateTime.now();
-    final diff = date.difference(now);
+    final today = DateTime(now.year, now.month, now.day);
+    final targetDay = DateTime(date.year, date.month, date.day);
+    final diff = targetDay.difference(today);
 
     if (diff.inDays == 0) {
       return 'Oggi';

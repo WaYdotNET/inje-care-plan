@@ -175,6 +175,7 @@ class ExportService {
     'scheduled' => 'Programmata',
     'delayed' => 'In ritardo',
     'skipped' => 'Saltata',
+    'missed' => 'Mancata',
     _ => status,
   };
 }

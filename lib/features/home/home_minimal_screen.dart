@@ -5,24 +5,48 @@ import 'package:intl/intl.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../models/body_zone.dart' as model;
+import '../../models/injection_record.dart' as inj;
+import '../../models/therapy_plan.dart';
 import '../../app/router.dart';
 import '../../core/ml/smart_suggestion_provider.dart';
-import '../injection/injection_provider.dart';
+import '../../core/services/missed_injection_service.dart';
+import '../../core/services/notification_settings_provider.dart';
+import '../../core/services/notification_service.dart';
+import '../../core/ml/rotation_pattern_engine.dart';
+import '../injection/injection_provider.dart' hide bodyZonesProvider;
 import '../injection/zone_provider.dart';
 import '../injection/widgets/body_silhouette_editor.dart';
 
 /// Home minimalista con focus sulla prossima iniezione
-class HomeMinimalScreen extends ConsumerWidget {
+class HomeMinimalScreen extends ConsumerStatefulWidget {
   const HomeMinimalScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeMinimalScreen> createState() => _HomeMinimalScreenState();
+}
+
+class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen> {
+  bool _weekFillPromptShown = false;
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final suggestionAsync = ref.watch(smartSuggestionProvider);
     final zonesAsync = ref.watch(zonesProvider);
     final therapyPlanAsync = ref.watch(therapyPlanProvider);
     final nextScheduledAsync = ref.watch(nextScheduledInjectionProvider);
+
+    // Controlla iniezioni mancate all'avvio (una volta per sessione container)
+    ref.watch(checkMissedInjectionsProvider);
+
+    final now = DateTime.now();
+    final weekStart = now.subtract(Duration(days: now.weekday - 1));
+    final startOfWeek = DateTime(weekStart.year, weekStart.month, weekStart.day);
+    final endOfWeek = startOfWeek.add(const Duration(days: 6, hours: 23, minutes: 59));
+    final weekInjectionsAsync = ref.watch(
+      injectionsInRangeProvider((start: startOfWeek, end: endOfWeek)),
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -98,6 +122,16 @@ class HomeMinimalScreen extends ConsumerWidget {
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, st) => _ErrorView(message: e.toString()),
           data: (zones) {
+            final plan = therapyPlanAsync.asData?.value;
+            final weekEmpty = weekInjectionsAsync.asData?.value.isEmpty ?? false;
+            if (!_weekFillPromptShown && plan != null && weekEmpty) {
+              _weekFillPromptShown = true;
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (!mounted) return;
+                _showFillWeekDialog(context, plan, startOfWeek);
+              });
+            }
+
             // Aspetta che nextScheduledAsync sia caricato
             return nextScheduledAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
@@ -147,7 +181,6 @@ class HomeMinimalScreen extends ConsumerWidget {
                             // Naviga per completare l'iniezione
                             _showCompleteDialog(
                               context,
-                              ref,
                               scheduledInjectionId,
                               zone!,
                               pointNumber ?? 1,
@@ -230,7 +263,6 @@ class HomeMinimalScreen extends ConsumerWidget {
 
   Future<void> _showCompleteDialog(
     BuildContext context,
-    WidgetRef ref,
     int injectionId,
     model.BodyZone zone,
     int pointNumber,
@@ -275,6 +307,123 @@ class HomeMinimalScreen extends ConsumerWidget {
             ),
           );
       }
+    }
+  }
+
+  Future<void> _showFillWeekDialog(
+    BuildContext context,
+    TherapyPlan plan,
+    DateTime startOfWeek,
+  ) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Pianificare questa settimana?'),
+        content: const Text(
+          'Questa settimana è vuota.\n\nVuoi creare automaticamente le iniezioni '
+          'programmate secondo il tuo piano e il pattern di rotazione?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('No'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Sì, pianifica'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true && mounted) {
+      await _fillWeekFromPlan(plan, startOfWeek);
+    }
+  }
+
+  Future<void> _fillWeekFromPlan(
+    TherapyPlan plan,
+    DateTime startOfWeek,
+  ) async {
+    final repository = ref.read(injectionRepositoryProvider);
+    final notificationSettings = ref.read(notificationSettingsProvider);
+    final now = DateTime.now();
+
+    // Evita doppie pianificazioni: ricontrolla la settimana
+    final endOfWeek = startOfWeek.add(const Duration(days: 6, hours: 23, minutes: 59));
+    final existing = await ref
+        .read(injectionsInRangeProvider((start: startOfWeek, end: endOfWeek)).future);
+    if (existing.isNotEmpty) return;
+
+    final parts = plan.preferredTime.split(':');
+    final hour = parts.length >= 2 ? int.tryParse(parts[0]) ?? 20 : 20;
+    final minute = parts.length >= 2 ? int.tryParse(parts[1]) ?? 0 : 0;
+
+    // Pianifica solo i giorni del piano che sono ancora nel futuro
+    final daysToPlan = <DateTime>[];
+    for (var i = 0; i < 7; i++) {
+      final day = startOfWeek.add(Duration(days: i));
+      if (!plan.weekDays.contains(day.weekday)) continue;
+      final scheduledAt = DateTime(day.year, day.month, day.day, hour, minute);
+      if (scheduledAt.isBefore(now)) continue;
+      daysToPlan.add(day);
+    }
+
+    if (daysToPlan.isEmpty) return;
+
+    int created = 0;
+    for (final day in daysToPlan) {
+      final engine = await ref.read(rotationPatternEngineProvider.future);
+      final suggestion = await engine.getNextSuggestion();
+      if (suggestion == null) continue;
+
+      final point = await repository.findLeastUsedPoint(suggestion.zoneId) ?? 1;
+      final scheduledAt = DateTime(day.year, day.month, day.day, hour, minute);
+
+      final record = inj.InjectionRecord(
+        zoneId: suggestion.zoneId,
+        pointNumber: point,
+        scheduledAt: scheduledAt,
+        status: inj.InjectionStatus.scheduled,
+        createdAt: now,
+        updatedAt: now,
+      );
+
+      await repository.createInjection(record);
+      created++;
+
+      // Avanza il pattern (persistente) per la prossima proposta
+      final zones = await ref.read(bodyZonesProvider.future);
+      final usedZone = zones.firstWhere((z) => z.id == suggestion.zoneId);
+      final patternService = RotationPatternService(engine.db);
+      await patternService.advancePattern(usedZone.id, usedZone.side);
+      ref.invalidate(currentRotationPatternProvider);
+      ref.invalidate(rotationPatternEngineProvider);
+
+      if (notificationSettings.enabled &&
+          notificationSettings.permissionsGranted) {
+        await NotificationService.instance.scheduleInjectionNotifications(
+          injection: record,
+          minutesBefore: notificationSettings.minutesBefore,
+          missedDoseReminder: notificationSettings.missedDoseReminder,
+        );
+      }
+    }
+
+    // Refresh UI
+    ref.invalidate(injectionsProvider);
+    ref.invalidate(weeklyEventsProvider);
+    ref.invalidate(nextScheduledInjectionProvider);
+
+    if (mounted) {
+      ScaffoldMessenger.of(context)
+        ..clearSnackBars()
+        ..showSnackBar(
+          SnackBar(
+            content: Text('Pianificate $created iniezioni per questa settimana'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
     }
   }
 }

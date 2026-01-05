@@ -7,6 +7,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/database/app_database.dart' as db;
 import '../../core/database/database_provider.dart';
 import '../../models/body_zone.dart';
+import '../../models/therapy_plan.dart';
 import 'zone_provider.dart';
 import 'injection_provider.dart' hide blacklistedPointsProvider;
 import 'widgets/body_silhouette_editor.dart';
@@ -42,38 +43,59 @@ class _PointSelectionScreenState extends ConsumerState<PointSelectionScreen> {
   final _reasonController = TextEditingController();
   late DateTime _scheduledDateTime;
   late TimeOfDay _scheduledTime;
-  bool _initializedWithPreferredTime = false;
+  bool _userChangedTime = false;
+  bool _usedFallbackPreferredTime = false;
 
   @override
   void initState() {
     super.initState();
     _selectedZoneId = widget.initialZoneId;
-    // Inizializza data dalla prop o usa oggi
-    _scheduledDateTime = widget.scheduledDate ?? DateTime.now();
-    _scheduledTime = TimeOfDay.fromDateTime(_scheduledDateTime);
+    // Inizializza data/ora. Se arriva una "date-only" (00:00), applica l'orario di default.
+    final base = widget.scheduledDate ?? DateTime.now();
+    if (widget.scheduledDate == null || _isDateOnly(base)) {
+      final fallback = TherapyPlan.defaults.preferredTime; // es. 20:00
+      _scheduledDateTime = _combineDateWithPreferredTime(base, fallback);
+      _scheduledTime = TimeOfDay.fromDateTime(_scheduledDateTime);
+      _usedFallbackPreferredTime = true;
+    } else {
+      _scheduledDateTime = base;
+      _scheduledTime = TimeOfDay.fromDateTime(_scheduledDateTime);
+    }
+
+    // Se il piano terapeutico è configurato e diverso dal fallback, aggiorna (solo se utente non ha cambiato manualmente).
+    ref.listen<AsyncValue<TherapyPlan?>>(
+      therapyPlanProvider,
+      (prev, next) {
+        final preferred = next.asData?.value?.preferredTime;
+        if (preferred == null) return;
+        if (_userChangedTime) return;
+        if (!_usedFallbackPreferredTime) return;
+        _applyPreferredTime(preferred);
+      },
+    );
   }
 
-  /// Inizializza l'orario con quello preferito dal piano terapeutico
-  void _initializePreferredTime(String? preferredTime) {
-    if (_initializedWithPreferredTime || widget.scheduledDate != null) return;
-    _initializedWithPreferredTime = true;
+  bool _isDateOnly(DateTime dt) =>
+      dt.hour == 0 &&
+      dt.minute == 0 &&
+      dt.second == 0 &&
+      dt.millisecond == 0 &&
+      dt.microsecond == 0;
 
-    if (preferredTime != null) {
-      final parts = preferredTime.split(':');
-      if (parts.length >= 2) {
-        final hour = int.tryParse(parts[0]) ?? 20;
-        final minute = int.tryParse(parts[1]) ?? 0;
-        final now = DateTime.now();
-        _scheduledDateTime = DateTime(
-          now.year,
-          now.month,
-          now.day,
-          hour,
-          minute,
-        );
-        _scheduledTime = TimeOfDay(hour: hour, minute: minute);
-      }
-    }
+  DateTime _combineDateWithPreferredTime(DateTime date, String preferredTime) {
+    final parts = preferredTime.split(':');
+    final hour = parts.length >= 2 ? int.tryParse(parts[0]) ?? 20 : 20;
+    final minute = parts.length >= 2 ? int.tryParse(parts[1]) ?? 0 : 0;
+    return DateTime(date.year, date.month, date.day, hour, minute);
+  }
+
+  void _applyPreferredTime(String preferredTime) {
+    final nextDt = _combineDateWithPreferredTime(_scheduledDateTime, preferredTime);
+    setState(() {
+      _scheduledDateTime = nextDt;
+      _scheduledTime = TimeOfDay.fromDateTime(nextDt);
+      _usedFallbackPreferredTime = false;
+    });
   }
 
   @override
@@ -85,6 +107,8 @@ class _PointSelectionScreenState extends ConsumerState<PointSelectionScreen> {
   /// Aggiorna l'orario schedulato
   void _updateScheduledTime(TimeOfDay newTime) {
     setState(() {
+      _userChangedTime = true;
+      _usedFallbackPreferredTime = false;
       _scheduledTime = newTime;
       _scheduledDateTime = DateTime(
         _scheduledDateTime.year,
@@ -118,12 +142,6 @@ class _PointSelectionScreenState extends ConsumerState<PointSelectionScreen> {
     final zonesAsync = ref.watch(enabledZonesProvider);
     final blacklistedAsync = ref.watch(blacklistedPointsProvider);
     final suggestedAsync = ref.watch(suggestedNextPointProvider);
-    final therapyPlanAsync = ref.watch(therapyPlanProvider);
-
-    // Inizializza orario con quello preferito dal piano terapeutico
-    therapyPlanAsync.whenData((plan) {
-      _initializePreferredTime(plan?.preferredTime);
-    });
 
     return Scaffold(
       appBar: AppBar(

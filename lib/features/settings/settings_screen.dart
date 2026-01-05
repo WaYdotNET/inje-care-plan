@@ -166,6 +166,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               notificationSettings.minutesBefore,
             ),
           ),
+          _SettingsTile(
+            title: 'Tolleranza mancata',
+            trailing: Text('${notificationSettings.overdueGraceMinutes} min'),
+            onTap: () => _editOverdueGraceMinutes(
+              context,
+              notificationSettings.overdueGraceMinutes,
+            ),
+          ),
           SwitchListTile(
             title: const Text('Reminder dose saltata'),
             value: notificationSettings.missedDoseReminder,
@@ -474,6 +482,59 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Future<void> _updateTherapyPlan(TherapyPlan plan) async {
     final repository = ref.read(injectionRepositoryProvider);
     await repository.saveTherapyPlan(plan);
+  }
+
+  void _editOverdueGraceMinutes(BuildContext context, int currentValue) {
+    showDialog<void>(
+      context: context,
+      builder: (context) {
+        int value = currentValue;
+        return AlertDialog(
+          title: const Text('Tolleranza mancata'),
+          content: StatefulBuilder(
+            builder: (context, setState) => RadioGroup<int>(
+              groupValue: value,
+              onChanged: (v) => setState(() => value = v!),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [0, 15, 30, 45, 60, 90, 120, 180]
+                    .map(
+                      (n) => RadioListTile<int>(
+                        title: Text(
+                          n == 0
+                              ? 'Subito'
+                              : n < 60
+                                  ? '$n minuti'
+                                  : '${n ~/ 60} ${n == 60 ? 'ora' : 'ore'}',
+                        ),
+                        subtitle: const Text(
+                          'Dopo questo tempo una programmata diventa mancata',
+                        ),
+                        value: n,
+                      ),
+                    )
+                    .toList(),
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Annulla'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+                ref
+                    .read(notificationSettingsProvider.notifier)
+                    .setOverdueGraceMinutes(value);
+              },
+              child: const Text('Salva'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _editNotificationMinutes(BuildContext context, int currentValue) {

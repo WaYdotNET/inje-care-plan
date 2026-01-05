@@ -48,7 +48,7 @@ class ImportService {
     'GS': (id: 8, name: 'Gluteo Sx'),
   };
 
-  static const _validStatuses = ['completed', 'scheduled', 'skipped', 'delayed'];
+  static const _validStatuses = ['completed', 'scheduled', 'skipped', 'delayed', 'missed'];
 
   /// Importa iniezioni da file CSV
   Future<ImportResult> importFromFile(AppDatabase db, File file) async {
@@ -144,7 +144,9 @@ class ImportService {
       // Parse status
       final status = parts[3].toLowerCase();
       if (!_validStatuses.contains(status)) {
-        return _ParseResult.failure('Stato non valido: $status (usa: completed, scheduled, skipped, delayed)');
+        return _ParseResult.failure(
+          'Stato non valido: $status (usa: completed, scheduled, skipped, delayed, missed)',
+        );
       }
 
       // Determine completedAt

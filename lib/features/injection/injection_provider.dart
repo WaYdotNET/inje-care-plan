@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/database/app_database.dart' as db;
 import '../../core/database/database_provider.dart';
+import '../../core/services/missed_injection_service.dart';
+import '../../core/services/notification_settings_provider.dart';
 import '../../models/therapy_plan.dart';
 import 'injection_repository.dart';
 
@@ -205,18 +207,25 @@ class WeeklyEventData {
 /// Provider per la prossima iniezione programmata (scheduled) oggi o in futuro
 final nextScheduledInjectionProvider = FutureProvider<db.Injection?>((ref) async {
   final repository = ref.watch(injectionRepositoryProvider);
-  final now = DateTime.now();
-  final startOfToday = DateTime(now.year, now.month, now.day);
+  final missedService = ref.watch(missedInjectionServiceProvider);
+  final notificationSettings = ref.watch(notificationSettingsProvider);
 
-  // Cerca iniezioni scheduled da oggi in poi
+  // Prima marca come "missed" le iniezioni scheduled scadute oltre la tolleranza
+  await missedService.checkAndMarkMissedInjections(
+    grace: Duration(minutes: notificationSettings.overdueGraceMinutes),
+  );
+
+  final now = DateTime.now();
+
+  // Cerca iniezioni scheduled da adesso in poi
   final futureInjections = await repository.getInjectionsInRange(
-    startOfToday,
-    startOfToday.add(const Duration(days: 30)),
+    now,
+    now.add(const Duration(days: 30)),
   );
 
   // Filtra solo quelle scheduled (non completed)
   final scheduledInjections = futureInjections
-      .where((inj) => inj.status == 'scheduled')
+      .where((inj) => inj.status == 'scheduled' && !inj.scheduledAt.isBefore(now))
       .toList()
     ..sort((a, b) => a.scheduledAt.compareTo(b.scheduledAt));
 

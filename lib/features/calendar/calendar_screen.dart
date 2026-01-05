@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/database/app_database.dart' as db;
 import '../../app/router.dart';
+import '../../core/services/missed_injection_service.dart';
 import '../injection/injection_provider.dart';
 
 /// Calendar screen with injection schedule
@@ -27,6 +28,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     final focusedDay = ref.watch(focusedDayProvider);
     final selectedDay = ref.watch(selectedDayProvider);
     final injectionsAsync = ref.watch(injectionsProvider);
+
+    // Controlla e marca le iniezioni mancate (una volta per sessione container)
+    ref.watch(checkMissedInjectionsProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -168,6 +172,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
               color = isDark ? AppColors.darkPine : AppColors.dawnPine;
               break;
             case 'skipped':
+              color = isDark ? AppColors.darkLove : AppColors.dawnLove;
+              break;
+            case 'missed':
               color = isDark ? AppColors.darkLove : AppColors.dawnLove;
               break;
             default:
@@ -345,6 +352,11 @@ class _InjectionCard extends ConsumerWidget {
         statusColor = isDark ? AppColors.darkLove : AppColors.dawnLove;
         statusIcon = Icons.cancel;
         statusLabel = 'Saltata';
+        break;
+      case 'missed':
+        statusColor = isDark ? AppColors.darkLove : AppColors.dawnLove;
+        statusIcon = Icons.warning_amber;
+        statusLabel = 'Mancata';
         break;
       case 'delayed':
         statusColor = isDark ? AppColors.darkGold : AppColors.dawnGold;

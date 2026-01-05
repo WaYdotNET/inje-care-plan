@@ -10,6 +10,18 @@ e il progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 ### Corretto
 - **Home mostra iniezioni programmate**: La home minimalista ora mostra correttamente le iniezioni già programmate nel calendario, non solo i suggerimenti AI
 
+## [4.2.8] - 2026-01-05
+
+### Corretto
+- **Orario default**: quando selezioni una data senza orario (00:00), viene usato l'orario preferito del piano terapeutico (es. 20:00)
+- **Mancate con tolleranza**: le iniezioni programmate diventano automaticamente **mancate** dopo una tolleranza configurabile
+- **Home \"prossima\" coerente**: non propone più una programmata già scaduta
+- **Promemoria affidabili**: la notifica viene schedulata sull'iniezione appena creata/modificata (anche con app chiusa)
+
+### Nuovo
+- **Pianificazione settimana**: se la settimana è vuota, l'app propone di crearla automaticamente secondo piano + pattern di rotazione
+- **Impostazioni Notifiche**: nuova opzione \"Tolleranza mancata\"
+
 ## [4.2.6] - 2026-01-05
 
 ### Corretto

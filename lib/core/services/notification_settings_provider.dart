@@ -9,12 +9,14 @@ class NotificationSettings {
   final int minutesBefore;
   final bool missedDoseReminder;
   final bool permissionsGranted;
+  final int overdueGraceMinutes;
 
   const NotificationSettings({
     this.enabled = true,
     this.minutesBefore = 30,
     this.missedDoseReminder = true,
     this.permissionsGranted = false,
+    this.overdueGraceMinutes = 60,
   });
 
   NotificationSettings copyWith({
@@ -22,12 +24,14 @@ class NotificationSettings {
     int? minutesBefore,
     bool? missedDoseReminder,
     bool? permissionsGranted,
+    int? overdueGraceMinutes,
   }) {
     return NotificationSettings(
       enabled: enabled ?? this.enabled,
       minutesBefore: minutesBefore ?? this.minutesBefore,
       missedDoseReminder: missedDoseReminder ?? this.missedDoseReminder,
       permissionsGranted: permissionsGranted ?? this.permissionsGranted,
+      overdueGraceMinutes: overdueGraceMinutes ?? this.overdueGraceMinutes,
     );
   }
 }
@@ -38,6 +42,7 @@ class NotificationSettingsNotifier extends Notifier<NotificationSettings> {
   static const _keyMinutesBefore = 'notification_minutes_before';
   static const _keyMissedDose = 'notification_missed_dose';
   static const _keyPermissionsGranted = 'notification_permissions_granted';
+  static const _keyOverdueGraceMinutes = 'notification_overdue_grace_minutes';
 
   @override
   NotificationSettings build() {
@@ -52,6 +57,7 @@ class NotificationSettingsNotifier extends Notifier<NotificationSettings> {
       minutesBefore: prefs.getInt(_keyMinutesBefore) ?? 30,
       missedDoseReminder: prefs.getBool(_keyMissedDose) ?? true,
       permissionsGranted: prefs.getBool(_keyPermissionsGranted) ?? false,
+      overdueGraceMinutes: prefs.getInt(_keyOverdueGraceMinutes) ?? 60,
     );
   }
 
@@ -71,6 +77,12 @@ class NotificationSettingsNotifier extends Notifier<NotificationSettings> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_keyMissedDose, value);
     state = state.copyWith(missedDoseReminder: value);
+  }
+
+  Future<void> setOverdueGraceMinutes(int value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_keyOverdueGraceMinutes, value);
+    state = state.copyWith(overdueGraceMinutes: value);
   }
 
   /// Request notification permissions

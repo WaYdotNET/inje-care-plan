@@ -116,6 +116,16 @@ La nuova visualizzazione compatta mostra tutti i 7 giorni della settimana:
 
 Il contatore in alto a destra (es. "2/3") mostra il progresso settimanale.
 
+### Pianificazione Automatica Settimana (se vuota)
+
+Se l'app rileva che **la settimana corrente è vuota** (nessuna iniezione registrata o programmata),
+ti verrà chiesto se vuoi **pianificarla automaticamente**:
+
+- Crea le iniezioni **programmate** per i giorni del tuo piano terapeutico
+- Usa l'**orario preferito** configurato
+- Segue il **pattern di rotazione** attivo per scegliere la zona
+- Programma i **promemoria** (se abilitati)
+
 ### Suggerimenti Intelligenti
 
 L'app analizza i tuoi dati per fornirti raccomandazioni personalizzate:
@@ -333,6 +343,7 @@ L'app include **7 piani di rotazione predefiniti** per le tue iniezioni. Puoi se
 |---------|-------------|
 | **Promemoria iniezione** | Attiva/disattiva promemoria |
 | **Anticipo** | Minuti prima dell'orario (es. 30 min) |
+| **Tolleranza mancata** | Dopo quanti minuti una programmata diventa **mancata** |
 
 #### Aspetto
 

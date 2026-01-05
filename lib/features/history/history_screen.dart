@@ -195,6 +195,7 @@ class _HistoryCard extends StatelessWidget {
     'skipped' => isDark ? AppColors.darkLove : AppColors.dawnLove,
     'delayed' => isDark ? AppColors.darkGold : AppColors.dawnGold,
     'scheduled' => isDark ? AppColors.darkFoam : AppColors.dawnFoam,
+    'missed' => isDark ? AppColors.darkLove : AppColors.dawnLove,
     _ => isDark ? AppColors.darkMuted : AppColors.dawnMuted,
   };
 
@@ -203,6 +204,7 @@ class _HistoryCard extends StatelessWidget {
     'skipped' => 'Saltata',
     'delayed' => 'In ritardo',
     'scheduled' => 'Programmata',
+    'missed' => 'Mancata',
     _ => 'Sconosciuto',
   };
 

@@ -5,6 +5,12 @@ Tutte le modifiche rilevanti a InjeCare Plan sono documentate in questo file.
 Il formato segue [Keep a Changelog](https://keepachangelog.com/it/1.0.0/),
 e il progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 
+## [4.2.4] - 2026-01-05
+
+### Corretto
+- **Coordinate punti unificate**: La home minimal ora usa le stesse coordinate esatte di `generateDefaultPointPositions` 
+- I punti sono ora correttamente posizionati sulla silhouette, allineati con la schermata di selezione punto
+
 ## [4.2.3] - 2026-01-05
 
 ### Corretto

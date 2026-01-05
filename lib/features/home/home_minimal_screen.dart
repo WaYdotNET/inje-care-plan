@@ -381,20 +381,31 @@ class _MainCard extends StatelessWidget {
         child: Column(
           children: [
             // Silhouette con punto evidenziato (scala proporzionale)
+            // Usa le stesse coordinate di generateDefaultPointPositions
             Expanded(
               child: LayoutBuilder(
                 builder: (context, constraints) {
                   // Scala i punti in base all'altezza disponibile
                   // Base: 400px = scala 1.0, più piccolo = scala ridotta
                   final scale = (constraints.maxHeight / 400).clamp(0.5, 1.0);
+                  
+                  // Usa le coordinate esatte da generateDefaultPointPositions
+                  final allPoints = generateDefaultPointPositions(
+                    zone!.numberOfPoints,
+                    zone!.type,
+                    zone!.side,
+                  );
+                  
+                  // Trova il punto corretto o usa il primo
+                  final targetPoint = allPoints.firstWhere(
+                    (p) => p.pointNumber == displayPointNumber,
+                    orElse: () => allPoints.isNotEmpty 
+                        ? allPoints.first 
+                        : PositionedPoint(pointNumber: 1, x: 0.5, y: 0.5),
+                  );
+                  
                   return BodySilhouetteEditor(
-                    points: [
-                      PositionedPoint(
-                        pointNumber: displayPointNumber,
-                        x: _getDefaultX(zone!.type, zone!.side),
-                        y: _getDefaultY(zone!.type),
-                      ),
-                    ],
+                    points: [targetPoint],
                     onPointMoved: (p, x, y, v) {},
                     onPointTapped: (p) {},
                     selectedPointNumber: displayPointNumber,
@@ -497,31 +508,6 @@ class _MainCard extends StatelessWidget {
     );
   }
 
-  double _getDefaultX(String zoneType, String side) {
-    // Coordinate X corrette per ogni zona e lato
-    // Allineate con generateDefaultPointPositions in body_silhouette_editor.dart
-    return switch ((zoneType, side)) {
-      ('arm', 'left') => 0.20,
-      ('arm', 'right') => 0.76,
-      ('thigh', 'left') => 0.32,
-      ('thigh', 'right') => 0.68,
-      ('abdomen', 'left') => 0.35,
-      ('abdomen', 'right') => 0.63,
-      ('buttock', 'left') => 0.35,
-      ('buttock', 'right') => 0.63,
-      _ => 0.5,
-    };
-  }
-
-  double _getDefaultY(String zoneType) {
-    return switch (zoneType) {
-      'thigh' => 0.60,
-      'arm' => 0.24,
-      'abdomen' => 0.36,
-      'buttock' => 0.52,
-      _ => 0.5,
-    };
-  }
 }
 
 /// Vista errore

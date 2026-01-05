@@ -511,14 +511,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Future<void> _showTestNotification(BuildContext context) async {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    
+
     // Show immediate test notification
     await NotificationService.instance.showNotification(
       id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
       title: '💉 Promemoria Iniezione',
       body: 'È ora della tua iniezione! Zona suggerita: Braccio Sx 💪',
     );
-    
+
     if (context.mounted) {
       ScaffoldMessenger.of(context)
         ..clearSnackBars()
@@ -536,8 +536,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
               ],
             ),
-            backgroundColor: isDark 
-                ? const Color(0xFF31748F) 
+            backgroundColor: isDark
+                ? const Color(0xFF31748F)
                 : const Color(0xFF56949F),
             duration: const Duration(seconds: 3),
           ),

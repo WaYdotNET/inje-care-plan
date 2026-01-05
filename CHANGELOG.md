@@ -5,6 +5,15 @@ Tutte le modifiche rilevanti a InjeCare Plan sono documentate in questo file.
 Il formato segue [Keep a Changelog](https://keepachangelog.com/it/1.0.0/),
 e il progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 
+## [4.1.6] - 2026-01-05
+
+### Aggiunto
+- **Menu rapido in Home Minimal**: Aggiunto pulsante ⋮ nell'app bar con accesso rapido a:
+  - 📜 Storico
+  - 📊 Statistiche  
+  - ❓ Guida
+  - ℹ️ Info
+
 ## [4.1.5] - 2026-01-05
 
 ### Aggiunto

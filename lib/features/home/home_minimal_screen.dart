@@ -28,6 +28,62 @@ class HomeMinimalScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('InjeCare Plan'),
         actions: [
+          // Menu con link rapidi
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert),
+            tooltip: 'Menu',
+            onSelected: (value) {
+              switch (value) {
+                case 'history':
+                  context.go(AppRoutes.history);
+                case 'statistics':
+                  context.push(AppRoutes.statistics);
+                case 'guide':
+                  context.push(AppRoutes.help);
+                case 'info':
+                  context.push(AppRoutes.info);
+              }
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'history',
+                child: ListTile(
+                  leading: Icon(Icons.history),
+                  title: Text('Storico'),
+                  contentPadding: EdgeInsets.zero,
+                  visualDensity: VisualDensity.compact,
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'statistics',
+                child: ListTile(
+                  leading: Icon(Icons.bar_chart),
+                  title: Text('Statistiche'),
+                  contentPadding: EdgeInsets.zero,
+                  visualDensity: VisualDensity.compact,
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'guide',
+                child: ListTile(
+                  leading: Icon(Icons.help_outline),
+                  title: Text('Guida'),
+                  contentPadding: EdgeInsets.zero,
+                  visualDensity: VisualDensity.compact,
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'info',
+                child: ListTile(
+                  leading: Icon(Icons.info_outline),
+                  title: Text('Info'),
+                  contentPadding: EdgeInsets.zero,
+                  visualDensity: VisualDensity.compact,
+                ),
+              ),
+            ],
+          ),
+          // Settings
           IconButton(
             icon: const CircleAvatar(
               radius: 16,

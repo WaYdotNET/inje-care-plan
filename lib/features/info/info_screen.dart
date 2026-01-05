@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/theme/app_colors.dart';
+
+/// Provider per le informazioni del package (versione, ecc.)
+final packageInfoProvider = FutureProvider<PackageInfo>((ref) async {
+  return await PackageInfo.fromPlatform();
+});
 
 /// Info screen showing project information
 class InfoScreen extends ConsumerWidget {
@@ -13,6 +19,7 @@ class InfoScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final packageInfoAsync = ref.watch(packageInfoProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -48,11 +55,25 @@ class InfoScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 8),
 
-            // Version
-            Text(
-              'Versione 4.2.0',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+            // Version (letta dinamicamente dal pubspec.yaml)
+            packageInfoAsync.when(
+              data: (info) => Text(
+                'Versione ${info.version} (build ${info.buildNumber})',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                ),
+              ),
+              loading: () => Text(
+                'Caricamento versione...',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                ),
+              ),
+              error: (e, st) => Text(
+                'Versione non disponibile',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                ),
               ),
             ),
             const SizedBox(height: 32),

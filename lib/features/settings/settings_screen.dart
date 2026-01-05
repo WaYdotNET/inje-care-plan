@@ -9,6 +9,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/theme_provider.dart';
 import '../../core/services/export_service.dart';
 import '../../core/services/import_service.dart';
+import '../../core/services/notification_service.dart';
 import '../../core/services/notification_settings_provider.dart';
 import '../../core/database/app_database.dart' as db;
 import '../../core/database/database_provider.dart';
@@ -171,6 +172,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ? (value) => ref
                       .read(notificationSettingsProvider.notifier)
                       .setMissedDoseReminder(value)
+                : null,
+          ),
+          ListTile(
+            title: const Text('Testa notifica'),
+            subtitle: const Text('Visualizza un esempio di promemoria'),
+            trailing: const Icon(Icons.notifications_active_outlined),
+            enabled: notificationSettings.permissionsGranted,
+            onTap: notificationSettings.permissionsGranted
+                ? () => _showTestNotification(context)
                 : null,
           ),
 
@@ -496,6 +506,43 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         );
       },
     );
+  }
+
+  Future<void> _showTestNotification(BuildContext context) async {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
+    // Show immediate test notification
+    await NotificationService.instance.showNotification(
+      id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      title: '💉 Promemoria Iniezione',
+      body: 'È ora della tua iniezione! Zona suggerita: Braccio Sx 💪',
+    );
+    
+    if (context.mounted) {
+      ScaffoldMessenger.of(context)
+        ..clearSnackBars()
+        ..showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Icon(
+                  Icons.check_circle,
+                  color: isDark ? Colors.white : Colors.white,
+                ),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Text('Notifica di test inviata! Controlla il pannello notifiche.'),
+                ),
+              ],
+            ),
+            backgroundColor: isDark 
+                ? const Color(0xFF31748F) 
+                : const Color(0xFF56949F),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+    }
   }
 
   void _showThemeSelector(BuildContext context) {

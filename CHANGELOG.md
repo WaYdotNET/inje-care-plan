@@ -5,6 +5,13 @@ Tutte le modifiche rilevanti a InjeCare Plan sono documentate in questo file.
 Il formato segue [Keep a Changelog](https://keepachangelog.com/it/1.0.0/),
 e il progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 
+## [4.1.5] - 2026-01-05
+
+### Aggiunto
+- **Test notifiche**: Nuovo pulsante nelle impostazioni per testare le notifiche di promemoria
+  - Mostra una notifica di esempio per verificare funzionamento e aspetto
+  - Utile per confermare che le notifiche sono configurate correttamente
+
 ## [4.1.4] - 2026-01-05
 
 ### Modificato

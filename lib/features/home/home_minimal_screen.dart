@@ -388,22 +388,22 @@ class _MainCard extends StatelessWidget {
                   // Scala i punti in base all'altezza disponibile
                   // Base: 400px = scala 1.0, più piccolo = scala ridotta
                   final scale = (constraints.maxHeight / 400).clamp(0.5, 1.0);
-                  
+
                   // Usa le coordinate esatte da generateDefaultPointPositions
                   final allPoints = generateDefaultPointPositions(
                     zone!.numberOfPoints,
                     zone!.type,
                     zone!.side,
                   );
-                  
+
                   // Trova il punto corretto o usa il primo
                   final targetPoint = allPoints.firstWhere(
                     (p) => p.pointNumber == displayPointNumber,
-                    orElse: () => allPoints.isNotEmpty 
-                        ? allPoints.first 
+                    orElse: () => allPoints.isNotEmpty
+                        ? allPoints.first
                         : PositionedPoint(pointNumber: 1, x: 0.5, y: 0.5),
                   );
-                  
+
                   return BodySilhouetteEditor(
                     points: [targetPoint],
                     onPointMoved: (p, x, y, v) {},

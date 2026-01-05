@@ -136,42 +136,29 @@ class HelpScreen extends ConsumerWidget {
           const SizedBox(height: 16),
 
           _HelpSection(
-            icon: Icons.cloud_outlined,
-            title: 'Backup e sincronizzazione',
+            icon: Icons.psychology,
+            title: 'Pattern di rotazione',
             isDark: isDark,
             content: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Puoi effettuare il backup dei tuoi dati su Google Drive:',
+                  'L\'app offre diversi pattern per suggerire la prossima zona:',
                   style: theme.textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 12),
-                _HelpStep(
-                  number: 1,
-                  title: 'Collega l\'account Google',
-                  description: 'Vai in Impostazioni e tocca "Collega account Google".',
-                  isDark: isDark,
-                ),
-                _HelpStep(
-                  number: 2,
-                  title: 'Crea il backup',
-                  description: 'Tocca "Crea backup" e inserisci una password sicura.',
-                  isDark: isDark,
-                ),
-                _HelpStep(
-                  number: 3,
-                  title: 'Ripristina su un altro dispositivo',
-                  description: 'Installa l\'app, collega lo stesso account Google '
-                      'e ripristina usando la stessa password.',
-                  isDark: isDark,
-                ),
+                _BulletPoint(text: 'Suggerimento AI: analizza lo storico per la scelta ottimale', isDark: isDark),
+                _BulletPoint(text: 'Sequenza Zone: ruota tra le 8 zone in ordine', isDark: isDark),
+                _BulletPoint(text: 'Alternanza Sx/Dx: alterna lato sinistro e destro', isDark: isDark),
+                _BulletPoint(text: 'Rotazione Settimanale: una zona diversa ogni settimana', isDark: isDark),
+                _BulletPoint(text: 'Orario/Antiorario: segue un percorso circolare sul corpo', isDark: isDark),
+                _BulletPoint(text: 'Personalizzato: crea la tua sequenza', isDark: isDark),
                 const SizedBox(height: 12),
-                _InfoBox(
-                  icon: Icons.security,
-                  text: 'I backup sono crittografati con la tua password. '
-                      'Senza la password non è possibile ripristinare i dati.',
-                  isDark: isDark,
+                Text(
+                  'Per cambiare: Impostazioni > Pattern di Rotazione',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontStyle: FontStyle.italic,
+                  ),
                 ),
               ],
             ),
@@ -179,17 +166,63 @@ class HelpScreen extends ConsumerWidget {
           const SizedBox(height: 16),
 
           _HelpSection(
-            icon: Icons.file_download_outlined,
-            title: 'Esportazione dati',
+            icon: Icons.home,
+            title: 'Stili Home',
             isDark: isDark,
             content: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Puoi esportare lo storico delle iniezioni in due formati:',
+                  'Puoi scegliere tra due stili di home page:',
                   style: theme.textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 12),
+                _ExportFormat(
+                  icon: Icons.dashboard,
+                  title: 'Classica',
+                  description: 'Vista completa con panoramica settimanale, '
+                      'suggerimenti e statistiche.',
+                  isDark: isDark,
+                ),
+                const SizedBox(height: 8),
+                _ExportFormat(
+                  icon: Icons.center_focus_strong,
+                  title: 'Minimalista',
+                  description: 'Solo la prossima iniezione con silhouette. '
+                      'Tocca per registrare subito.',
+                  isDark: isDark,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Per cambiare: Impostazioni > Stile Home',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          _HelpSection(
+            icon: Icons.sync_alt,
+            title: 'Import/Export dati',
+            isDark: isDark,
+            content: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Gestisci i tuoi dati in modo sicuro:',
+                  style: theme.textTheme.bodyMedium,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Esporta:',
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
                 _ExportFormat(
                   icon: Icons.picture_as_pdf,
                   title: 'PDF',
@@ -201,16 +234,31 @@ class HelpScreen extends ConsumerWidget {
                 _ExportFormat(
                   icon: Icons.table_chart,
                   title: 'CSV',
-                  description: 'Formato dati, ideale per analisi in Excel '
-                      'o altri programmi.',
+                  description: 'Formato dati per backup o trasferimento '
+                      'su altro dispositivo.',
+                  isDark: isDark,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Importa:',
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                _ExportFormat(
+                  icon: Icons.file_upload_outlined,
+                  title: 'CSV',
+                  description: 'Ripristina dati da un backup CSV esportato '
+                      'precedentemente.',
                   isDark: isDark,
                 ),
                 const SizedBox(height: 12),
-                Text(
-                  'Per esportare: Impostazioni > Esporta storico',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontStyle: FontStyle.italic,
-                  ),
+                _InfoBox(
+                  icon: Icons.security,
+                  text: 'I tuoi dati restano sempre sul dispositivo. '
+                      'Nessun dato viene inviato a server esterni.',
+                  isDark: isDark,
                 ),
               ],
             ),
@@ -225,23 +273,23 @@ class HelpScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _FaqItem(
-                  question: 'Posso usare l\'app senza account Google?',
-                  answer: 'Sì, l\'app funziona completamente offline. '
-                      'L\'account Google è opzionale e serve solo per i backup.',
+                  question: 'I miei dati sono sicuri?',
+                  answer: 'Sì, tutti i dati sono salvati solo sul tuo dispositivo. '
+                      'L\'app funziona completamente offline e non invia dati a server esterni.',
                   isDark: isDark,
                 ),
                 const SizedBox(height: 12),
                 _FaqItem(
-                  question: 'I miei dati sono sicuri?',
-                  answer: 'I dati sono salvati solo sul tuo dispositivo. '
-                      'I backup su Google Drive sono crittografati con la tua password.',
+                  question: 'Come faccio backup dei dati?',
+                  answer: 'Vai in Impostazioni > Esporta storico > CSV. '
+                      'Il file può essere reimportato su un nuovo dispositivo.',
                   isDark: isDark,
                 ),
                 const SizedBox(height: 12),
                 _FaqItem(
                   question: 'Come modifico un\'iniezione già registrata?',
-                  answer: 'Vai allo Storico, cerca l\'iniezione e toccala '
-                      'per vedere i dettagli e le opzioni di modifica.',
+                  answer: 'Vai nel Calendario, tocca l\'iniezione e seleziona '
+                      '"Modifica punto" per cambiare la zona o il punto.',
                   isDark: isDark,
                 ),
                 const SizedBox(height: 12),
@@ -249,6 +297,13 @@ class HelpScreen extends ConsumerWidget {
                   question: 'Posso cambiare i giorni delle iniezioni?',
                   answer: 'Sì, vai in Impostazioni > Piano Iniezioni > '
                       'Giorni della settimana.',
+                  isDark: isDark,
+                ),
+                const SizedBox(height: 12),
+                _FaqItem(
+                  question: 'Cosa succede se aggiorno l\'app?',
+                  answer: 'I tuoi dati vengono preservati. L\'app è progettata '
+                      'per aggiornamenti senza perdita di dati.',
                   isDark: isDark,
                 ),
               ],

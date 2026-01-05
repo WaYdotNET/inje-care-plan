@@ -104,6 +104,21 @@ Sistema di raccomandazioni basato su regole in `core/ml/`:
 - `ZonePredictionModel`: Suggerisce la zona ottimale
 - `TimeOptimizer`: Suggerisce l'orario migliore
 - `AdherenceScorer`: Analizza l'aderenza alla terapia
+- `RotationPatternEngine`: Gestisce 7 pattern di rotazione
+
+### Pattern di Rotazione
+Sistema configurabile per la rotazione delle zone (`models/rotation_pattern.dart`):
+- **Smart (AI)**: Analisi storico per suggerimento ottimale
+- **Sequential**: Rotazione fissa tra le 8 zone
+- **AlternateSides**: Alternanza lato sinistro/destro
+- **WeeklyRotation**: Una zona per settimana
+- **Clockwise/CounterClockwise**: Percorso orario/antiorario
+- **Custom**: Sequenza definita dall'utente
+
+### Stili Home
+Due layout selezionabili dall'utente (`auth_provider.dart`):
+- **Classic**: Vista completa con statistiche e panoramica settimanale
+- **Minimalist**: Solo prossima iniezione con silhouette interattiva
 
 ## Decisioni Architetturali
 
@@ -149,6 +164,26 @@ Sistema di raccomandazioni basato su regole in `core/ml/`:
 - ✅ Facile aggiungere nuove feature
 - ✅ Codice correlato raggruppato insieme
 
+### ADR-005: Versione Dinamica (v4.2)
+**Contesto**: La versione era hardcoded in più punti del codice.
+
+**Decisione**: Usare `package_info_plus` per leggere la versione da `pubspec.yaml`.
+
+**Conseguenze**:
+- ✅ Versione aggiornata automaticamente ovunque
+- ✅ Mostra anche il numero di build
+- ✅ Un solo punto di aggiornamento (pubspec.yaml)
+
+### ADR-006: Home Styles (v4.0)
+**Contesto**: Utenti diversi preferiscono livelli di dettaglio diversi.
+
+**Decisione**: Due stili di home selezionabili (Classic/Minimalist).
+
+**Conseguenze**:
+- ✅ UX personalizzabile
+- ✅ Minimalist come default per semplicità
+- ✅ Classic per utenti che vogliono più informazioni
+
 ## Performance
 
 ### Ottimizzazioni Applicate
@@ -181,8 +216,8 @@ test/
 ## Sicurezza
 
 - **Dati locali**: Tutti i dati sensibili sono salvati solo sul dispositivo
-- **Biometria**: Supporto per sblocco con impronta/Face ID
 - **No analytics**: Nessun tracciamento o telemetria
+- **Export sicuro**: PDF/CSV restano sul dispositivo
 
 ## Localizzazione
 
@@ -204,7 +239,9 @@ Supporto multilingua tramite ARB files:
 | `table_calendar` | Widget calendario |
 | `fl_chart` | Grafici statistiche |
 | `pdf` | Export PDF |
-| `local_auth` | Autenticazione biometrica |
+| `csv` | Import/Export CSV |
+| `file_picker` | Selezione file per import |
+| `package_info_plus` | Versione app dinamica |
 
 ## Contribuire
 

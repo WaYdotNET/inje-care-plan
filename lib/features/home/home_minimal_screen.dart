@@ -380,22 +380,30 @@ class _MainCard extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // Silhouette con punto evidenziato
+            // Silhouette con punto evidenziato (scala proporzionale)
             Expanded(
-              child: BodySilhouetteEditor(
-                points: [
-                  PositionedPoint(
-                    pointNumber: displayPointNumber,
-                    x: _getDefaultX(zone!.type, zone!.side),
-                    y: _getDefaultY(zone!.type),
-                  ),
-                ],
-                onPointMoved: (p, x, y, v) {},
-                onPointTapped: (p) {},
-                selectedPointNumber: displayPointNumber,
-                initialView: view,
-                editable: false,
-                zoneType: zone!.type,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  // Scala i punti in base all'altezza disponibile
+                  // Base: 400px = scala 1.0, più piccolo = scala ridotta
+                  final scale = (constraints.maxHeight / 400).clamp(0.5, 1.0);
+                  return BodySilhouetteEditor(
+                    points: [
+                      PositionedPoint(
+                        pointNumber: displayPointNumber,
+                        x: _getDefaultX(zone!.type, zone!.side),
+                        y: _getDefaultY(zone!.type),
+                      ),
+                    ],
+                    onPointMoved: (p, x, y, v) {},
+                    onPointTapped: (p) {},
+                    selectedPointNumber: displayPointNumber,
+                    initialView: view,
+                    editable: false,
+                    zoneType: zone!.type,
+                    pointScale: scale,
+                  );
+                },
               ),
             ),
 

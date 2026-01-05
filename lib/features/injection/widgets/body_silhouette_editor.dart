@@ -51,6 +51,7 @@ class BodySilhouetteEditor extends StatefulWidget {
     this.currentView,
     this.onViewChanged,
     this.enableZoom = false,
+    this.pointScale = 1.0,
   });
 
   /// Lista dei punti posizionati
@@ -89,6 +90,9 @@ class BodySilhouetteEditor extends StatefulWidget {
 
   /// Abilita zoom e pan con InteractiveViewer
   final bool enableZoom;
+
+  /// Scala per i punti (0.5 = metà dimensione, 1.0 = normale)
+  final double pointScale;
 
   @override
   State<BodySilhouetteEditor> createState() => _BodySilhouetteEditorState();
@@ -303,8 +307,9 @@ class _BodySilhouetteEditorState extends State<BodySilhouetteEditor>
     }
 
     // Dimensione punto con area di hit estesa per migliore UX
-    const pointSize = 40.0;
-    const hitAreaSize = 56.0;
+    // Usa pointScale per adattare alle dimensioni della silhouette
+    final pointSize = 40.0 * widget.pointScale;
+    final hitAreaSize = 56.0 * widget.pointScale;
 
     return AnimatedBuilder(
       animation: _pulseAnimation,
@@ -386,8 +391,8 @@ class _BodySilhouetteEditorState extends State<BodySilhouetteEditor>
                 child: Transform.scale(
                   scale: isDragging ? 1.1 : scale,
                   child: Container(
-                    width: isSelected || isDragging ? 48 : pointSize,
-                    height: isSelected || isDragging ? 48 : pointSize,
+                    width: isSelected || isDragging ? 48 * widget.pointScale : pointSize,
+                    height: isSelected || isDragging ? 48 * widget.pointScale : pointSize,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topLeft,
@@ -433,10 +438,10 @@ class _BodySilhouetteEditorState extends State<BodySilhouetteEditor>
                         style: TextStyle(
                           color: isSelected ? Colors.white : textColor,
                           fontWeight: FontWeight.bold,
-                          fontSize: point.customName != null &&
+                          fontSize: (point.customName != null &&
                                   point.customName!.isNotEmpty
                               ? 12
-                              : 14,
+                              : 14) * widget.pointScale,
                           shadows: isSelected
                               ? [
                                   Shadow(

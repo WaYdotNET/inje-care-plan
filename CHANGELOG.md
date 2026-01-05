@@ -5,6 +5,12 @@ Tutte le modifiche rilevanti a InjeCare Plan sono documentate in questo file.
 Il formato segue [Keep a Changelog](https://keepachangelog.com/it/1.0.0/),
 e il progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 
+## [4.2.3] - 2026-01-05
+
+### Corretto
+- **Punti proporzionali**: I punti sulla silhouette ora si ridimensionano proporzionalmente alla dimensione della silhouette
+- **Versione dinamica ovunque**: La versione dell'app è ora dinamica anche nella schermata Impostazioni (era hardcoded a v4.1.0)
+
 ## [4.2.2] - 2026-01-05
 
 ### Corretto

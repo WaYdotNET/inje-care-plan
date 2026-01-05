@@ -7,6 +7,7 @@ import 'package:file_picker/file_picker.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/theme_provider.dart';
+import '../info/info_screen.dart' show packageInfoProvider;
 import '../../core/services/export_service.dart';
 import '../../core/services/import_service.dart';
 import '../../core/services/notification_service.dart';
@@ -269,12 +270,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
           const SizedBox(height: 32),
 
-          // App version
-          Center(
-            child: Text(
-              'InjeCare Plan v4.1.0',
-              style: theme.textTheme.bodySmall,
-            ),
+          // App version (letta dinamicamente)
+          Consumer(
+            builder: (context, ref, _) {
+              final packageInfoAsync = ref.watch(packageInfoProvider);
+              return Center(
+                child: packageInfoAsync.when(
+                  data: (info) => Text(
+                    'InjeCare Plan v${info.version}',
+                    style: theme.textTheme.bodySmall,
+                  ),
+                  loading: () => Text(
+                    'InjeCare Plan',
+                    style: theme.textTheme.bodySmall,
+                  ),
+                  error: (_, __) => Text(
+                    'InjeCare Plan',
+                    style: theme.textTheme.bodySmall,
+                  ),
+                ),
+              );
+            },
           ),
           Center(
             child: Text(

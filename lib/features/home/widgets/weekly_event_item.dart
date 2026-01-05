@@ -5,15 +5,6 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/database/app_database.dart' as db;
 import '../../../models/body_zone.dart';
 
-/// Returns Material Icon for zone type
-IconData _getZoneIcon(String type) => switch (type) {
-      'thigh' => Icons.accessibility_new_rounded,
-      'arm' => Icons.fitness_center_rounded,
-      'abdomen' => Icons.circle_outlined,
-      'buttock' => Icons.airline_seat_legroom_reduced_rounded,
-      _ => Icons.location_on_rounded,
-    };
-
 /// Rappresenta un evento settimanale (confermato o suggerito)
 class WeeklyEvent {
   final DateTime date;
@@ -144,7 +135,7 @@ class WeeklyEventItem extends StatelessWidget {
                     Row(
                       children: [
                         if (event.zone != null)
-                          Icon(_getZoneIcon(event.zone!.type), size: 16),
+                          Text(event.zone!.emoji, style: const TextStyle(fontSize: 16)),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(

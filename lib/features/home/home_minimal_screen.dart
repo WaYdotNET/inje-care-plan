@@ -44,7 +44,7 @@ class HomeMinimalScreen extends ConsumerWidget {
           data: (zones) {
             // Prima controlla se c'è un'iniezione programmata
             final nextScheduled = nextScheduledAsync.value;
-            
+
             return suggestionAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (e, st) => _ErrorView(message: e.toString()),
@@ -55,7 +55,7 @@ class HomeMinimalScreen extends ConsumerWidget {
                 bool isScheduled = false;
                 int? scheduledInjectionId;
                 int? pointNumber;
-                
+
                 if (nextScheduled != null) {
                   // Mostra l'iniezione programmata
                   isScheduled = true;
@@ -88,9 +88,9 @@ class HomeMinimalScreen extends ConsumerWidget {
                           if (isScheduled && scheduledInjectionId != null) {
                             // Naviga per completare l'iniezione
                             _showCompleteDialog(
-                              context, 
+                              context,
                               ref,
-                              scheduledInjectionId, 
+                              scheduledInjectionId,
                               zone!,
                               pointNumber ?? 1,
                             );
@@ -129,8 +129,8 @@ class HomeMinimalScreen extends ConsumerWidget {
                         // Hint per azione
                         if (zone != null)
                           Text(
-                            isScheduled 
-                                ? 'Tocca per completare' 
+                            isScheduled
+                                ? 'Tocca per completare'
                                 : 'Tocca per registrare',
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color: isDark
@@ -197,13 +197,13 @@ class HomeMinimalScreen extends ConsumerWidget {
 
     if (shouldComplete == true && context.mounted) {
       final repository = ref.read(injectionRepositoryProvider);
-      
+
       await repository.completeInjection(injectionId);
-      
+
       // Refresh dei providers
       ref.invalidate(nextScheduledInjectionProvider);
       ref.invalidate(weeklyEventsProvider);
-      
+
       if (context.mounted) {
         ScaffoldMessenger.of(context)
           ..clearSnackBars()
@@ -247,7 +247,7 @@ class _DateHeader extends StatelessWidget {
         Text(
           isScheduled ? 'Iniezione programmata' : 'Prossima iniezione',
           style: theme.textTheme.bodyMedium?.copyWith(
-            color: isScheduled 
+            color: isScheduled
                 ? (isDark ? AppColors.darkGold : AppColors.dawnGold)
                 : (isDark ? AppColors.darkMuted : AppColors.dawnMuted),
           ),

@@ -14,14 +14,6 @@ import 'injection_provider.dart';
 import 'zone_provider.dart';
 
 /// Returns Material Icon for zone type
-IconData _getZoneIcon(String type) => switch (type) {
-      'thigh' => Icons.accessibility_new_rounded,
-      'arm' => Icons.fitness_center_rounded,
-      'abdomen' => Icons.circle_outlined,
-      'buttock' => Icons.airline_seat_legroom_reduced_rounded,
-      _ => Icons.location_on_rounded,
-    };
-
 /// Record injection screen
 class RecordInjectionScreen extends ConsumerStatefulWidget {
   const RecordInjectionScreen({
@@ -124,7 +116,7 @@ class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
               padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
-                  Icon(_getZoneIcon(zone.type), size: 32),
+                  Text(zone.emoji, style: const TextStyle(fontSize: 32)),
                   const SizedBox(width: 16),
                   Expanded(
                     child: Column(

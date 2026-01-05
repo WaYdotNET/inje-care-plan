@@ -8,13 +8,13 @@ import '../../../core/ml/adherence_scorer.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../injection/point_selection_screen.dart';
 
-/// Returns Material Icon for zone type
-IconData _getZoneIcon(String type) => switch (type) {
-      'thigh' => Icons.accessibility_new_rounded,
-      'arm' => Icons.fitness_center_rounded,
-      'abdomen' => Icons.circle_outlined,
-      'buttock' => Icons.airline_seat_legroom_reduced_rounded,
-      _ => Icons.location_on_rounded,
+/// Returns emoji for zone type
+String _getZoneEmoji(String type) => switch (type) {
+      'thigh' => '🦵',
+      'arm' => '💪',
+      'abdomen' => '💧',
+      'buttock' => '🍑',
+      _ => '📍',
     };
 
 /// Card che mostra suggerimenti ML intelligenti
@@ -172,9 +172,9 @@ class SmartSuggestionCard extends ConsumerWidget {
                 child: Row(
                   children: [
                     if (suggestion.hasZoneSuggestion) ...[
-                      Icon(
-                        _getZoneIcon(suggestion.topZonePrediction!.zone.type),
-                        size: 28,
+                      Text(
+                        _getZoneEmoji(suggestion.topZonePrediction!.zone.type),
+                        style: const TextStyle(fontSize: 28),
                       ),
                       const SizedBox(width: 12),
                     ],
@@ -283,7 +283,7 @@ class SmartSuggestionCard extends ConsumerWidget {
         children: alternatives
             .map(
               (pred) => Chip(
-                avatar: Icon(_getZoneIcon(pred.zone.type), size: 14),
+                avatar: Text(_getZoneEmoji(pred.zone.type), style: const TextStyle(fontSize: 14)),
                 label: Text(
                   pred.zone.displayName,
                   style: const TextStyle(fontSize: 12),

@@ -207,18 +207,18 @@ final nextScheduledInjectionProvider = FutureProvider<db.Injection?>((ref) async
   final repository = ref.watch(injectionRepositoryProvider);
   final now = DateTime.now();
   final startOfToday = DateTime(now.year, now.month, now.day);
-  
+
   // Cerca iniezioni scheduled da oggi in poi
   final futureInjections = await repository.getInjectionsInRange(
     startOfToday,
     startOfToday.add(const Duration(days: 30)),
   );
-  
+
   // Filtra solo quelle scheduled (non completed)
   final scheduledInjections = futureInjections
       .where((inj) => inj.status == 'scheduled')
       .toList()
     ..sort((a, b) => a.scheduledAt.compareTo(b.scheduledAt));
-  
+
   return scheduledInjections.isNotEmpty ? scheduledInjections.first : null;
 });

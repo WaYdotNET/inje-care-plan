@@ -5,6 +5,17 @@ Tutte le modifiche rilevanti a InjeCare Plan sono documentate in questo file.
 Il formato segue [Keep a Changelog](https://keepachangelog.com/it/1.0.0/),
 e il progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 
+## [4.1.4] - 2026-01-05
+
+### Modificato
+- **Emoji per zone del corpo**: Ripristinati gli emoji originali (🦵💪💧🍑) al posto delle Material Icons per una migliore leggibilità
+
+Le zone ora mostrano:
+- Coscia: 🦵
+- Braccio: 💪
+- Addome: 💧
+- Gluteo: 🍑
+
 ## [4.1.3] - 2026-01-05
 
 ### Modificato

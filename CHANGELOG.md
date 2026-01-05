@@ -5,6 +5,11 @@ Tutte le modifiche rilevanti a InjeCare Plan sono documentate in questo file.
 Il formato segue [Keep a Changelog](https://keepachangelog.com/it/1.0.0/),
 e il progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 
+## [4.2.7] - 2026-01-05
+
+### Corretto
+- **Home mostra iniezioni programmate**: La home minimalista ora mostra correttamente le iniezioni già programmate nel calendario, non solo i suggerimenti AI
+
 ## [4.2.6] - 2026-01-05
 
 ### Corretto

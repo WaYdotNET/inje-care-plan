@@ -98,42 +98,44 @@ class HomeMinimalScreen extends ConsumerWidget {
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, st) => _ErrorView(message: e.toString()),
           data: (zones) {
-            // Prima controlla se c'è un'iniezione programmata
-            final nextScheduled = nextScheduledAsync.value;
-
-            return suggestionAsync.when(
+            // Aspetta che nextScheduledAsync sia caricato
+            return nextScheduledAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (e, st) => _ErrorView(message: e.toString()),
-              data: (suggestion) {
-                // Se c'è un'iniezione schedulata, mostra quella
-                model.BodyZone? zone;
-                String displayTime;
-                bool isScheduled = false;
-                int? scheduledInjectionId;
-                int? pointNumber;
+              data: (nextScheduled) {
+                return suggestionAsync.when(
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (e, st) => _ErrorView(message: e.toString()),
+                  data: (suggestion) {
+                    // Se c'è un'iniezione schedulata, mostra quella
+                    model.BodyZone? zone;
+                    String displayTime;
+                    bool isScheduled = false;
+                    int? scheduledInjectionId;
+                    int? pointNumber;
 
-                if (nextScheduled != null) {
-                  // Mostra l'iniezione programmata
-                  isScheduled = true;
-                  scheduledInjectionId = nextScheduled.id;
-                  pointNumber = nextScheduled.pointNumber;
-                  zone = zones.firstWhere(
-                    (z) => z.id == nextScheduled.zoneId,
-                    orElse: () => zones.first,
-                  );
-                  displayTime = DateFormat('HH:mm').format(nextScheduled.scheduledAt);
-                } else {
-                  // Fallback a suggerimento AI
-                  final topZone = suggestion.topZonePrediction;
-                  zone = topZone != null
-                      ? zones.firstWhere(
-                          (z) => z.id == topZone.zone.id,
-                          orElse: () => zones.first,
-                        )
-                      : null;
-                  final therapyPlan = therapyPlanAsync.value;
-                  displayTime = therapyPlan?.preferredTime ?? '20:00';
-                }
+                    if (nextScheduled != null) {
+                      // Mostra l'iniezione programmata
+                      isScheduled = true;
+                      scheduledInjectionId = nextScheduled.id;
+                      pointNumber = nextScheduled.pointNumber;
+                      zone = zones.firstWhere(
+                        (z) => z.id == nextScheduled.zoneId,
+                        orElse: () => zones.first,
+                      );
+                      displayTime = DateFormat('HH:mm').format(nextScheduled.scheduledAt);
+                    } else {
+                      // Fallback a suggerimento AI
+                      final topZone = suggestion.topZonePrediction;
+                      zone = topZone != null
+                          ? zones.firstWhere(
+                              (z) => z.id == topZone.zone.id,
+                              orElse: () => zones.first,
+                            )
+                          : null;
+                      final therapyPlan = therapyPlanAsync.value;
+                      displayTime = therapyPlan?.preferredTime ?? '20:00';
+                    }
 
                 // Determina la vista (front/back) in base alla zona
                 final view = _getViewForZone(zone?.type);
@@ -197,6 +199,8 @@ class HomeMinimalScreen extends ConsumerWidget {
                       ],
                     ),
                   ),
+                );
+                  },
                 );
               },
             );

@@ -168,12 +168,15 @@ class AppDatabase extends _$AppDatabase {
     final now = DateTime.now();
 
     // Trova quali tipi di pattern esistono già
-    final existingTypes = existingPlans.map((p) => p.rotationPatternType).toSet();
+    final existingTypes = existingPlans
+        .map((p) => p.rotationPatternType)
+        .toSet();
 
     // Aggiorna i piani esistenti con nome corretto e imposta il primo come attivo
     bool hasActivePlan = false;
     for (final plan in existingPlans) {
-      final correctName = _patternTypeNames[plan.rotationPatternType] ?? 'Piano Smart';
+      final correctName =
+          _patternTypeNames[plan.rotationPatternType] ?? 'Piano Smart';
       final shouldBeActive = !hasActivePlan; // Il primo piano diventa attivo
 
       await (update(therapyPlans)..where((p) => p.id.equals(plan.id))).write(
@@ -188,14 +191,18 @@ class AppDatabase extends _$AppDatabase {
     }
 
     // Crea i piani mancanti
-    final missingTypes = _patternTypeNames.keys.where((t) => !existingTypes.contains(t));
+    final missingTypes = _patternTypeNames.keys.where(
+      (t) => !existingTypes.contains(t),
+    );
 
     for (final patternType in missingTypes) {
       await into(therapyPlans).insert(
         TherapyPlansCompanion.insert(
           startDate: now,
           name: Value(_patternTypeNames[patternType]!),
-          isActive: Value(!hasActivePlan), // Se non c'è ancora un piano attivo, attiva questo
+          isActive: Value(
+            !hasActivePlan,
+          ), // Se non c'è ancora un piano attivo, attiva questo
           rotationPatternType: Value(patternType),
         ),
       );
@@ -344,8 +351,9 @@ class AppDatabase extends _$AppDatabase {
 
   // --- Therapy Plans ---
   /// Ottiene il piano terapeutico attivo
-  Future<TherapyPlan?> getCurrentTherapyPlan() =>
-      (select(therapyPlans)..where((p) => p.isActive.equals(true))).getSingleOrNull();
+  Future<TherapyPlan?> getCurrentTherapyPlan() => (select(
+    therapyPlans,
+  )..where((p) => p.isActive.equals(true))).getSingleOrNull();
 
   /// Ottiene tutti i piani terapeutici
   Future<List<TherapyPlan>> getAllTherapyPlans() =>
@@ -644,12 +652,13 @@ class AppDatabase extends _$AppDatabase {
     // Query per l'ultima iniezione completata per ogni punto
     // Usa scheduledAt come data di riferimento (quando l'iniezione è stata fatta)
     // invece di completedAt (quando è stata registrata nell'app)
-    final allInjections = await (select(injections)
-          ..where(
-            (i) => i.zoneId.equals(zoneId) & i.status.equals('completed'),
-          )
-          ..orderBy([(i) => OrderingTerm.desc(i.scheduledAt)]))
-        .get();
+    final allInjections =
+        await (select(injections)
+              ..where(
+                (i) => i.zoneId.equals(zoneId) & i.status.equals('completed'),
+              )
+              ..orderBy([(i) => OrderingTerm.desc(i.scheduledAt)]))
+            .get();
 
     // Prendi solo la data più recente per ogni punto
     for (final inj in allInjections) {

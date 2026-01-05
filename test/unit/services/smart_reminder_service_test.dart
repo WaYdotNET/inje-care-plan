@@ -183,7 +183,7 @@ void main() {
     test('returns false when no therapy plan', () async {
       // Database now seeds default therapy plans, so we need to delete them first
       await db.customStatement('DELETE FROM therapy_plans');
-      
+
       final missed = await service.checkTodayMissedInjection();
       expect(missed, isFalse);
     });

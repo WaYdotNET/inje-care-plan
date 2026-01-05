@@ -659,7 +659,7 @@ List<PositionedPoint> generateDefaultPointPositions(
 ) {
   // Coordinate precise per ogni tipo di zona, calcolate dall'immagine di riferimento
   // Le coordinate sono normalizzate (0-1) rispetto alla silhouette
-  
+
   switch (zoneType) {
     case 'thigh':
       // Coscia: 6 punti in griglia 2x3 (2 colonne, 3 righe)
@@ -676,7 +676,7 @@ List<PositionedPoint> generateDefaultPointPositions(
         PositionedPoint(pointNumber: 5, x: baseX, y: baseY + spacingY * 2),
         PositionedPoint(pointNumber: 6, x: baseX + spacingX, y: baseY + spacingY * 2),
       ].take(numberOfPoints).toList();
-      
+
     case 'arm':
       // Braccio: 4 punti in griglia 2x2
       // Vista frontale: superficie esterna del braccio superiore
@@ -690,7 +690,7 @@ List<PositionedPoint> generateDefaultPointPositions(
         PositionedPoint(pointNumber: 3, x: baseX, y: baseY + spacingY),
         PositionedPoint(pointNumber: 4, x: baseX + spacingX, y: baseY + spacingY),
       ].take(numberOfPoints).toList();
-      
+
     case 'abdomen':
       // Addome: 4 punti in griglia 2x2
       // Vista frontale: almeno 5cm dall'ombelico
@@ -704,7 +704,7 @@ List<PositionedPoint> generateDefaultPointPositions(
         PositionedPoint(pointNumber: 3, x: baseX, y: baseY + spacingY),
         PositionedPoint(pointNumber: 4, x: baseX + spacingX, y: baseY + spacingY),
       ].take(numberOfPoints).toList();
-      
+
     case 'buttock':
       // Gluteo: 4 punti in griglia 2x2
       // Vista posteriore: quadrante superiore esterno
@@ -718,14 +718,14 @@ List<PositionedPoint> generateDefaultPointPositions(
         PositionedPoint(pointNumber: 3, x: baseX, y: baseY + spacingY),
         PositionedPoint(pointNumber: 4, x: baseX + spacingX, y: baseY + spacingY),
       ].take(numberOfPoints).toList();
-      
+
     default:
       // Fallback generico per zone personalizzate
       final baseX = side == 'left' ? 0.3 : (side == 'right' ? 0.6 : 0.45);
       final points = <PositionedPoint>[];
       final cols = (numberOfPoints / 2).ceil();
       const spacing = 0.08;
-      
+
       for (var i = 0; i < numberOfPoints; i++) {
         final row = i ~/ cols;
         final col = i % cols;

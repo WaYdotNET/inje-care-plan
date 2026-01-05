@@ -15,6 +15,15 @@ import 'widgets/body_silhouette_editor.dart';
 /// Can be used for: recording injections, blacklisting points
 enum PointSelectionMode { injection, blacklist }
 
+/// Returns Material Icon for zone type
+IconData _getZoneIcon(String type) => switch (type) {
+      'thigh' => Icons.accessibility_new_rounded,
+      'arm' => Icons.fitness_center_rounded,
+      'abdomen' => Icons.circle_outlined,
+      'buttock' => Icons.airline_seat_legroom_reduced_rounded,
+      _ => Icons.location_on_rounded,
+    };
+
 class PointSelectionScreen extends ConsumerStatefulWidget {
   const PointSelectionScreen({
     super.key,
@@ -728,7 +737,7 @@ class _ZoneButton extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(zone.emoji, style: const TextStyle(fontSize: 24)),
+            Icon(_getZoneIcon(zone.type), size: 24),
             const SizedBox(height: 4),
             Text(
               zone.displayName,
@@ -874,7 +883,7 @@ class _ZoneDetailCardState extends ConsumerState<_ZoneDetailCard> {
             // Zone header
             Row(
               children: [
-                Text(zone.emoji, style: const TextStyle(fontSize: 32)),
+                Icon(_getZoneIcon(zone.type), size: 32),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(

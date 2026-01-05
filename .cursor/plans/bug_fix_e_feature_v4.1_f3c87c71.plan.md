@@ -34,7 +34,7 @@ todos:
     status: completed
   - id: update-docs
     content: Aggiornare README, CHANGELOG, manuale, screenshot e test
-    status: in_progress
+    status: completed
 ---
 
 # Piano Bug Fix e Feature v4.1

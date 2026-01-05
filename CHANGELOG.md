@@ -5,6 +5,19 @@ Tutte le modifiche rilevanti a InjeCare Plan sono documentate in questo file.
 Il formato segue [Keep a Changelog](https://keepachangelog.com/it/1.0.0/),
 e il progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 
+## [4.1.1] - 2026-01-05
+
+### Cambiato
+- **Passaggio a Material Icons**: Sostituito il set icone Rosepine SVG personalizzato con [Google Material Icons](https://fonts.google.com/icons)
+  - Navigation bar: icone `home`, `calendar_month`, `add_circle`, `settings`
+  - Zone del corpo: icone semantiche (`accessibility_new`, `fitness_center`, `circle_outlined`, `airline_seat_legroom_reduced`)
+  - Vantaggio: icone già incluse in Flutter, nessun asset aggiuntivo, stile coerente con Material Design 3
+
+### Rimosso
+- Pacchetto icone Rosepine SVG (`assets/icons/rosepine/`)
+- Helper `RosepineIcons` e widget correlati
+- Dipendenza da flutter_svg per le icone (mantenuta solo per silhouette corpo)
+
 ## [4.1.0] - 2026-01-05
 
 ### Aggiunto

@@ -27,7 +27,7 @@
 
 - **Calendario intelligente**: Pianifica automaticamente le tue iniezioni
 - **Mappa del corpo interattiva**: Ruota i punti di iniezione per evitare sovrapposizioni
-- **Pattern di rotazione configurabili**: Scegli come ruotare le zone (AI, sequenza, alternanza, settimanale, personalizzato)
+- **Pattern di rotazione configurabili**: Scegli come ruotare le zone (AI, sequenza, alternanza, settimanale, oraria, antioraria, personalizzato)
 - **Suggerimenti AI**: Raccomandazioni intelligenti per zone e orari ottimali
 - **Statistiche avanzate**: Grafici aderenza, heatmap zone, trend settimanali
 - **Promemoria configurabili**: Non dimenticare mai una dose
@@ -295,7 +295,7 @@ Ideale per condividere con il tuo neurologo.
 
 #### Pattern di Rotazione
 
-L'app include **5 piani di rotazione predefiniti** per le tue iniezioni. Puoi selezionare quello più adatto alle tue esigenze:
+L'app include **7 piani di rotazione predefiniti** per le tue iniezioni. Puoi selezionare quello più adatto alle tue esigenze:
 
 | Pattern | Descrizione |
 |---------|-------------|
@@ -303,6 +303,8 @@ L'app include **5 piani di rotazione predefiniti** per le tue iniezioni. Puoi se
 | **Sequenza zone** | Segue un ordine fisso: Coscia Sx → Coscia Dx → Braccio Sx → Braccio Dx → ... |
 | **Alternanza Sx/Dx** | Alterna sempre tra lato sinistro e destro del corpo |
 | **Rotazione settimanale** | Cambia tipo di zona ogni settimana (es. cosce questa settimana, braccia la prossima) |
+| **Rotazione oraria** | Ruota in senso orario: Braccio Sx → Braccio Dx → Addome Dx → Gluteo Dx → Coscia Dx → Coscia Sx → Gluteo Sx → Addome Sx |
+| **Rotazione antioraria** | Percorso inverso della rotazione oraria |
 | **Personalizzato** | Definisci tu l'ordine delle zone da seguire con drag-and-drop |
 
 **Come selezionare un pattern:**

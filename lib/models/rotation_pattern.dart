@@ -12,6 +12,12 @@ enum RotationPatternType {
   /// Rotazione settimanale per tipo di zona
   weeklyRotation,
 
+  /// Rotazione oraria del corpo (partendo da Braccio Sx)
+  clockwise,
+
+  /// Rotazione antioraria del corpo (inverso di orario)
+  counterClockwise,
+
   /// Sequenza personalizzata definita dall'utente
   custom,
 }
@@ -24,6 +30,8 @@ extension RotationPatternTypeExtension on RotationPatternType {
     RotationPatternType.sequential => 'Sequenza zone',
     RotationPatternType.alternateSides => 'Alternanza Sx/Dx',
     RotationPatternType.weeklyRotation => 'Rotazione settimanale',
+    RotationPatternType.clockwise => 'Rotazione oraria',
+    RotationPatternType.counterClockwise => 'Rotazione antioraria',
     RotationPatternType.custom => 'Personalizzato',
   };
 
@@ -37,6 +45,10 @@ extension RotationPatternTypeExtension on RotationPatternType {
       'Alterna sempre tra lato sinistro e destro del corpo',
     RotationPatternType.weeklyRotation =>
       'Cambia tipo di zona ogni settimana (es. cosce questa settimana, braccia la prossima)',
+    RotationPatternType.clockwise =>
+      'Rotazione oraria del corpo: Braccio Sx → Braccio Dx → Addome Dx → Gluteo Dx → Coscia Dx → Coscia Sx → Gluteo Sx → Addome Sx',
+    RotationPatternType.counterClockwise =>
+      'Rotazione antioraria del corpo: inverso della rotazione oraria',
     RotationPatternType.custom =>
       'Definisci tu l\'ordine delle zone da seguire',
   };
@@ -47,6 +59,8 @@ extension RotationPatternTypeExtension on RotationPatternType {
     RotationPatternType.sequential => '🔄',
     RotationPatternType.alternateSides => '↔️',
     RotationPatternType.weeklyRotation => '📅',
+    RotationPatternType.clockwise => '🔃',
+    RotationPatternType.counterClockwise => '🔄',
     RotationPatternType.custom => '✏️',
   };
 
@@ -152,17 +166,27 @@ class RotationPattern {
 /// Sequenza di zone di default per il pattern sequenziale
 class DefaultZoneSequence {
   /// Ordine standard delle zone (IDs)
-  /// Coscia Sx, Coscia Dx, Braccio Sx, Braccio Dx, Addome Sx, Addome Dx, Gluteo Sx, Gluteo Dx
+  /// Coscia Dx, Coscia Sx, Braccio Dx, Braccio Sx, Addome Dx, Addome Sx, Gluteo Dx, Gluteo Sx
+  /// Nota: gli IDs corrispondono a:
+  /// 1=Coscia Dx, 2=Coscia Sx, 3=Braccio Dx, 4=Braccio Sx, 5=Addome Dx, 6=Addome Sx, 7=Gluteo Dx, 8=Gluteo Sx
   static const List<int> standard = [1, 2, 3, 4, 5, 6, 7, 8];
 
   /// Gruppi di zone per rotazione settimanale
   static const Map<String, List<int>> weeklyGroups = {
-    'cosce': [1, 2],     // Coscia Sx, Coscia Dx
-    'braccia': [3, 4],   // Braccio Sx, Braccio Dx
-    'addome': [5, 6],    // Addome Sx, Addome Dx
-    'glutei': [7, 8],    // Gluteo Sx, Gluteo Dx
+    'cosce': [1, 2],     // Coscia Dx, Coscia Sx
+    'braccia': [3, 4],   // Braccio Dx, Braccio Sx
+    'addome': [5, 6],    // Addome Dx, Addome Sx
+    'glutei': [7, 8],    // Gluteo Dx, Gluteo Sx
   };
 
   /// Ordine dei gruppi per rotazione settimanale
   static const List<String> weeklyOrder = ['cosce', 'braccia', 'addome', 'glutei'];
+
+  /// Rotazione oraria del corpo (partendo da Braccio Sx)
+  /// Ordine: Braccio Sx → Braccio Dx → Addome Dx → Gluteo Dx → Coscia Dx → Coscia Sx → Gluteo Sx → Addome Sx
+  /// Assumendo IDs: Coscia Dx=1, Coscia Sx=2, Braccio Dx=3, Braccio Sx=4, Addome Dx=5, Addome Sx=6, Gluteo Dx=7, Gluteo Sx=8
+  static const List<int> clockwise = [4, 3, 5, 7, 1, 2, 8, 6];
+
+  /// Rotazione antioraria del corpo (inverso di oraria)
+  static const List<int> counterClockwise = [6, 8, 2, 1, 7, 5, 3, 4];
 }

@@ -221,16 +221,16 @@ class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
       final now = DateTime.now();
       final scheduledAt = widget.scheduledDate ?? now;
 
-      // Se la data è nel futuro, salva come "scheduled", altrimenti come "completed"
-      final isFuture = scheduledAt.isAfter(now);
-      final status = isFuture ? InjectionStatus.scheduled : InjectionStatus.completed;
+      // Workflow: SEMPRE salvata prima come "scheduled", poi può essere completata
+      // Questo permette all'utente di programmare e poi confermare
+      const status = InjectionStatus.scheduled;
 
-      // Create injection record
+      // Create injection record - sempre come "scheduled" inizialmente
       final record = InjectionRecord(
         zoneId: widget.zoneId,
         pointNumber: widget.pointNumber,
         scheduledAt: scheduledAt,
-        completedAt: isFuture ? null : now,
+        completedAt: null, // Non completata ancora
         status: status,
         notes: _notesController.text.isNotEmpty ? _notesController.text : '',
         sideEffects: _selectedSideEffects.toList(),
@@ -277,9 +277,15 @@ class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
             content: Text(
               isUpdate
                   ? 'Iniezione modificata: ${zone.pointLabel(widget.pointNumber)}'
-                  : '${zone.pointLabel(widget.pointNumber)} registrata',
+                  : '${zone.pointLabel(widget.pointNumber)} programmata. Vai al calendario per segnarla come completata.',
             ),
             backgroundColor: Theme.of(context).colorScheme.primary,
+            duration: const Duration(seconds: 4),
+            action: SnackBarAction(
+              label: 'Calendario',
+              textColor: Colors.white,
+              onPressed: () => context.go(AppRoutes.calendar),
+            ),
           ),
         );
         context.go(AppRoutes.home);

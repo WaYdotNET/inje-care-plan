@@ -17,10 +17,10 @@ Applicazione Flutter per la gestione delle iniezioni di Interferone beta-1a per 
 ## Screenshots
 
 <p align="center">
-  <img src="assets/screenshots/home.png" width="180" alt="Home">
-  <img src="assets/screenshots/calendar.png" width="180" alt="Calendario">
-  <img src="assets/screenshots/point_history.png" width="180" alt="Storico Punti">
-  <img src="assets/screenshots/statistics.png" width="180" alt="Statistiche">
+  <img src="assets/screenshots/home_v4.png" width="180" alt="Home">
+  <img src="assets/screenshots/calendar_v4.png" width="180" alt="Calendario">
+  <img src="assets/screenshots/point_selection_v4.png" width="180" alt="Selezione Punto">
+  <img src="assets/screenshots/settings_v4.png" width="180" alt="Impostazioni">
 </p>
 
 ## Caratteristiche
@@ -29,11 +29,13 @@ Applicazione Flutter per la gestione delle iniezioni di Interferone beta-1a per 
 - 📅 **Calendario intelligente**: Pianificazione automatica delle iniezioni
 - 🧍 **Mappa corpo interattiva**: 8 zone con rotazione automatica dei punti
 - 📜 **Storico punti**: Visualizza l'ultimo utilizzo di ogni punto con indicatori colorati (verde=consigliato, rosso=evitare)
-- 🔄 **Pattern di rotazione configurabili**: Scegli come ruotare le zone
+- 🔄 **Pattern di rotazione configurabili**: 7 metodi per ruotare le zone
   - Suggerimento AI (predefinito)
   - Sequenza zone fissa
   - Alternanza sinistra/destra
   - Rotazione settimanale per tipo
+  - Rotazione oraria del corpo
+  - Rotazione antioraria del corpo
   - Sequenza personalizzata drag-and-drop
 - 🏠 **Due stili di Home**: Scegli la visualizzazione preferita
   - Classica: Vista completa con statistiche e azioni rapide

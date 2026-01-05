@@ -50,7 +50,7 @@ class InfoScreen extends ConsumerWidget {
 
             // Version
             Text(
-              'Versione 4.0.0',
+              'Versione 4.1.0',
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
               ),

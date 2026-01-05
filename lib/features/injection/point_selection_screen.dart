@@ -38,17 +38,36 @@ class _PointSelectionScreenState extends ConsumerState<PointSelectionScreen> {
   int? _selectedZoneId;
   int? _selectedPoint;
   final _reasonController = TextEditingController();
+  late DateTime _scheduledDateTime;
+  late TimeOfDay _scheduledTime;
 
   @override
   void initState() {
     super.initState();
     _selectedZoneId = widget.initialZoneId;
+    // Inizializza data/ora dalla prop o usa ora corrente
+    _scheduledDateTime = widget.scheduledDate ?? DateTime.now();
+    _scheduledTime = TimeOfDay.fromDateTime(_scheduledDateTime);
   }
 
   @override
   void dispose() {
     _reasonController.dispose();
     super.dispose();
+  }
+
+  /// Aggiorna l'orario schedulato
+  void _updateScheduledTime(TimeOfDay newTime) {
+    setState(() {
+      _scheduledTime = newTime;
+      _scheduledDateTime = DateTime(
+        _scheduledDateTime.year,
+        _scheduledDateTime.month,
+        _scheduledDateTime.day,
+        newTime.hour,
+        newTime.minute,
+      );
+    });
   }
 
   String get _title => switch (widget.mode) {
@@ -90,6 +109,15 @@ class _PointSelectionScreenState extends ConsumerState<PointSelectionScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Date/time header per iniezioni
+              if (widget.mode == PointSelectionMode.injection)
+                _ScheduleDateTimeCard(
+                  scheduledDateTime: _scheduledDateTime,
+                  scheduledTime: _scheduledTime,
+                  isDark: isDark,
+                  onTimeChanged: _updateScheduledTime,
+                ),
+
               // Instructions card
               Card(
                 child: Padding(
@@ -249,13 +277,13 @@ class _PointSelectionScreenState extends ConsumerState<PointSelectionScreen> {
     final zone = zones.firstWhere((z) => z.id == _selectedZoneId);
 
     if (widget.mode == PointSelectionMode.injection) {
-      // Navigate to record screen with selected point
+      // Navigate to record screen with selected point and updated datetime
       context.push(
         '/record',
         extra: {
           'zoneId': _selectedZoneId,
           'pointNumber': _selectedPoint,
-          if (widget.scheduledDate != null) 'scheduledDate': widget.scheduledDate,
+          'scheduledDate': _scheduledDateTime, // Usa la data/ora aggiornata
           if (widget.existingInjectionId != null) 'existingInjectionId': widget.existingInjectionId,
         },
       );
@@ -357,6 +385,155 @@ class _SuggestedPointCard extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+/// Card per mostrare e modificare data/ora dell'iniezione
+class _ScheduleDateTimeCard extends StatelessWidget {
+  const _ScheduleDateTimeCard({
+    required this.scheduledDateTime,
+    required this.scheduledTime,
+    required this.isDark,
+    required this.onTimeChanged,
+  });
+
+  final DateTime scheduledDateTime;
+  final TimeOfDay scheduledTime;
+  final bool isDark;
+  final ValueChanged<TimeOfDay> onTimeChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final dateFormat = DateFormat('EEEE d MMMM yyyy', 'it_IT');
+    final timeFormat = DateFormat('HH:mm', 'it_IT');
+
+    return Card(
+      color: isDark
+          ? AppColors.darkFoam.withValues(alpha: 0.15)
+          : AppColors.dawnFoam.withValues(alpha: 0.1),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.event,
+                  color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Iniezione per:',
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                // Data
+                Expanded(
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.calendar_today,
+                        size: 18,
+                        color: isDark ? AppColors.darkSubtle : AppColors.dawnSubtle,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _capitalizeFirst(dateFormat.format(scheduledDateTime)),
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Orario modificabile
+                InkWell(
+                  onTap: () => _showTimePicker(context),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? AppColors.darkOverlay
+                          : AppColors.dawnOverlay,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: isDark
+                            ? AppColors.darkFoam.withValues(alpha: 0.5)
+                            : AppColors.dawnFoam.withValues(alpha: 0.5),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.access_time,
+                          size: 18,
+                          color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          timeFormat.format(scheduledDateTime),
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Icon(
+                          Icons.edit,
+                          size: 14,
+                          color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'L\'orario verrà usato per il promemoria',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showTimePicker(BuildContext context) async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: scheduledTime,
+      builder: (context, child) {
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null) {
+      onTimeChanged(picked);
+    }
+  }
+
+  String _capitalizeFirst(String text) {
+    if (text.isEmpty) return text;
+    return text[0].toUpperCase() + text.substring(1);
   }
 }
 
@@ -647,12 +824,24 @@ class _ZoneDetailCardState extends ConsumerState<_ZoneDetailCard> {
     if (mounted) setState(() => _isLoading = false);
   }
 
+  /// Ottiene l'etichetta del punto, preferendo il nome personalizzato se presente
+  String _getPointLabel(int pointNumber) {
+    final point = _points.firstWhere(
+      (p) => p.pointNumber == pointNumber,
+      orElse: () => PositionedPoint(pointNumber: pointNumber, x: 0.5, y: 0.5),
+    );
+    if (point.customName != null && point.customName!.isNotEmpty) {
+      return '${widget.zone.name} · ${point.customName}';
+    }
+    return widget.zone.pointLabel(pointNumber);
+  }
+
   List<_PointHistoryItem> _buildHistoryItems() {
     final items = <_PointHistoryItem>[];
     for (var i = 1; i <= widget.zone.numberOfPoints; i++) {
       items.add(_PointHistoryItem(
         pointNumber: i,
-        pointLabel: widget.zone.pointLabel(i),
+        pointLabel: _getPointLabel(i),
         lastUsed: _usageHistory[i],
         isBlacklisted: _blacklistedNumbers.contains(i),
       ));
@@ -761,7 +950,7 @@ class _ZoneDetailCardState extends ConsumerState<_ZoneDetailCard> {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'Selezionato: ${zone.pointLabel(selectedPoint)}',
+                      'Selezionato: ${_getPointLabel(selectedPoint)}',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: isDark ? AppColors.darkPine : AppColors.dawnPine,

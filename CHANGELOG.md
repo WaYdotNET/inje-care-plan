@@ -5,6 +5,29 @@ Tutte le modifiche rilevanti a InjeCare Plan sono documentate in questo file.
 Il formato segue [Keep a Changelog](https://keepachangelog.com/it/1.0.0/),
 e il progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 
+## [4.1.0] - 2026-01-05
+
+### Aggiunto
+- **Pattern di rotazione oraria e antioraria**: Due nuovi pattern per la rotazione delle zone
+  - Oraria: Braccio Sx → Braccio Dx → Addome Dx → Gluteo Dx → Coscia Dx → Coscia Sx → Gluteo Sx → Addome Sx
+  - Antioraria: percorso inverso
+- **Visualizzazione data/ora nella selezione punto**: L'utente può vedere e modificare l'orario dell'iniezione prima di confermare
+- **Set completo icone Rosepine**: ~40 icone SVG minimaliste organizzate per categoria, pronte per futura pubblicazione come repo separato
+  - Categorie: body, actions, status, navigation, patterns, misc
+  - Stile coerente con tema Rosepine
+
+### Migliorato
+- **Workflow iniezioni**: Tutte le iniezioni vengono prima salvate come "scheduled", poi l'utente può confermarle dal calendario
+- **Drag and drop punti più fluido**: Ottimizzato con throttling (~60fps) e hit area estesa per migliore UX
+- **Coordinate punti precise**: Aggiornate secondo l'immagine di riferimento `posizione_punti.png`
+- **Nomi personalizzati nello storico**: I punti con nome custom mostrano correttamente il nome personalizzato nella lista storico
+
+### Corretto
+- **Calcolo giorni iniezioni passate**: Ora usa `scheduledAt` invece di `completedAt` per calcolare i giorni trascorsi
+- **Feedback onboarding migliorato**: Messaggio più chiaro che spiega la differenza tra dati demo e suggerimenti AI
+
+---
+
 ## [4.0.0] - 2026-01-04
 
 ### Aggiunto

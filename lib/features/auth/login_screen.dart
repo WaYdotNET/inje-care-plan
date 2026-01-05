@@ -188,6 +188,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       await notifier.completeOnboarding();
 
       if (mounted) {
+        // Mostra conferma di cosa è stato fatto
+        final message = _insertDemoData
+            ? 'Dati demo inseriti. Buon utilizzo!'
+            : 'Storico vuoto. I suggerimenti mostrati sono basati sul piano terapeutico.';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message),
+            duration: const Duration(seconds: 4),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
         context.go(AppRoutes.home);
       }
     } catch (e) {
@@ -360,7 +371,7 @@ class _DemoDataPage extends StatelessWidget {
 
         const SizedBox(height: 16),
 
-        // Info box
+        // Info box - spiega che i suggerimenti AI appaiono sempre
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
@@ -371,19 +382,33 @@ class _DemoDataPage extends StatelessWidget {
             ),
           ),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Icon(
-                Icons.info_outline,
+                Icons.lightbulb_outline,
                 size: 20,
                 color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: Text(
-                  'L\'app mostrerà sempre suggerimenti AI per le iniezioni future basati sul tuo piano terapeutico.',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: isDark ? AppColors.darkSubtle : AppColors.dawnSubtle,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Nota importante',
+                      style: theme.textTheme.labelMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Anche senza dati demo, l\'app mostrerà suggerimenti per le iniezioni future basati sul piano terapeutico (Lun/Mer/Ven). I suggerimenti NON sono dati demo.',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: isDark ? AppColors.darkSubtle : AppColors.dawnSubtle,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],

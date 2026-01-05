@@ -1,7 +1,7 @@
 name: injecare_plan
 description: InjeCare Plan - La tua terapia, sotto controllo.
 publish_to: 'none'
-version: 4.0.0+1
+version: 4.1.0+1
 homepage: https://waydotnet.com
 repository: https://github.com/WaYdotNET/inje-care-plan
 
@@ -84,3 +84,10 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
+    - assets/icons/rosepine/
+    - assets/icons/rosepine/body/
+    - assets/icons/rosepine/actions/
+    - assets/icons/rosepine/status/
+    - assets/icons/rosepine/navigation/
+    - assets/icons/rosepine/patterns/
+    - assets/icons/rosepine/misc/

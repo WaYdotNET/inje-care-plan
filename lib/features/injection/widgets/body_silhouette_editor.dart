@@ -103,6 +103,11 @@ class _BodySilhouetteEditorState extends State<BodySilhouetteEditor>
   final TransformationController _transformationController =
       TransformationController();
 
+  // Per ottimizzare il drag: posizione locale durante il trascinamento
+  Offset? _dragOffset;
+  DateTime? _lastDragUpdate;
+  static const _dragThrottleMs = 16; // ~60fps
+
   BodyView get _currentView => widget.currentView ?? _internalView;
 
   @override
@@ -289,6 +294,18 @@ class _BodySilhouetteEditorState extends State<BodySilhouetteEditor>
     final secondaryColor = isDark ? AppColors.darkFoam : AppColors.dawnFoam;
     final textColor = isDark ? AppColors.darkBase : AppColors.dawnBase;
 
+    // Calcola posizione: usa offset locale durante drag per fluidità
+    double effectiveX = point.x;
+    double effectiveY = point.y;
+    if (isDragging && _dragOffset != null) {
+      effectiveX = (_dragOffset!.dx / constraints.maxWidth).clamp(0.05, 0.95);
+      effectiveY = (_dragOffset!.dy / constraints.maxHeight).clamp(0.05, 0.95);
+    }
+
+    // Dimensione punto con area di hit estesa per migliore UX
+    const pointSize = 40.0;
+    const hitAreaSize = 56.0;
+
     return AnimatedBuilder(
       animation: _pulseAnimation,
       builder: (context, child) {
@@ -296,99 +313,141 @@ class _BodySilhouetteEditorState extends State<BodySilhouetteEditor>
             isSelected && !widget.editable ? _pulseAnimation.value : 1.0;
 
         return Positioned(
-          left: point.x * constraints.maxWidth - 20,
-          top: point.y * constraints.maxHeight - 20,
+          left: effectiveX * constraints.maxWidth - hitAreaSize / 2,
+          top: effectiveY * constraints.maxHeight - hitAreaSize / 2,
           child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
             onTap: () => widget.onPointTapped(point.pointNumber),
             onPanStart: widget.editable
-                ? (_) => setState(() => _draggingPoint = point.pointNumber)
+                ? (details) {
+                    setState(() {
+                      _draggingPoint = point.pointNumber;
+                      _dragOffset = Offset(
+                        point.x * constraints.maxWidth,
+                        point.y * constraints.maxHeight,
+                      );
+                    });
+                  }
                 : null,
             onPanUpdate: widget.editable
                 ? (details) {
-                    final newX = (point.x * constraints.maxWidth +
-                            details.delta.dx) /
-                        constraints.maxWidth;
-                    final newY = (point.y * constraints.maxHeight +
-                            details.delta.dy) /
-                        constraints.maxHeight;
+                    // Throttle updates per performance
+                    final now = DateTime.now();
+                    if (_lastDragUpdate != null &&
+                        now.difference(_lastDragUpdate!).inMilliseconds < _dragThrottleMs) {
+                      // Aggiorna solo offset locale senza rebuild
+                      _dragOffset = Offset(
+                        (_dragOffset?.dx ?? 0) + details.delta.dx,
+                        (_dragOffset?.dy ?? 0) + details.delta.dy,
+                      );
+                      return;
+                    }
+                    _lastDragUpdate = now;
+
+                    final newOffset = Offset(
+                      (_dragOffset?.dx ?? point.x * constraints.maxWidth) + details.delta.dx,
+                      (_dragOffset?.dy ?? point.y * constraints.maxHeight) + details.delta.dy,
+                    );
+                    setState(() => _dragOffset = newOffset);
+
+                    // Notifica posizione al parent (throttled)
                     widget.onPointMoved(
                       point.pointNumber,
-                      newX.clamp(0.05, 0.95),
-                      newY.clamp(0.05, 0.95),
+                      (newOffset.dx / constraints.maxWidth).clamp(0.05, 0.95),
+                      (newOffset.dy / constraints.maxHeight).clamp(0.05, 0.95),
                       _currentView,
                     );
                   }
                 : null,
             onPanEnd: widget.editable
                 ? (_) {
-                    setState(() => _draggingPoint = null);
+                    // Commit finale della posizione
+                    if (_dragOffset != null) {
+                      widget.onPointMoved(
+                        point.pointNumber,
+                        (_dragOffset!.dx / constraints.maxWidth).clamp(0.05, 0.95),
+                        (_dragOffset!.dy / constraints.maxHeight).clamp(0.05, 0.95),
+                        _currentView,
+                      );
+                    }
+                    setState(() {
+                      _draggingPoint = null;
+                      _dragOffset = null;
+                      _lastDragUpdate = null;
+                    });
                     widget.onDragEnd?.call();
                   }
                 : null,
-            child: Transform.scale(
-              scale: scale,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 150),
-                width: isSelected || isDragging ? 48 : 40,
-                height: isSelected || isDragging ? 48 : 40,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: isSelected
-                        ? [
-                            primaryColor,
-                            primaryColor.withValues(alpha: 0.8),
-                          ]
-                        : [
-                            secondaryColor,
-                            secondaryColor.withValues(alpha: 0.7),
-                          ],
-                  ),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: isSelected
-                        ? Colors.white.withValues(alpha: 0.9)
-                        : textColor.withValues(alpha: 0.5),
-                    width: isSelected ? 3 : 2,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: isSelected
-                          ? primaryColor.withValues(alpha: 0.5)
-                          : Colors.black.withValues(alpha: 0.2),
-                      blurRadius: isSelected || isDragging ? 16 : 8,
-                      spreadRadius: isSelected || isDragging ? 3 : 1,
-                      offset: const Offset(0, 2),
-                    ),
-                    if (isSelected)
-                      BoxShadow(
-                        color: Colors.white.withValues(alpha: 0.3),
-                        blurRadius: 4,
-                        spreadRadius: -2,
-                        offset: const Offset(-2, -2),
+            // Container esteso per hit area maggiore
+            child: SizedBox(
+              width: hitAreaSize,
+              height: hitAreaSize,
+              child: Center(
+                child: Transform.scale(
+                  scale: isDragging ? 1.1 : scale,
+                  child: Container(
+                    width: isSelected || isDragging ? 48 : pointSize,
+                    height: isSelected || isDragging ? 48 : pointSize,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: isSelected
+                            ? [
+                                primaryColor,
+                                primaryColor.withValues(alpha: 0.8),
+                              ]
+                            : [
+                                secondaryColor,
+                                secondaryColor.withValues(alpha: 0.7),
+                              ],
                       ),
-                  ],
-                ),
-                child: Center(
-                  child: Text(
-                    _getPointLabel(point),
-                    style: TextStyle(
-                      color: isSelected ? Colors.white : textColor,
-                      fontWeight: FontWeight.bold,
-                      fontSize: point.customName != null &&
-                              point.customName!.isNotEmpty
-                          ? 12
-                          : 14,
-                      shadows: isSelected
-                          ? [
-                              Shadow(
-                                color: Colors.black.withValues(alpha: 0.3),
-                                blurRadius: 2,
-                                offset: const Offset(0, 1),
-                              ),
-                            ]
-                          : null,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: isSelected
+                            ? Colors.white.withValues(alpha: 0.9)
+                            : textColor.withValues(alpha: 0.5),
+                        width: isSelected ? 3 : 2,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: isSelected
+                              ? primaryColor.withValues(alpha: 0.5)
+                              : Colors.black.withValues(alpha: 0.2),
+                          blurRadius: isSelected || isDragging ? 16 : 8,
+                          spreadRadius: isSelected || isDragging ? 3 : 1,
+                          offset: const Offset(0, 2),
+                        ),
+                        if (isSelected)
+                          BoxShadow(
+                            color: Colors.white.withValues(alpha: 0.3),
+                            blurRadius: 4,
+                            spreadRadius: -2,
+                            offset: const Offset(-2, -2),
+                          ),
+                      ],
+                    ),
+                    child: Center(
+                      child: Text(
+                        _getPointLabel(point),
+                        style: TextStyle(
+                          color: isSelected ? Colors.white : textColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: point.customName != null &&
+                                  point.customName!.isNotEmpty
+                              ? 12
+                              : 14,
+                          shadows: isSelected
+                              ? [
+                                  Shadow(
+                                    color: Colors.black.withValues(alpha: 0.3),
+                                    blurRadius: 2,
+                                    offset: const Offset(0, 1),
+                                  ),
+                                ]
+                              : null,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -592,34 +651,90 @@ extension PointConfigToPositionedPoint on db.PointConfig {
 }
 
 /// Helper per generare posizioni predefinite per i punti in base al tipo di zona
+/// Coordinate calibrate secondo l'immagine posizione_punti.png
 List<PositionedPoint> generateDefaultPointPositions(
   int numberOfPoints,
   String zoneType,
   String side,
 ) {
-  final basePositions = <String, ({double x, double y, double spacing})>{
-    'thigh': (x: 0.35, y: 0.58, spacing: 0.08),
-    'arm': (x: 0.2, y: 0.25, spacing: 0.06),
-    'abdomen': (x: 0.4, y: 0.35, spacing: 0.07),
-    'buttock': (x: 0.4, y: 0.52, spacing: 0.06),
-  };
-
-  final base = basePositions[zoneType] ?? (x: 0.5, y: 0.5, spacing: 0.08);
-  final xOffset = side == 'left' ? -0.15 : (side == 'right' ? 0.15 : 0);
-
-  final points = <PositionedPoint>[];
-  final cols = (numberOfPoints / 2).ceil();
-
-  for (var i = 0; i < numberOfPoints; i++) {
-    final row = i ~/ cols;
-    final col = i % cols;
-
-    points.add(PositionedPoint(
-      pointNumber: i + 1,
-      x: (base.x + xOffset + col * base.spacing).clamp(0.1, 0.9),
-      y: (base.y + row * base.spacing).clamp(0.1, 0.9),
-    ));
+  // Coordinate precise per ogni tipo di zona, calcolate dall'immagine di riferimento
+  // Le coordinate sono normalizzate (0-1) rispetto alla silhouette
+  
+  switch (zoneType) {
+    case 'thigh':
+      // Coscia: 6 punti in griglia 2x3 (2 colonne, 3 righe)
+      // Vista frontale: parte anteriore e laterale della coscia
+      final baseX = side == 'left' ? 0.28 : 0.64;
+      final spacingX = 0.08;
+      final baseY = 0.58;
+      final spacingY = 0.07;
+      return [
+        PositionedPoint(pointNumber: 1, x: baseX, y: baseY),
+        PositionedPoint(pointNumber: 2, x: baseX + spacingX, y: baseY),
+        PositionedPoint(pointNumber: 3, x: baseX, y: baseY + spacingY),
+        PositionedPoint(pointNumber: 4, x: baseX + spacingX, y: baseY + spacingY),
+        PositionedPoint(pointNumber: 5, x: baseX, y: baseY + spacingY * 2),
+        PositionedPoint(pointNumber: 6, x: baseX + spacingX, y: baseY + spacingY * 2),
+      ].take(numberOfPoints).toList();
+      
+    case 'arm':
+      // Braccio: 4 punti in griglia 2x2
+      // Vista frontale: superficie esterna del braccio superiore
+      final baseX = side == 'left' ? 0.12 : 0.80;
+      final spacingX = 0.06;
+      final baseY = 0.24;
+      final spacingY = 0.06;
+      return [
+        PositionedPoint(pointNumber: 1, x: baseX, y: baseY),
+        PositionedPoint(pointNumber: 2, x: baseX + spacingX, y: baseY),
+        PositionedPoint(pointNumber: 3, x: baseX, y: baseY + spacingY),
+        PositionedPoint(pointNumber: 4, x: baseX + spacingX, y: baseY + spacingY),
+      ].take(numberOfPoints).toList();
+      
+    case 'abdomen':
+      // Addome: 4 punti in griglia 2x2
+      // Vista frontale: almeno 5cm dall'ombelico
+      final baseX = side == 'left' ? 0.32 : 0.60;
+      final spacingX = 0.06;
+      final baseY = 0.34;
+      final spacingY = 0.05;
+      return [
+        PositionedPoint(pointNumber: 1, x: baseX, y: baseY),
+        PositionedPoint(pointNumber: 2, x: baseX + spacingX, y: baseY),
+        PositionedPoint(pointNumber: 3, x: baseX, y: baseY + spacingY),
+        PositionedPoint(pointNumber: 4, x: baseX + spacingX, y: baseY + spacingY),
+      ].take(numberOfPoints).toList();
+      
+    case 'buttock':
+      // Gluteo: 4 punti in griglia 2x2
+      // Vista posteriore: quadrante superiore esterno
+      final baseX = side == 'left' ? 0.32 : 0.60;
+      final spacingX = 0.06;
+      final baseY = 0.50;
+      final spacingY = 0.05;
+      return [
+        PositionedPoint(pointNumber: 1, x: baseX, y: baseY),
+        PositionedPoint(pointNumber: 2, x: baseX + spacingX, y: baseY),
+        PositionedPoint(pointNumber: 3, x: baseX, y: baseY + spacingY),
+        PositionedPoint(pointNumber: 4, x: baseX + spacingX, y: baseY + spacingY),
+      ].take(numberOfPoints).toList();
+      
+    default:
+      // Fallback generico per zone personalizzate
+      final baseX = side == 'left' ? 0.3 : (side == 'right' ? 0.6 : 0.45);
+      final points = <PositionedPoint>[];
+      final cols = (numberOfPoints / 2).ceil();
+      const spacing = 0.08;
+      
+      for (var i = 0; i < numberOfPoints; i++) {
+        final row = i ~/ cols;
+        final col = i % cols;
+        points.add(PositionedPoint(
+          pointNumber: i + 1,
+          x: (baseX + col * spacing).clamp(0.1, 0.9),
+          y: (0.4 + row * spacing).clamp(0.1, 0.9),
+        ));
+      }
+      return points;
   }
-
-  return points;
 }

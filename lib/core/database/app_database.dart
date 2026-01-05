@@ -157,6 +157,8 @@ class AppDatabase extends _$AppDatabase {
     'sequential': 'Sequenza Zone',
     'alternateSides': 'Alternanza Sx/Dx',
     'weeklyRotation': 'Rotazione Settimanale',
+    'clockwise': 'Rotazione Oraria',
+    'counterClockwise': 'Rotazione Antioraria',
     'custom': 'Personalizzato',
   };
 
@@ -201,7 +203,7 @@ class AppDatabase extends _$AppDatabase {
     }
   }
 
-  /// Inserisce i 5 piani terapeutici predefiniti (solo per nuove installazioni)
+  /// Inserisce i 7 piani terapeutici predefiniti (solo per nuove installazioni)
   Future<void> _seedDefaultTherapyPlans() async {
     // Verifica se esistono già piani
     final existingPlans = await (select(therapyPlans)).get();
@@ -232,6 +234,18 @@ class AppDatabase extends _$AppDatabase {
         name: const Value('Rotazione Settimanale'),
         isActive: const Value(false),
         rotationPatternType: const Value('weeklyRotation'),
+      ),
+      TherapyPlansCompanion.insert(
+        startDate: now,
+        name: const Value('Rotazione Oraria'),
+        isActive: const Value(false),
+        rotationPatternType: const Value('clockwise'),
+      ),
+      TherapyPlansCompanion.insert(
+        startDate: now,
+        name: const Value('Rotazione Antioraria'),
+        isActive: const Value(false),
+        rotationPatternType: const Value('counterClockwise'),
       ),
       TherapyPlansCompanion.insert(
         startDate: now,
@@ -390,6 +404,7 @@ class AppDatabase extends _$AppDatabase {
             ..orderBy([(i) => OrderingTerm.asc(i.scheduledAt)]))
           .get();
 
+  /// Usa scheduledAt come data di riferimento (quando l'iniezione è stata fatta)
   Future<Injection?> getLastInjectionForPoint(int zoneId, int pointNumber) =>
       (select(injections)
             ..where(
@@ -398,7 +413,7 @@ class AppDatabase extends _$AppDatabase {
                   i.pointNumber.equals(pointNumber) &
                   i.status.equals('completed'),
             )
-            ..orderBy([(i) => OrderingTerm.desc(i.completedAt)])
+            ..orderBy([(i) => OrderingTerm.desc(i.scheduledAt)])
             ..limit(1))
           .getSingleOrNull();
 
@@ -429,21 +444,22 @@ class AppDatabase extends _$AppDatabase {
       pointUsage[p] = null;
     }
 
+    // Usa scheduledAt come data di riferimento (quando l'iniezione è stata fatta)
     final recentInjections =
         await (select(injections)
               ..where(
                 (i) =>
                     i.zoneId.equals(zoneId) &
                     i.status.equals('completed') &
-                    i.completedAt.isBiggerOrEqualValue(cutoffDate),
+                    i.scheduledAt.isBiggerOrEqualValue(cutoffDate),
               )
-              ..orderBy([(i) => OrderingTerm.desc(i.completedAt)]))
+              ..orderBy([(i) => OrderingTerm.desc(i.scheduledAt)]))
             .get();
 
     for (final inj in recentInjections) {
       if (pointUsage.containsKey(inj.pointNumber) &&
           pointUsage[inj.pointNumber] == null) {
-        pointUsage[inj.pointNumber] = inj.completedAt;
+        pointUsage[inj.pointNumber] = inj.scheduledAt;
       }
     }
 
@@ -626,18 +642,21 @@ class AppDatabase extends _$AppDatabase {
     }
 
     // Query per l'ultima iniezione completata per ogni punto
+    // Usa scheduledAt come data di riferimento (quando l'iniezione è stata fatta)
+    // invece di completedAt (quando è stata registrata nell'app)
     final allInjections = await (select(injections)
           ..where(
             (i) => i.zoneId.equals(zoneId) & i.status.equals('completed'),
           )
-          ..orderBy([(i) => OrderingTerm.desc(i.completedAt)]))
+          ..orderBy([(i) => OrderingTerm.desc(i.scheduledAt)]))
         .get();
 
     // Prendi solo la data più recente per ogni punto
     for (final inj in allInjections) {
       if (result.containsKey(inj.pointNumber) &&
           result[inj.pointNumber] == null) {
-        result[inj.pointNumber] = inj.completedAt ?? inj.scheduledAt;
+        // Usa sempre scheduledAt come data dell'iniezione effettiva
+        result[inj.pointNumber] = inj.scheduledAt;
       }
     }
 

@@ -47,6 +47,8 @@ class RotationPatternEngine {
       RotationPatternType.sequential => _getSequentialSuggestion(),
       RotationPatternType.alternateSides => _getAlternateSidesSuggestion(),
       RotationPatternType.weeklyRotation => _getWeeklyRotationSuggestion(),
+      RotationPatternType.clockwise => _getClockwiseSuggestion(),
+      RotationPatternType.counterClockwise => _getCounterClockwiseSuggestion(),
       RotationPatternType.custom => _getCustomSuggestion(),
     };
   }
@@ -198,6 +200,51 @@ class RotationPatternEngine {
       zoneId: zone.id,
       zoneName: zone.name,
       reason: 'Sequenza personalizzata (${currentIndex + 1}/${customSequence.length})',
+    );
+  }
+
+  /// Suggerimento con rotazione oraria del corpo
+  /// Ordine: Braccio Sx → Braccio Dx → Addome Dx → Gluteo Dx → Coscia Dx → Coscia Sx → Gluteo Sx → Addome Sx
+  Future<ZoneSuggestion?> _getClockwiseSuggestion() async {
+    final sequence = DefaultZoneSequence.clockwise;
+
+    var currentIndex = currentPattern.currentIndex;
+    if (currentIndex >= sequence.length) {
+      currentIndex = 0;
+    }
+
+    final targetZoneId = sequence[currentIndex];
+    final zone = zones.firstWhere(
+      (z) => z.id == targetZoneId,
+      orElse: () => zones[currentIndex % zones.length],
+    );
+
+    return ZoneSuggestion(
+      zoneId: zone.id,
+      zoneName: zone.name,
+      reason: 'Rotazione oraria (${currentIndex + 1}/${sequence.length})',
+    );
+  }
+
+  /// Suggerimento con rotazione antioraria del corpo (inverso di oraria)
+  Future<ZoneSuggestion?> _getCounterClockwiseSuggestion() async {
+    final sequence = DefaultZoneSequence.counterClockwise;
+
+    var currentIndex = currentPattern.currentIndex;
+    if (currentIndex >= sequence.length) {
+      currentIndex = 0;
+    }
+
+    final targetZoneId = sequence[currentIndex];
+    final zone = zones.firstWhere(
+      (z) => z.id == targetZoneId,
+      orElse: () => zones[currentIndex % zones.length],
+    );
+
+    return ZoneSuggestion(
+      zoneId: zone.id,
+      zoneName: zone.name,
+      reason: 'Rotazione antioraria (${currentIndex + 1}/${sequence.length})',
     );
   }
 

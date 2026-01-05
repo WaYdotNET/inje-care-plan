@@ -262,7 +262,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           // App version
           Center(
             child: Text(
-              'InjeCare Plan v4.0.0',
+              'InjeCare Plan v4.1.0',
               style: theme.textTheme.bodySmall,
             ),
           ),
@@ -934,6 +934,10 @@ class _RotationPatternSection extends ConsumerWidget {
         pattern.weekStartDate != null
             ? 'Settimana iniziata il ${_formatDate(pattern.weekStartDate!)}'
             : 'Inizierà dalla prossima iniezione',
+      RotationPatternType.clockwise =>
+        'Posizione nella sequenza: ${pattern.currentIndex + 1}/8',
+      RotationPatternType.counterClockwise =>
+        'Posizione nella sequenza: ${pattern.currentIndex + 1}/8',
       RotationPatternType.custom =>
         pattern.customSequence != null
             ? 'Posizione: ${pattern.currentIndex + 1}/${pattern.customSequence!.length}'

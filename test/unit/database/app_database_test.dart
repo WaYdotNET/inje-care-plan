@@ -192,9 +192,9 @@ void main() {
       expect(plan.name, 'Suggerimento AI'); // Il piano smart è attivo di default
     });
 
-    test('getAllTherapyPlans returns 5 seeded plans', () async {
+    test('getAllTherapyPlans returns 7 seeded plans', () async {
       final plans = await db.getAllTherapyPlans();
-      expect(plans.length, 5);
+      expect(plans.length, 7); // 5 original + 2 new (clockwise, counterClockwise)
       expect(plans.where((p) => p.isActive).length, 1);
     });
 

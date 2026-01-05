@@ -283,7 +283,7 @@ class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
 
       if (mounted) {
         final isUpdate = widget.existingInjectionId != null;
-        
+
         if (isUpdate) {
           // Per le modifiche, vai direttamente alla home
           ScaffoldMessenger.of(context)
@@ -319,7 +319,7 @@ class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
               ],
             ),
           );
-          
+
           if (shouldComplete == true && mounted) {
             // Segna come completata
             final completedRecord = record.copyWith(
@@ -327,7 +327,7 @@ class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
               completedAt: DateTime.now(),
             );
             await repository.updateInjection(injectionId, completedRecord);
-            
+
             if (mounted) {
               ScaffoldMessenger.of(context)
                 ..clearSnackBars()
@@ -340,7 +340,7 @@ class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
                 );
             }
           }
-          
+
           if (mounted) {
             context.go(AppRoutes.home);
           }

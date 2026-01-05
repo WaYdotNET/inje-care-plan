@@ -680,9 +680,10 @@ List<PositionedPoint> generateDefaultPointPositions(
     case 'arm':
       // Braccio: 4 punti in griglia 2x2
       // Vista frontale: superficie esterna del braccio superiore
-      final baseX = side == 'left' ? 0.12 : 0.80;
-      final spacingX = 0.06;
-      final baseY = 0.24;
+      // Coordinate corrette per essere sopra le braccia della silhouette
+      final baseX = side == 'left' ? 0.18 : 0.74;
+      final spacingX = 0.05;
+      final baseY = 0.22;
       final spacingY = 0.06;
       return [
         PositionedPoint(pointNumber: 1, x: baseX, y: baseY),

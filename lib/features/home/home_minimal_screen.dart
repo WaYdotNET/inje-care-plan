@@ -22,6 +22,7 @@ class HomeMinimalScreen extends ConsumerWidget {
     final suggestionAsync = ref.watch(smartSuggestionProvider);
     final zonesAsync = ref.watch(zonesProvider);
     final therapyPlanAsync = ref.watch(therapyPlanProvider);
+    final nextScheduledAsync = ref.watch(nextScheduledInjectionProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -37,39 +38,76 @@ class HomeMinimalScreen extends ConsumerWidget {
         ],
       ),
       body: SafeArea(
-        child: suggestionAsync.when(
+        child: zonesAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, st) => _ErrorView(message: e.toString()),
-          data: (suggestion) {
-            return zonesAsync.when(
+          data: (zones) {
+            // Prima controlla se c'è un'iniezione programmata
+            final nextScheduled = nextScheduledAsync.value;
+            
+            return suggestionAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (e, st) => _ErrorView(message: e.toString()),
-              data: (zones) {
-                final topZone = suggestion.topZonePrediction;
-                final zone = topZone != null
-                    ? zones.firstWhere(
-                        (z) => z.id == topZone.zone.id,
-                        orElse: () => zones.first,
-                      )
-                    : null;
+              data: (suggestion) {
+                // Se c'è un'iniezione schedulata, mostra quella
+                model.BodyZone? zone;
+                String displayTime;
+                bool isScheduled = false;
+                int? scheduledInjectionId;
+                int? pointNumber;
+                
+                if (nextScheduled != null) {
+                  // Mostra l'iniezione programmata
+                  isScheduled = true;
+                  scheduledInjectionId = nextScheduled.id;
+                  pointNumber = nextScheduled.pointNumber;
+                  zone = zones.firstWhere(
+                    (z) => z.id == nextScheduled.zoneId,
+                    orElse: () => zones.first,
+                  );
+                  displayTime = DateFormat('HH:mm').format(nextScheduled.scheduledAt);
+                } else {
+                  // Fallback a suggerimento AI
+                  final topZone = suggestion.topZonePrediction;
+                  zone = topZone != null
+                      ? zones.firstWhere(
+                          (z) => z.id == topZone.zone.id,
+                          orElse: () => zones.first,
+                        )
+                      : null;
+                  final therapyPlan = therapyPlanAsync.value;
+                  displayTime = therapyPlan?.preferredTime ?? '20:00';
+                }
 
                 // Determina la vista (front/back) in base alla zona
                 final view = _getViewForZone(zone?.type);
 
-                // Ottieni l'orario preferito dal piano terapeutico
-                final therapyPlan = therapyPlanAsync.value;
-                final preferredTime = therapyPlan?.preferredTime ?? '20:00';
-
                 return GestureDetector(
                   onTap: zone != null
-                      ? () => _navigateToRecord(context, zone.id)
+                      ? () {
+                          if (isScheduled && scheduledInjectionId != null) {
+                            // Naviga per completare l'iniezione
+                            _showCompleteDialog(
+                              context, 
+                              ref,
+                              scheduledInjectionId, 
+                              zone!,
+                              pointNumber ?? 1,
+                            );
+                          } else {
+                            _navigateToRecord(context, zone!.id);
+                          }
+                        }
                       : null,
                   child: Padding(
                     padding: const EdgeInsets.all(24),
                     child: Column(
                       children: [
                         // Header con data
-                        _DateHeader(isDark: isDark),
+                        _DateHeader(
+                          isDark: isDark,
+                          isScheduled: isScheduled,
+                        ),
 
                         const SizedBox(height: 24),
 
@@ -78,18 +116,22 @@ class HomeMinimalScreen extends ConsumerWidget {
                           child: _MainCard(
                             zone: zone,
                             suggestion: suggestion,
-                            preferredTime: preferredTime,
+                            preferredTime: displayTime,
                             view: view,
                             isDark: isDark,
+                            isScheduled: isScheduled,
+                            pointNumber: pointNumber,
                           ),
                         ),
 
                         const SizedBox(height: 24),
 
-                        // Hint per registrare
+                        // Hint per azione
                         if (zone != null)
                           Text(
-                            'Tocca per registrare',
+                            isScheduled 
+                                ? 'Tocca per completare' 
+                                : 'Tocca per registrare',
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color: isDark
                                   ? AppColors.darkMuted
@@ -125,13 +167,67 @@ class HomeMinimalScreen extends ConsumerWidget {
       },
     );
   }
+
+  Future<void> _showCompleteDialog(
+    BuildContext context,
+    WidgetRef ref,
+    int injectionId,
+    model.BodyZone zone,
+    int pointNumber,
+  ) async {
+    final shouldComplete = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Conferma iniezione'),
+        content: Text(
+          'Vuoi segnare ${zone.pointLabel(pointNumber)} come completata?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('No'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Sì, completata'),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldComplete == true && context.mounted) {
+      final repository = ref.read(injectionRepositoryProvider);
+      
+      await repository.completeInjection(injectionId);
+      
+      // Refresh dei providers
+      ref.invalidate(nextScheduledInjectionProvider);
+      ref.invalidate(weeklyEventsProvider);
+      
+      if (context.mounted) {
+        ScaffoldMessenger.of(context)
+          ..clearSnackBars()
+          ..showSnackBar(
+            SnackBar(
+              content: Text('✓ ${zone.pointLabel(pointNumber)} completata!'),
+              backgroundColor: Colors.green,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+      }
+    }
+  }
 }
 
 /// Header con la data corrente
 class _DateHeader extends StatelessWidget {
-  const _DateHeader({required this.isDark});
+  const _DateHeader({
+    required this.isDark,
+    this.isScheduled = false,
+  });
 
   final bool isDark;
+  final bool isScheduled;
 
   @override
   Widget build(BuildContext context) {
@@ -149,9 +245,11 @@ class _DateHeader extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          'Prossima iniezione',
+          isScheduled ? 'Iniezione programmata' : 'Prossima iniezione',
           style: theme.textTheme.bodyMedium?.copyWith(
-            color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+            color: isScheduled 
+                ? (isDark ? AppColors.darkGold : AppColors.dawnGold)
+                : (isDark ? AppColors.darkMuted : AppColors.dawnMuted),
           ),
         ),
       ],
@@ -167,6 +265,8 @@ class _MainCard extends StatelessWidget {
     required this.preferredTime,
     required this.view,
     required this.isDark,
+    this.isScheduled = false,
+    this.pointNumber,
   });
 
   final model.BodyZone? zone;
@@ -174,6 +274,8 @@ class _MainCard extends StatelessWidget {
   final String preferredTime;
   final BodyView view;
   final bool isDark;
+  final bool isScheduled;
+  final int? pointNumber;
 
   @override
   Widget build(BuildContext context) {
@@ -215,7 +317,7 @@ class _MainCard extends StatelessWidget {
 
     // Calcola la posizione del punto suggerito
     final suggestedPoint = suggestion.topZonePrediction;
-    const pointNumber = 1; // Default al primo punto
+    final displayPointNumber = pointNumber ?? 1; // Usa il punto schedulato o default
 
     return Card(
       child: Padding(
@@ -227,14 +329,14 @@ class _MainCard extends StatelessWidget {
               child: BodySilhouetteEditor(
                 points: [
                   PositionedPoint(
-                    pointNumber: pointNumber,
+                    pointNumber: displayPointNumber,
                     x: _getDefaultX(zone!.type, zone!.side),
                     y: _getDefaultY(zone!.type),
                   ),
                 ],
                 onPointMoved: (p, x, y, v) {},
                 onPointTapped: (p) {},
-                selectedPointNumber: pointNumber,
+                selectedPointNumber: displayPointNumber,
                 initialView: view,
                 editable: false,
                 zoneType: zone!.type,
@@ -332,26 +434,26 @@ class _MainCard extends StatelessWidget {
   }
 
   double _getDefaultX(String zoneType, String side) {
-    final baseX = switch (zoneType) {
-      'thigh' => 0.35,
-      'arm' => 0.2,
-      'abdomen' => 0.4,
-      'buttock' => 0.4,
+    // Coordinate X corrette per ogni zona e lato
+    // Allineate con generateDefaultPointPositions in body_silhouette_editor.dart
+    return switch ((zoneType, side)) {
+      ('arm', 'left') => 0.20,
+      ('arm', 'right') => 0.76,
+      ('thigh', 'left') => 0.32,
+      ('thigh', 'right') => 0.68,
+      ('abdomen', 'left') => 0.35,
+      ('abdomen', 'right') => 0.63,
+      ('buttock', 'left') => 0.35,
+      ('buttock', 'right') => 0.63,
       _ => 0.5,
     };
-    final offset = switch (side) {
-      'left' => -0.1,
-      'right' => 0.1,
-      _ => 0.0,
-    };
-    return baseX + offset;
   }
 
   double _getDefaultY(String zoneType) {
     return switch (zoneType) {
-      'thigh' => 0.58,
-      'arm' => 0.28,
-      'abdomen' => 0.38,
+      'thigh' => 0.60,
+      'arm' => 0.24,
+      'abdomen' => 0.36,
       'buttock' => 0.52,
       _ => 0.5,
     };

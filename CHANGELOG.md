@@ -5,6 +5,18 @@ Tutte le modifiche rilevanti a InjeCare Plan sono documentate in questo file.
 Il formato segue [Keep a Changelog](https://keepachangelog.com/it/1.0.0/),
 e il progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 
+## [4.1.3] - 2026-01-05
+
+### Modificato
+- **Home Minimalista default**: Ora è la home di default per nuove installazioni
+- **Iniezioni programmate in home**: La home minimal mostra le iniezioni già programmate con la possibilità di segnarle come completate
+- **Posizione punti braccio**: Corrette le coordinate dei punti per braccia (sinistro e destro)
+- **Conferma immediata**: Dalla home minimal si può confermare un'iniezione programmata con un tap
+
+### Corretto
+- Posizioni X/Y errate per le zone braccio nella silhouette
+- La home minimalista ora mostra correttamente iniezioni programmate invece di solo suggerimenti AI
+
 ## [4.1.2] - 2026-01-05
 
 ### Migliorato

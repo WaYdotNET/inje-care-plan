@@ -30,7 +30,7 @@ class AppState {
   const AppState({
     this.isLoading = false,
     this.hasCompletedOnboarding = false,
-    this.homeStyle = HomeStyle.classic,
+    this.homeStyle = HomeStyle.minimal,
     this.error,
   });
 
@@ -67,7 +67,7 @@ class AppStateNotifier extends Notifier<AppState> {
       final homeStyleStr = prefs.getString(_homeStyleKey) ?? 'classic';
       final homeStyle = HomeStyle.values.firstWhere(
         (s) => s.name == homeStyleStr,
-        orElse: () => HomeStyle.classic,
+        orElse: () => HomeStyle.minimal,
       );
 
       state = AppState(

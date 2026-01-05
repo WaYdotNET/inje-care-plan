@@ -64,7 +64,7 @@ class AppStateNotifier extends Notifier<AppState> {
     try {
       final prefs = await SharedPreferences.getInstance();
       final hasCompleted = prefs.getBool(_onboardingCompletedKey) ?? false;
-      final homeStyleStr = prefs.getString(_homeStyleKey) ?? 'classic';
+      final homeStyleStr = prefs.getString(_homeStyleKey) ?? 'minimal';
       final homeStyle = HomeStyle.values.firstWhere(
         (s) => s.name == homeStyleStr,
         orElse: () => HomeStyle.minimal,

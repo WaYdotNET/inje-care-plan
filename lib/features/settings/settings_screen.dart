@@ -192,6 +192,31 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ? () => _showTestNotification(context)
                 : null,
           ),
+          ListTile(
+            title: const Text('Testa promemoria (10s)'),
+            subtitle: const Text('Verifica notifica programmata anche con app chiusa'),
+            trailing: const Icon(Icons.alarm),
+            enabled: notificationSettings.permissionsGranted,
+            onTap: notificationSettings.permissionsGranted
+                ? () async {
+                    final now = DateTime.now();
+                    await NotificationService.instance.scheduleInjectionReminder(
+                      id: (now.millisecondsSinceEpoch ~/ 1000) + 42,
+                      scheduledTime: now.add(const Duration(seconds: 10)),
+                      pointLabel: 'Test promemoria (10s)',
+                      minutesBefore: 0,
+                    );
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Promemoria programmato tra 10 secondi'),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    }
+                  }
+                : null,
+          ),
 
           const _SectionHeader(title: 'ASPETTO'),
           _HomeStyleSelector(),

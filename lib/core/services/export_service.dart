@@ -13,15 +13,6 @@ class ExportService {
 
   static final instance = ExportService._();
 
-  /// Get zone name from zoneId
-  String _getZoneName(int zoneId) => switch (zoneId) {
-    1 => 'Coscia Dx', 2 => 'Coscia Sx',
-    3 => 'Braccio Dx', 4 => 'Braccio Sx',
-    5 => 'Addome Dx', 6 => 'Addome Sx',
-    7 => 'Gluteo Dx', 8 => 'Gluteo Sx',
-    _ => 'Sconosciuto',
-  };
-
   /// Export injections to PDF (accepts Drift Injection type)
   Future<void> exportToPdf(List<dynamic> injections) async {
     final pdf = pw.Document();

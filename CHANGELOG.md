@@ -22,6 +22,13 @@ e il progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 - **Pianificazione settimana**: se la settimana è vuota, l'app propone di crearla automaticamente secondo piano + pattern di rotazione
 - **Impostazioni Notifiche**: nuova opzione \"Tolleranza mancata\"
 
+## [4.2.9] - 2026-01-06
+
+### Corretto
+- **Notifiche programmate Android**: aggiunti i receiver richiesti da `flutter_local_notifications` (`ScheduledNotificationReceiver` e `ScheduledNotificationBootReceiver`) per garantire la consegna anche con app chiusa
+- Migliorato fallback: se non è possibile schedulare esatto, usa `inexactAllowWhileIdle`
+
+
 ## [4.2.6] - 2026-01-05
 
 ### Corretto

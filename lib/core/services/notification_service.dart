@@ -11,6 +11,9 @@ class NotificationService {
   static final instance = NotificationService._();
 
   final _notifications = FlutterLocalNotificationsPlugin();
+  AndroidFlutterLocalNotificationsPlugin? get _android =>
+      _notifications.resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>();
 
   /// Initialize the notification service
   Future<void> initialize() async {
@@ -38,6 +41,18 @@ class NotificationService {
       settings,
       onDidReceiveNotificationResponse: _onNotificationResponse,
     );
+  }
+
+  Future<AndroidScheduleMode> _androidScheduleMode() async {
+    try {
+      final canExact = await _android?.canScheduleExactNotifications();
+      // Se non possiamo schedulare "exact", fallback a inexact (meno preciso ma affidabile)
+      return (canExact ?? false)
+          ? AndroidScheduleMode.exactAllowWhileIdle
+          : AndroidScheduleMode.inexactAllowWhileIdle;
+    } catch (_) {
+      return AndroidScheduleMode.inexactAllowWhileIdle;
+    }
   }
 
   /// Request notification permissions
@@ -105,7 +120,7 @@ class NotificationService {
       'Tra $minutesBefore minuti: $pointLabel',
       tz.TZDateTime.from(reminderTime, tz.local),
       details,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      androidScheduleMode: await _androidScheduleMode(),
     );
   }
 
@@ -147,7 +162,7 @@ class NotificationService {
       'Hai completato: $pointLabel?',
       tz.TZDateTime.from(reminderTime, tz.local),
       details,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      androidScheduleMode: await _androidScheduleMode(),
     );
   }
 

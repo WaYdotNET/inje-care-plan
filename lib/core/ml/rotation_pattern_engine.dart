@@ -354,23 +354,36 @@ class RotationPatternService {
     final currentPlan = await db.getCurrentTherapyPlan();
     if (currentPlan == null) return;
 
-    int newIndex = currentPlan.patternCurrentIndex + 1;
-
     final patternType = RotationPatternTypeExtension.fromDatabaseValue(
       currentPlan.rotationPatternType,
     );
 
-    int sequenceLength;
-    if (patternType == RotationPatternType.custom &&
-        currentPlan.customPatternSequence.isNotEmpty) {
-      sequenceLength = currentPlan.customPatternSequence.split(',').length;
-    } else {
-      sequenceLength = DefaultZoneSequence.standard.length;
+    // Per pattern che non usano un indice lineare, manteniamo l'indice stabile
+    // e aggiorniamo solo lastZone/lastSide.
+    if (patternType == RotationPatternType.weeklyRotation ||
+        patternType == RotationPatternType.alternateSides) {
+      await (db.update(db.therapyPlans)..where((t) => t.id.equals(currentPlan.id)))
+          .write(TherapyPlansCompanion(
+            patternLastZoneId: Value(usedZoneId),
+            patternLastSide: Value(side),
+            updatedAt: Value(DateTime.now()),
+          ));
+      return;
     }
 
-    if (newIndex >= sequenceLength) {
-      newIndex = 0;
-    }
+    int newIndex = currentPlan.patternCurrentIndex + 1;
+
+    int sequenceLength = switch (patternType) {
+      RotationPatternType.clockwise => DefaultZoneSequence.clockwise.length,
+      RotationPatternType.counterClockwise =>
+        DefaultZoneSequence.counterClockwise.length,
+      RotationPatternType.custom when currentPlan.customPatternSequence.isNotEmpty =>
+        currentPlan.customPatternSequence.split(',').where((s) => s.trim().isNotEmpty).length,
+      _ => DefaultZoneSequence.standard.length,
+    };
+
+    if (sequenceLength <= 0) sequenceLength = DefaultZoneSequence.standard.length;
+    if (newIndex >= sequenceLength) newIndex = 0;
 
     await (db.update(db.therapyPlans)..where((t) => t.id.equals(currentPlan.id)))
         .write(TherapyPlansCompanion(

@@ -4,15 +4,16 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/database/database_provider.dart';
 import '../../models/body_zone.dart' as model;
 import '../../models/injection_record.dart' as inj;
 import '../../models/therapy_plan.dart';
 import '../../app/router.dart';
-import '../../core/ml/smart_suggestion_provider.dart';
 import '../../core/services/missed_injection_service.dart';
 import '../../core/services/notification_settings_provider.dart';
 import '../../core/services/notification_service.dart';
 import '../../core/ml/rotation_pattern_engine.dart';
+import '../../core/utils/schedule_utils.dart';
 import '../injection/injection_provider.dart' hide bodyZonesProvider;
 import '../injection/zone_provider.dart';
 import '../injection/widgets/body_silhouette_editor.dart';
@@ -32,10 +33,9 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final suggestionAsync = ref.watch(smartSuggestionProvider);
     final zonesAsync = ref.watch(zonesProvider);
     final therapyPlanAsync = ref.watch(therapyPlanProvider);
-    final nextScheduledAsync = ref.watch(nextScheduledInjectionProvider);
+    final nextScheduled = ref.watch(nextScheduledInjectionProvider);
 
     // Controlla iniezioni mancate all'avvio (una volta per sessione container)
     ref.watch(checkMissedInjectionsProvider);
@@ -132,53 +132,48 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen> {
               });
             }
 
-            // Aspetta che nextScheduledAsync sia caricato
-            return nextScheduledAsync.when(
+            final resolvedPlan = plan ?? TherapyPlan.defaults;
+            final displayDate = nextScheduled?.scheduledAt ??
+                ScheduleUtils.nextTherapySlot(from: DateTime.now(), plan: resolvedPlan);
+
+            // Suggerimento coerente con rotazione e data (solo se non c'è già una scheduled valida)
+            final suggestedForDateAsync = ref.watch(
+              suggestedPointForDateProvider((scheduledAt: displayDate, ignoreInjectionId: null)),
+            );
+
+            return suggestedForDateAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (e, st) => _ErrorView(message: e.toString()),
-              data: (nextScheduled) {
-                return suggestionAsync.when(
-                  loading: () => const Center(child: CircularProgressIndicator()),
-                  error: (e, st) => _ErrorView(message: e.toString()),
-                  data: (suggestion) {
-                    // Se c'è un'iniezione schedulata, mostra quella
-                    model.BodyZone? zone;
-                    String displayTime;
-                    bool isScheduled = false;
-                    int? scheduledInjectionId;
-                    int? pointNumber;
+              data: (suggestedForDate) {
+                // Se c'è un'iniezione schedulata valida (coerente con giorni piano), mostra quella
+                model.BodyZone? zone;
+                int? pointNumber;
+                int? scheduledInjectionId;
 
-                    if (nextScheduled != null) {
-                      // Mostra l'iniezione programmata
-                      isScheduled = true;
-                      scheduledInjectionId = nextScheduled.id;
-                      pointNumber = nextScheduled.pointNumber;
-                      zone = zones.firstWhere(
-                        (z) => z.id == nextScheduled.zoneId,
-                        orElse: () => zones.first,
-                      );
-                      displayTime = DateFormat('HH:mm').format(nextScheduled.scheduledAt);
-                    } else {
-                      // Fallback a suggerimento AI
-                      final topZone = suggestion.topZonePrediction;
-                      zone = topZone != null
-                          ? zones.firstWhere(
-                              (z) => z.id == topZone.zone.id,
-                              orElse: () => zones.first,
-                            )
-                          : null;
-                      final therapyPlan = therapyPlanAsync.value;
-                      displayTime = therapyPlan?.preferredTime ?? '20:00';
-                    }
+                if (nextScheduled != null) {
+                  scheduledInjectionId = nextScheduled.id;
+                  pointNumber = nextScheduled.pointNumber;
+                  zone = zones.firstWhere(
+                    (z) => z.id == nextScheduled.zoneId,
+                    orElse: () => zones.first,
+                  );
+                } else if (suggestedForDate != null) {
+                  zone = zones.firstWhere(
+                    (z) => z.id == suggestedForDate.zoneId,
+                    orElse: () => zones.first,
+                  );
+                  pointNumber = suggestedForDate.pointNumber;
+                }
 
-                // Determina la vista (front/back) in base alla zona
+                final isScheduled = nextScheduled != null;
                 final view = _getViewForZone(zone?.type);
+
+                final displayTime = DateFormat('HH:mm').format(displayDate);
 
                 return GestureDetector(
                   onTap: zone != null
                       ? () {
                           if (isScheduled && scheduledInjectionId != null) {
-                            // Naviga per completare l'iniezione
                             _showCompleteDialog(
                               context,
                               scheduledInjectionId,
@@ -186,7 +181,7 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen> {
                               pointNumber ?? 1,
                             );
                           } else {
-                            _navigateToRecord(context, zone!.id);
+                            _navigateToRecord(context, zone!.id, displayDate);
                           }
                         }
                       : null,
@@ -194,46 +189,34 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen> {
                     padding: const EdgeInsets.all(24),
                     child: Column(
                       children: [
-                        // Header con data
                         _DateHeader(
                           isDark: isDark,
                           isScheduled: isScheduled,
+                          displayDate: displayDate,
                         ),
-
                         const SizedBox(height: 24),
-
-                        // Card principale con silhouette
                         Expanded(
                           child: _MainCard(
                             zone: zone,
-                            suggestion: suggestion,
-                            preferredTime: displayTime,
+                            displayDate: displayDate,
+                            displayTime: displayTime,
                             view: view,
                             isDark: isDark,
                             isScheduled: isScheduled,
                             pointNumber: pointNumber,
                           ),
                         ),
-
                         const SizedBox(height: 24),
-
-                        // Hint per azione
                         if (zone != null)
                           Text(
-                            isScheduled
-                                ? 'Tocca per completare'
-                                : 'Tocca per registrare',
+                            isScheduled ? 'Tocca per completare' : 'Tocca per registrare',
                             style: theme.textTheme.bodyMedium?.copyWith(
-                              color: isDark
-                                  ? AppColors.darkMuted
-                                  : AppColors.dawnMuted,
+                              color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
                             ),
                           ),
                       ],
                     ),
                   ),
-                );
-                  },
                 );
               },
             );
@@ -251,12 +234,12 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen> {
     return BodyView.front;
   }
 
-  void _navigateToRecord(BuildContext context, int zoneId) {
+  void _navigateToRecord(BuildContext context, int zoneId, DateTime scheduledAt) {
     context.push(
       AppRoutes.bodyMap,
       extra: {
         'zoneId': zoneId,
-        'scheduledDate': DateTime.now(),
+        'scheduledDate': scheduledAt,
       },
     );
   }
@@ -373,16 +356,15 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen> {
 
     int created = 0;
     for (final day in daysToPlan) {
-      final engine = await ref.read(rotationPatternEngineProvider.future);
-      final suggestion = await engine.getNextSuggestion();
-      if (suggestion == null) continue;
-
-      final point = await repository.findLeastUsedPoint(suggestion.zoneId) ?? 1;
       final scheduledAt = DateTime(day.year, day.month, day.day, hour, minute);
+      final suggested = await ref.read(
+        suggestedPointForDateProvider((scheduledAt: scheduledAt, ignoreInjectionId: null)).future,
+      );
+      if (suggested == null) continue;
 
       final record = inj.InjectionRecord(
-        zoneId: suggestion.zoneId,
-        pointNumber: point,
+        zoneId: suggested.zoneId,
+        pointNumber: suggested.pointNumber,
         scheduledAt: scheduledAt,
         status: inj.InjectionStatus.scheduled,
         createdAt: now,
@@ -394,8 +376,9 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen> {
 
       // Avanza il pattern (persistente) per la prossima proposta
       final zones = await ref.read(bodyZonesProvider.future);
-      final usedZone = zones.firstWhere((z) => z.id == suggestion.zoneId);
-      final patternService = RotationPatternService(engine.db);
+      final usedZone = zones.firstWhere((z) => z.id == suggested.zoneId);
+      final dbi = ref.read(databaseProvider);
+      final patternService = RotationPatternService(dbi);
       await patternService.advancePattern(usedZone.id, usedZone.side);
       ref.invalidate(currentRotationPatternProvider);
       ref.invalidate(rotationPatternEngineProvider);
@@ -432,22 +415,23 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen> {
 class _DateHeader extends StatelessWidget {
   const _DateHeader({
     required this.isDark,
+    required this.displayDate,
     this.isScheduled = false,
   });
 
   final bool isDark;
   final bool isScheduled;
+  final DateTime displayDate;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final now = DateTime.now();
     final dateFormat = DateFormat('EEEE d MMMM', 'it_IT');
 
     return Column(
       children: [
         Text(
-          dateFormat.format(now),
+          dateFormat.format(displayDate),
           style: theme.textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.bold,
           ),
@@ -470,8 +454,8 @@ class _DateHeader extends StatelessWidget {
 class _MainCard extends StatelessWidget {
   const _MainCard({
     required this.zone,
-    required this.suggestion,
-    required this.preferredTime,
+    required this.displayDate,
+    required this.displayTime,
     required this.view,
     required this.isDark,
     this.isScheduled = false,
@@ -479,8 +463,8 @@ class _MainCard extends StatelessWidget {
   });
 
   final model.BodyZone? zone;
-  final SmartSuggestion suggestion;
-  final String preferredTime;
+  final DateTime displayDate;
+  final String displayTime;
   final BodyView view;
   final bool isDark;
   final bool isScheduled;
@@ -524,8 +508,6 @@ class _MainCard extends StatelessWidget {
       );
     }
 
-    // Calcola la posizione del punto suggerito
-    final suggestedPoint = suggestion.topZonePrediction;
     final displayPointNumber = pointNumber ?? 1; // Usa il punto schedulato o default
 
     return Card(
@@ -600,7 +582,7 @@ class _MainCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        'Oggi alle $preferredTime',
+                        '${DateFormat('EEEE d MMM', 'it_IT').format(displayDate)} alle $displayTime',
                         style: theme.textTheme.bodyLarge,
                       ),
                     ],
@@ -608,50 +590,22 @@ class _MainCard extends StatelessWidget {
 
                   const SizedBox(height: 12),
 
-                  // Confidenza e pattern
+                  // Pattern indicator (minimal)
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: (isDark ? AppColors.darkFoam : AppColors.dawnFoam)
                           .withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          suggestion.confidenceIcon,
-                          style: const TextStyle(fontSize: 14),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          '${suggestion.patternName} • ${suggestion.confidencePercentage}%',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color:
-                                isDark ? AppColors.darkFoam : AppColors.dawnFoam,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // Motivo suggerimento
-                  if (suggestedPoint != null && suggestedPoint.reason.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8),
-                      child: Text(
-                        suggestedPoint.reason,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color:
-                              isDark ? AppColors.darkMuted : AppColors.dawnMuted,
-                        ),
-                        textAlign: TextAlign.center,
+                    child: Text(
+                      isScheduled ? 'Programmata' : 'Suggerita',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
+                  ),
                 ],
               ),
             ),

@@ -141,7 +141,12 @@ class _PointSelectionScreenState extends ConsumerState<PointSelectionScreen> {
     final isDark = theme.brightness == Brightness.dark;
     final zonesAsync = ref.watch(enabledZonesProvider);
     final blacklistedAsync = ref.watch(blacklistedPointsProvider);
-    final suggestedAsync = ref.watch(suggestedNextPointProvider);
+    final suggestedAsync = ref.watch(
+      suggestedPointForDateProvider((
+        scheduledAt: _scheduledDateTime,
+        ignoreInjectionId: widget.existingInjectionId,
+      )),
+    );
 
     return Scaffold(
       appBar: AppBar(

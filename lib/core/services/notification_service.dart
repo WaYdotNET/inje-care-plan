@@ -11,9 +11,10 @@ class NotificationService {
   static final instance = NotificationService._();
 
   final _notifications = FlutterLocalNotificationsPlugin();
-  AndroidFlutterLocalNotificationsPlugin? get _android =>
-      _notifications.resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>();
+  AndroidFlutterLocalNotificationsPlugin? get _android => _notifications
+      .resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin
+      >();
 
   /// Initialize the notification service
   Future<void> initialize() async {

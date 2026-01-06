@@ -4,11 +4,13 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/database/database_provider.dart';
 import '../../app/router.dart';
 import '../../models/body_zone.dart';
 import '../../models/injection_record.dart';
 import '../../core/services/notification_service.dart';
 import '../../core/services/notification_settings_provider.dart';
+import '../../core/ml/rotation_pattern_engine.dart';
 import 'injection_provider.dart';
 import 'zone_provider.dart';
 
@@ -252,6 +254,13 @@ class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
         injectionId = widget.existingInjectionId!;
       } else {
         injectionId = await repository.createInjection(record);
+
+        // Consuma la rotazione già su "scheduled" (come da requisito)
+        final dbi = ref.read(databaseProvider);
+        final patternService = RotationPatternService(dbi);
+        await patternService.advancePattern(zone.id, zone.side);
+        ref.invalidate(currentRotationPatternProvider);
+        ref.invalidate(rotationPatternEngineProvider);
       }
 
       // Schedula notifiche per QUESTA iniezione (anche con app chiusa)

@@ -209,7 +209,10 @@ class InjectionRepository {
 
   /// Watch therapy plan
   Stream<TherapyPlan?> watchTherapyPlan() {
-    return (_db.select(_db.therapyPlans)..limit(1)).watchSingleOrNull();
+    return (_db.select(_db.therapyPlans)
+          ..where((p) => p.isActive.equals(true))
+          ..limit(1))
+        .watchSingleOrNull();
   }
 
   /// Get therapy plan

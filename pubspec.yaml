@@ -1,7 +1,7 @@
 name: injecare_plan
 description: InjeCare Plan - La tua terapia, sotto controllo.
 publish_to: 'none'
-version: 4.2.9+1
+version: 4.2.10+1
 homepage: https://waydotnet.com
 repository: https://github.com/WaYdotNET/inje-care-plan
 

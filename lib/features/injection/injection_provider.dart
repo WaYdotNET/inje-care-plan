@@ -209,16 +209,13 @@ class WeeklyEventData {
 
 /// Provider per la prossima iniezione programmata (scheduled) oggi o in futuro
 final nextScheduledInjectionProvider = Provider<db.Injection?>((ref) {
-  final plan = ref.watch(therapyPlanProvider).asData?.value ?? TherapyPlan.defaults;
   final injections =
       ref.watch(injectionsProvider).asData?.value ?? const <db.Injection>[];
   final now = DateTime.now();
 
   final scheduled = injections
       .where((db.Injection i) =>
-          i.status == 'scheduled' &&
-          !i.scheduledAt.isBefore(now) &&
-          plan.weekDays.contains(i.scheduledAt.weekday))
+          i.status == 'scheduled' && !i.scheduledAt.isBefore(now))
       .toList()
     ..sort((db.Injection a, db.Injection b) => a.scheduledAt.compareTo(b.scheduledAt));
 

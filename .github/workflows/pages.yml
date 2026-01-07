@@ -1,0 +1,77 @@
+name: Deploy GitHub Pages (site + web app)
+
+on:
+  push:
+    branches: ["main"]
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.38.0"
+          channel: "stable"
+          cache: true
+
+      - name: Install deps
+        run: flutter pub get
+
+      - name: Build Flutter Web (for /app/)
+        run: |
+          flutter build web \
+            --release \
+            --web-url-strategy=hash \
+            --base-href "/${{ github.event.repository.name }}/app/"
+
+      - name: Prepare dist folder
+        run: |
+          rm -rf dist
+          mkdir -p dist/app
+
+          # Landing + guide (user site)
+          cp -a pages/. dist/
+
+          # Flutter Web app
+          cp -a build/web/. dist/app/
+
+          # Assets referenced by the user site (logo, screenshots, etc.)
+          mkdir -p dist/assets
+          cp -a assets/. dist/assets/
+
+          # Avoid Jekyll processing (safer for static assets)
+          touch dist/.nojekyll
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

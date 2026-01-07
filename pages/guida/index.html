@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="it" data-lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>InjeCare Plan — Guida rapida</title>
+    <meta
+      name="description"
+      content="Guida rapida per utenti: primo avvio, registrare un'iniezione, calendario, promemoria, backup (CSV/PDF), privacy."
+    />
+    <link rel="icon" href="../assets/images/logo.png" />
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#contenuto">Vai al contenuto</a>
+
+    <header class="topbar">
+      <div class="wrap topbar-inner">
+        <a class="brand" href="../">
+          <img class="logo" src="../assets/images/logo.png" alt="Logo InjeCare Plan" />
+          <span>
+            <span class="brand-title">InjeCare Plan</span>
+            <span class="brand-subtitle">Guida rapida</span>
+          </span>
+        </a>
+
+        <nav class="nav" aria-label="Sezioni">
+          <a href="#primo-avvio">Primo avvio</a>
+          <a href="#registra">Registra</a>
+          <a href="#calendario">Calendario</a>
+          <a href="#backup">Backup</a>
+        </nav>
+
+        <div class="actions">
+          <div class="lang-toggle" role="group" aria-label="Lingua / Language">
+            <button type="button" data-set-lang="it" aria-pressed="true">IT</button>
+            <button type="button" data-set-lang="en" aria-pressed="false">EN</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main id="contenuto" class="wrap">
+      <section class="hero" style="padding-top: 28px">
+        <div class="card hero-card">
+          <div class="lang" data-lang="it">
+            <h1 class="hero-title" style="font-size: clamp(24px, 3.2vw, 36px)">Guida rapida (per iniziare subito)</h1>
+            <p class="hero-lead">
+              Questa pagina riassume le azioni essenziali per usare InjeCare Plan. Per una guida più lunga e con più
+              screenshot puoi anche consultare la documentazione nel repository.
+            </p>
+            <div class="cta-row">
+              <a class="btn btn-primary" href="../app/">Apri la versione Web</a>
+              <a class="btn btn-secondary" href="../">Torna alla home</a>
+              <a class="btn btn-secondary" href="https://github.com/WaYdotNET/inje-care-plan/blob/main/docs/MANUALE_UTENTE.md">
+                Manuale completo (GitHub)
+              </a>
+            </div>
+          </div>
+
+          <div class="lang" data-lang="en">
+            <h1 class="hero-title" style="font-size: clamp(24px, 3.2vw, 36px)">Quick guide (get started fast)</h1>
+            <p class="hero-lead">
+              This page summarizes the essential steps to use InjeCare Plan. For a longer guide with more screenshots,
+              you can also read the documentation in the repository.
+            </p>
+            <div class="cta-row">
+              <a class="btn btn-primary" href="../app/">Open the Web version</a>
+              <a class="btn btn-secondary" href="../">Back to home</a>
+              <a class="btn btn-secondary" href="https://github.com/WaYdotNET/inje-care-plan/blob/main/docs/MANUALE_UTENTE.md">
+                Full manual (GitHub)
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="primo-avvio">
+        <div class="lang" data-lang="it">
+          <h2 class="section-title">Primo avvio</h2>
+          <p class="section-lead">
+            Al primo avvio puoi scegliere se iniziare da zero o caricare dei <strong>dati demo</strong> per capire
+            rapidamente come funziona tutto.
+          </p>
+          <div class="grid-2">
+            <div class="card kcard">
+              <h3>Configurazione iniziale</h3>
+              <p>Imposta quante iniezioni fai a settimana, i giorni e l’orario preferito per i promemoria.</p>
+            </div>
+            <div class="card kcard">
+              <h3>Dati demo (opzionale)</h3>
+              <p>Utile per vedere subito storico e statistiche. Puoi poi cancellare i dati dalle impostazioni.</p>
+            </div>
+          </div>
+          <div style="margin-top: 14px">
+            <img class="shot" src="../assets/screenshots/onboarding_v42.png" alt="Onboarding" loading="lazy" />
+          </div>
+        </div>
+
+        <div class="lang" data-lang="en">
+          <h2 class="section-title">First launch</h2>
+          <p class="section-lead">
+            On first launch you can start from scratch or load <strong>demo data</strong> to quickly understand how it works.
+          </p>
+          <div class="grid-2">
+            <div class="card kcard">
+              <h3>Initial setup</h3>
+              <p>Set injections per week, days, and your preferred reminder time.</p>
+            </div>
+            <div class="card kcard">
+              <h3>Demo data (optional)</h3>
+              <p>Useful to see history and stats right away. You can later wipe data from settings.</p>
+            </div>
+          </div>
+          <div style="margin-top: 14px">
+            <img class="shot" src="../assets/screenshots/onboarding_v42.png" alt="Onboarding screens" loading="lazy" />
+          </div>
+        </div>
+      </section>
+
+      <section id="registra">
+        <div class="lang" data-lang="it">
+          <h2 class="section-title">Registrare un’iniezione</h2>
+          <p class="section-lead">
+            Usa la mappa del corpo per scegliere <strong>zona</strong> e <strong>punto</strong>. I punti hanno colori che
+            aiutano a evitare quelli usati troppo di recente.
+          </p>
+          <div class="grid-3">
+            <div class="card kcard">
+              <h3>1) Seleziona la zona</h3>
+              <p>Coscia, braccio, addome, gluteo (lato sinistro o destro).</p>
+            </div>
+            <div class="card kcard">
+              <h3>2) Seleziona il punto</h3>
+              <p>Punti suggeriti evidenziati, punti recenti avvisati, blacklist esclusa dai suggerimenti.</p>
+            </div>
+            <div class="card kcard">
+              <h3>3) Conferma</h3>
+              <p>Salva, aggiungi note opzionali e l’app aggiorna suggerimenti e promemoria.</p>
+            </div>
+          </div>
+          <div class="grid-2" style="margin-top: 14px">
+            <img class="shot" src="../assets/screenshots/body_map.png" alt="Mappa corpo" loading="lazy" />
+            <img class="shot" src="../assets/screenshots/record_injection.png" alt="Conferma iniezione" loading="lazy" />
+          </div>
+        </div>
+
+        <div class="lang" data-lang="en">
+          <h2 class="section-title">Tracking an injection</h2>
+          <p class="section-lead">
+            Use the body map to pick a <strong>zone</strong> and a <strong>point</strong>. Colors help you avoid points used
+            too recently.
+          </p>
+          <div class="grid-3">
+            <div class="card kcard">
+              <h3>1) Choose a zone</h3>
+              <p>Thigh, arm, abdomen, glute (left or right side).</p>
+            </div>
+            <div class="card kcard">
+              <h3>2) Choose a point</h3>
+              <p>Suggested points highlighted, recently used points warned, blacklist excluded from suggestions.</p>
+            </div>
+            <div class="card kcard">
+              <h3>3) Confirm</h3>
+              <p>Save, optionally add notes, and the app updates recommendations and reminders.</p>
+            </div>
+          </div>
+          <div class="grid-2" style="margin-top: 14px">
+            <img class="shot" src="../assets/screenshots/body_map.png" alt="Body map" loading="lazy" />
+            <img class="shot" src="../assets/screenshots/record_injection.png" alt="Confirm injection" loading="lazy" />
+          </div>
+        </div>
+      </section>
+
+      <section id="calendario">
+        <div class="lang" data-lang="it">
+          <h2 class="section-title">Calendario e promemoria</h2>
+          <p class="section-lead">
+            Il calendario mostra programmate, completate e mancate. Puoi configurare promemoria e una tolleranza per
+            segnare automaticamente le mancate.
+          </p>
+          <div class="grid-2">
+            <div class="card kcard">
+              <h3>Colori principali</h3>
+              <p>Blu (programmata), verde (completata), rosso (mancata).</p>
+            </div>
+            <div class="card kcard">
+              <h3>Notifiche locali</h3>
+              <p>I promemoria sono notifiche locali. Nessun server, nessun account.</p>
+            </div>
+          </div>
+          <div style="margin-top: 14px">
+            <img class="shot" src="../assets/screenshots/calendar.png" alt="Calendario" loading="lazy" />
+          </div>
+        </div>
+
+        <div class="lang" data-lang="en">
+          <h2 class="section-title">Calendar & reminders</h2>
+          <p class="section-lead">
+            The calendar shows scheduled, completed, and missed injections. You can configure reminders and a tolerance
+            to automatically mark missed ones.
+          </p>
+          <div class="grid-2">
+            <div class="card kcard">
+              <h3>Main colors</h3>
+              <p>Blue (scheduled), green (completed), red (missed).</p>
+            </div>
+            <div class="card kcard">
+              <h3>Local notifications</h3>
+              <p>Reminders are local notifications. No server, no account.</p>
+            </div>
+          </div>
+          <div style="margin-top: 14px">
+            <img class="shot" src="../assets/screenshots/calendar.png" alt="Calendar" loading="lazy" />
+          </div>
+        </div>
+      </section>
+
+      <section id="backup">
+        <div class="lang" data-lang="it">
+          <h2 class="section-title">Backup, export e import</h2>
+          <p class="section-lead">
+            Per avere una copia dei dati o condividerli con il medico, usa l’export dallo storico. Su Web è ancora più
+            importante, perché cancellare i dati del browser può rimuovere lo storico.
+          </p>
+          <div class="grid-3">
+            <div class="card kcard">
+              <h3>CSV</h3>
+              <p>Backup e migrazione: facile da conservare e reimportare.</p>
+            </div>
+            <div class="card kcard">
+              <h3>PDF</h3>
+              <p>Report leggibile, utile per una visita o un confronto con il medico.</p>
+            </div>
+            <div class="card kcard">
+              <h3>Import CSV</h3>
+              <p>Ripristina lo storico da un file CSV compatibile.</p>
+            </div>
+          </div>
+          <p class="note" style="margin-top: 14px">
+            Suggerimento: fai export periodici (CSV) e conservali in un posto sicuro.
+          </p>
+        </div>
+
+        <div class="lang" data-lang="en">
+          <h2 class="section-title">Backup, export & import</h2>
+          <p class="section-lead">
+            To keep a copy of your data or share it with your doctor, export from History. On Web this is even more
+            important, because clearing browser data can remove your history.
+          </p>
+          <div class="grid-3">
+            <div class="card kcard">
+              <h3>CSV</h3>
+              <p>Backup and migration: easy to store and re-import.</p>
+            </div>
+            <div class="card kcard">
+              <h3>PDF</h3>
+              <p>Readable report, useful for appointments and discussion with your doctor.</p>
+            </div>
+            <div class="card kcard">
+              <h3>CSV import</h3>
+              <p>Restore history from a compatible CSV file.</p>
+            </div>
+          </div>
+          <p class="note" style="margin-top: 14px">
+            Tip: do periodic CSV exports and store them somewhere safe.
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="wrap">
+        <div class="lang" data-lang="it">
+          <p style="margin: 0 0 8px">
+            <a href="../">Home</a> · <a href="../app/">Versione Web</a> ·
+            <a href="https://github.com/WaYdotNET/inje-care-plan/issues">Supporto (Issues)</a>
+          </p>
+          <p style="margin: 0">Licenza: GPL-3.0 · InjeCare Plan © 2024–2026 Carlo Bertini (WaYdotNET)</p>
+        </div>
+        <div class="lang" data-lang="en">
+          <p style="margin: 0 0 8px">
+            <a href="../">Home</a> · <a href="../app/">Web version</a> ·
+            <a href="https://github.com/WaYdotNET/inje-care-plan/issues">Support (Issues)</a>
+          </p>
+          <p style="margin: 0">License: GPL-3.0 · InjeCare Plan © 2024–2026 Carlo Bertini (WaYdotNET)</p>
+        </div>
+      </div>
+    </footer>
+
+    <script src="../app.js"></script>
+  </body>
+</html>

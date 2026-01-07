@@ -178,6 +178,13 @@ Lingue supportate:
 - 🌐 Website: [waydotnet.com](https://waydotnet.com)
 - 📦 Repository: [github.com/WaYdotNET/inje-care-plan](https://github.com/WaYdotNET/inje-care-plan)
 
+## Versione Web e sito per utenti
+
+- **Sito per utenti + guida**: `https://waydotnet.github.io/inje-care-plan/`
+- **Versione Web (app)**: `https://waydotnet.github.io/inje-care-plan/app/`
+
+> Se stai usando un fork, l’URL cambia in base al tuo username e al nome del repository.
+
 ## Licenza
 
 Questo progetto è rilasciato sotto licenza **GNU General Public License v3.0**.

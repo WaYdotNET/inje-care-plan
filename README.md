@@ -67,8 +67,8 @@ Applicazione Flutter per la gestione delle iniezioni di Interferone beta-1a per 
 
 ## Requisiti
 
-- Flutter SDK 3.38+
-- Dart SDK 3.10+
+- Flutter SDK **3.38.5 (stable consigliato)**
+- Dart SDK **3.10.0+** (anche pre-release compatibili)
 - Android 5.0+ o iOS 12.0+
 
 ## Test

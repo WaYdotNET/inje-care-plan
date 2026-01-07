@@ -6,8 +6,9 @@ homepage: https://waydotnet.com
 repository: https://github.com/WaYdotNET/inje-care-plan
 
 environment:
-  sdk: ^3.10.0
-  flutter: ^3.38.0
+  # Accepts both stable and pre-release builds (e.g. 3.10.0-xxx.beta)
+  sdk: ">=3.10.0-0 <4.0.0"
+  flutter: ">=3.38.0-0 <4.0.0"
 
 dependencies:
   flutter:

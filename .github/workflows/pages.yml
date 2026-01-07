@@ -37,7 +37,6 @@ jobs:
         run: |
           flutter build web \
             --release \
-            --web-url-strategy=hash \
             --base-href "/${{ github.event.repository.name }}/app/"
 
       - name: Prepare dist folder

@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -12,6 +10,7 @@ import '../../core/services/export_service.dart';
 import '../../core/services/import_service.dart';
 import '../../core/services/notification_service.dart';
 import '../../core/services/notification_settings_provider.dart';
+import '../../core/utils/picked_file_to_string.dart';
 import '../../core/database/app_database.dart' as db;
 import '../../core/database/database_provider.dart';
 import '../../core/ml/rotation_pattern_engine.dart';
@@ -694,8 +693,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
       if (result == null || result.files.isEmpty) return;
 
-      final file = File(result.files.first.path!);
-
       // Show loading dialog
       if (mounted) {
         showDialog<void>(
@@ -714,7 +711,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       }
 
       // Import
-      final importResult = await ImportService.instance.importFromFile(db, file);
+      final content = await readPickedFileAsString(result.files.first);
+      final importResult = await ImportService.instance.importFromCsv(db, content);
 
       // Close loading dialog
       if (mounted) {

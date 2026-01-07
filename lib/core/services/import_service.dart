@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:drift/drift.dart';
 import 'package:intl/intl.dart';
 
@@ -49,12 +48,6 @@ class ImportService {
   };
 
   static const _validStatuses = ['completed', 'scheduled', 'skipped', 'delayed', 'missed'];
-
-  /// Importa iniezioni da file CSV
-  Future<ImportResult> importFromFile(AppDatabase db, File file) async {
-    final content = await file.readAsString();
-    return importFromCsv(db, content);
-  }
 
   /// Importa iniezioni da stringa CSV
   Future<ImportResult> importFromCsv(AppDatabase db, String csvContent) async {

@@ -17,10 +17,10 @@ Applicazione Flutter per la gestione delle iniezioni di Interferone beta-1a per 
 ## Screenshots
 
 <p align="center">
-  <img src="assets/screenshots/home_v4.png" width="180" alt="Home">
-  <img src="assets/screenshots/calendar_v4.png" width="180" alt="Calendario">
-  <img src="assets/screenshots/point_selection_v4.png" width="180" alt="Selezione Punto">
-  <img src="assets/screenshots/settings_v4.png" width="180" alt="Impostazioni">
+  <img src="assets/screenshots/home_v42.png" width="180" alt="Home">
+  <img src="assets/screenshots/calendar_v42.png" width="180" alt="Calendario">
+  <img src="assets/screenshots/body_map.png" width="180" alt="Selezione Punto">
+  <img src="assets/screenshots/settings_v42.png" width="180" alt="Impostazioni">
 </p>
 
 ## Caratteristiche

@@ -5,6 +5,7 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 import 'tables.dart';
+import 'point_constants.dart';
 
 part 'app_database.g.dart';
 
@@ -214,39 +215,32 @@ class AppDatabase extends _$AppDatabase {
     }
   }
 
-  /// Corregge le coordinate asimmetriche dei punti salvate nel database (v5)
+  /// Corregge le coordinate dei punti salvate nel database usando le costanti (v5)
   Future<void> _fixIncorrectPointCoordinates() async {
-    // Braccio Sx: da 0.18 a 0.26 (per simmetria con 0.74 del Braccio Dx)
-    await customStatement('''
-      UPDATE point_configs
-      SET position_x = 0.26
-      WHERE zone_id IN (SELECT id FROM body_zones WHERE code = 'BS')
-      AND position_x = 0.18
-    ''');
+    final allZones = await getAllZones();
 
-    // Coscia Sx: da 0.28 a 0.36 (per simmetria con 0.64 della Coscia Dx)
-    await customStatement('''
-      UPDATE point_configs
-      SET position_x = 0.36
-      WHERE zone_id IN (SELECT id FROM body_zones WHERE code = 'CS')
-      AND position_x = 0.28
-    ''');
+    await batch((b) {
+      for (final zone in allZones) {
+        final defaultPoints = BodyZonePoints.defaultPoints[zone.code];
+        if (defaultPoints == null) continue;
 
-    // Addome Sx: da 0.32 a 0.40 (per simmetria con 0.60 dell'Addome Dx)
-    await customStatement('''
-      UPDATE point_configs
-      SET position_x = 0.40
-      WHERE zone_id IN (SELECT id FROM body_zones WHERE code = 'AS')
-      AND position_x = 0.32
-    ''');
+        for (var i = 0; i < defaultPoints.length; i++) {
+          final pointNum = i + 1;
+          final point = defaultPoints[i];
 
-    // Gluteo Sx: da 0.32 a 0.40 (per simmetria con 0.60 del Gluteo Dx)
-    await customStatement('''
-      UPDATE point_configs
-      SET position_x = 0.40
-      WHERE zone_id IN (SELECT id FROM body_zones WHERE code = 'GS')
-      AND position_x = 0.32
-    ''');
+          // Aggiorna la posizione del punto se esiste già nel database
+          b.update(
+            pointConfigs,
+            PointConfigsCompanion(
+              positionX: Value(point.x),
+              positionY: Value(point.y),
+              updatedAt: Value(DateTime.now()),
+            ),
+            where: (p) => p.zoneId.equals(zone.id) & p.pointNumber.equals(pointNum),
+          );
+        }
+      }
+    });
   }
 
   /// Inserisce i 7 piani terapeutici predefiniti (solo per nuove installazioni)

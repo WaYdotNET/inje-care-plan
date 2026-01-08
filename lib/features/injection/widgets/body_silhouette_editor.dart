@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/database/app_database.dart' as db;
+import '../../../core/database/point_constants.dart';
 
 /// Rappresenta un punto posizionato sulla silhouette
 class PositionedPoint {
@@ -662,85 +663,52 @@ List<PositionedPoint> generateDefaultPointPositions(
   String zoneType,
   String side,
 ) {
-  // Coordinate precise per ogni tipo di zona, calcolate dall'immagine di riferimento
-  // Le coordinate sono normalizzate (0-1) rispetto alla silhouette
+  // Mappa zoneType + side -> zoneCode
+  final typeMap = {
+    'thigh': 'C',
+    'arm': 'B',
+    'abdomen': 'A',
+    'buttock': 'G',
+  };
 
-  switch (zoneType) {
-    case 'thigh':
-      // Coscia: 6 punti in griglia 2x3 (2 colonne, 3 righe)
-      // Vista frontale: parte anteriore e laterale della coscia
-      final baseX = side == 'left' ? 0.36 : 0.64;
-      final spacingX = 0.08;
-      final baseY = 0.58;
-      final spacingY = 0.07;
-      return [
-        PositionedPoint(pointNumber: 1, x: baseX, y: baseY),
-        PositionedPoint(pointNumber: 2, x: baseX + spacingX, y: baseY),
-        PositionedPoint(pointNumber: 3, x: baseX, y: baseY + spacingY),
-        PositionedPoint(pointNumber: 4, x: baseX + spacingX, y: baseY + spacingY),
-        PositionedPoint(pointNumber: 5, x: baseX, y: baseY + spacingY * 2),
-        PositionedPoint(pointNumber: 6, x: baseX + spacingX, y: baseY + spacingY * 2),
-      ].take(numberOfPoints).toList();
+  final sideMap = {
+    'right': 'D',
+    'left': 'S',
+  };
 
-    case 'arm':
-      // Braccio: 4 punti in griglia 2x2
-      // Vista frontale: superficie esterna del braccio superiore
-      // Coordinate corrette per essere sopra le braccia della silhouette
-      final baseX = side == 'left' ? 0.26 : 0.74;
-      final spacingX = 0.05;
-      final baseY = 0.22;
-      final spacingY = 0.06;
-      return [
-        PositionedPoint(pointNumber: 1, x: baseX, y: baseY),
-        PositionedPoint(pointNumber: 2, x: baseX + spacingX, y: baseY),
-        PositionedPoint(pointNumber: 3, x: baseX, y: baseY + spacingY),
-        PositionedPoint(pointNumber: 4, x: baseX + spacingX, y: baseY + spacingY),
-      ].take(numberOfPoints).toList();
+  final prefix = typeMap[zoneType];
+  final suffix = sideMap[side];
 
-    case 'abdomen':
-      // Addome: 4 punti in griglia 2x2
-      // Vista frontale: almeno 5cm dall'ombelico
-      final baseX = side == 'left' ? 0.40 : 0.60;
-      final spacingX = 0.06;
-      final baseY = 0.34;
-      final spacingY = 0.05;
-      return [
-        PositionedPoint(pointNumber: 1, x: baseX, y: baseY),
-        PositionedPoint(pointNumber: 2, x: baseX + spacingX, y: baseY),
-        PositionedPoint(pointNumber: 3, x: baseX, y: baseY + spacingY),
-        PositionedPoint(pointNumber: 4, x: baseX + spacingX, y: baseY + spacingY),
-      ].take(numberOfPoints).toList();
+  if (prefix != null && suffix != null) {
+    final code = '$prefix$suffix';
+    final defaultPoints = BodyZonePoints.defaultPoints[code];
 
-    case 'buttock':
-      // Gluteo: 4 punti in griglia 2x2
-      // Vista posteriore: quadrante superiore esterno
-      final baseX = side == 'left' ? 0.40 : 0.60;
-      final spacingX = 0.06;
-      final baseY = 0.50;
-      final spacingY = 0.05;
-      return [
-        PositionedPoint(pointNumber: 1, x: baseX, y: baseY),
-        PositionedPoint(pointNumber: 2, x: baseX + spacingX, y: baseY),
-        PositionedPoint(pointNumber: 3, x: baseX, y: baseY + spacingY),
-        PositionedPoint(pointNumber: 4, x: baseX + spacingX, y: baseY + spacingY),
-      ].take(numberOfPoints).toList();
-
-    default:
-      // Fallback generico per zone personalizzate
-      final baseX = side == 'left' ? 0.3 : (side == 'right' ? 0.6 : 0.45);
-      final points = <PositionedPoint>[];
-      final cols = (numberOfPoints / 2).ceil();
-      const spacing = 0.08;
-
-      for (var i = 0; i < numberOfPoints; i++) {
-        final row = i ~/ cols;
-        final col = i % cols;
-        points.add(PositionedPoint(
-          pointNumber: i + 1,
-          x: (baseX + col * spacing).clamp(0.1, 0.9),
-          y: (0.4 + row * spacing).clamp(0.1, 0.9),
-        ));
-      }
-      return points;
+    if (defaultPoints != null) {
+      return defaultPoints
+          .take(numberOfPoints)
+          .map((p) => PositionedPoint(
+                pointNumber: defaultPoints.indexOf(p) + 1,
+                x: p.x,
+                y: p.y,
+              ))
+          .toList();
+    }
   }
+
+  // Fallback generico per zone personalizzate se non trovate nelle costanti
+  final baseX = side == 'left' ? 0.3 : (side == 'right' ? 0.6 : 0.45);
+  final points = <PositionedPoint>[];
+  final cols = (numberOfPoints / 2).ceil();
+  const spacing = 0.08;
+
+  for (var i = 0; i < numberOfPoints; i++) {
+    final row = i ~/ cols;
+    final col = i % cols;
+    points.add(PositionedPoint(
+      pointNumber: i + 1,
+      x: (baseX + col * spacing).clamp(0.1, 0.9),
+      y: (0.4 + row * spacing).clamp(0.1, 0.9),
+    ));
+  }
+  return points;
 }

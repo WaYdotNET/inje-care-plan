@@ -43,7 +43,7 @@
 Al primo avvio dell'app, vedrai una breve introduzione alle funzionalità principali.
 
 <p align="center">
-  <img src="../assets/screenshots/onboarding.png" width="280" alt="Schermata di Onboarding">
+  <img src="../assets/screenshots/onboarding_v42.png" width="280" alt="Schermata di Onboarding">
 </p>
 
 ### Avvio Rapido
@@ -75,7 +75,7 @@ Dopo il primo avvio, verrai accolto dalla schermata principale. Puoi scegliere t
 Vista completa con tutte le informazioni e statistiche.
 
 <p align="center">
-  <img src="../assets/screenshots/home.png" width="280" alt="Dashboard Home Classica">
+  <img src="../assets/screenshots/home_v42.png" width="280" alt="Dashboard Home Classica">
 </p>
 
 | Elemento | Descrizione |
@@ -206,7 +206,7 @@ Dopo il salvataggio, l'app:
 La vista calendario mostra tutte le iniezioni programmate e completate.
 
 <p align="center">
-  <img src="../assets/screenshots/calendar.png" width="280" alt="Calendario">
+  <img src="../assets/screenshots/calendar_v42.png" width="280" alt="Calendario">
 </p>
 
 ### Legenda Colori
@@ -290,7 +290,7 @@ Ideale per condividere con il tuo neurologo.
 ## Impostazioni
 
 <p align="center">
-  <img src="../assets/screenshots/settings.png" width="280" alt="Impostazioni">
+  <img src="../assets/screenshots/settings_v42.png" width="280" alt="Impostazioni">
 </p>
 
 ### Sezioni Impostazioni

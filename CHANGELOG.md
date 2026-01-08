@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.2.13
+
+- Bump version to 4.2.13
+
 ## 4.2.12
 
 - Fixed UI layout inconsistencies on ultrawide screens (Web/Desktop)

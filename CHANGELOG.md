@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.2.17 - 2026-01-08
+
+### Corretto
+- **Migrazione Database**: Forzato l'aggiornamento dei punti di iniezione per tutti gli utenti per garantire che le coordinate corrette siano applicate.
+- **Release Automation**: Finalizzate le versioni 4.2.15 e 4.2.16 con i relativi APK.
+
 ## 4.2.16 - 2026-01-08
 
 ### Corretto

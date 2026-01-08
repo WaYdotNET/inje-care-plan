@@ -27,7 +27,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -77,6 +77,10 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 5) {
         // Correggi le coordinate asimmetriche dei punti (Issue #3)
+        await _fixIncorrectPointCoordinates();
+      }
+      if (from < 6) {
+        // Forza refresh delle coordinate per sincronizzarle con le costanti centralizzate
         await _fixIncorrectPointCoordinates();
       }
     },

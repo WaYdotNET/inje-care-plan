@@ -27,7 +27,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 1;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -38,51 +38,11 @@ class AppDatabase extends _$AppDatabase {
       await _seedDefaultTherapyPlans();
     },
     onUpgrade: (m, from, to) async {
-      if (from < 2) {
-        // Aggiungi nuove colonne alla tabella BodyZones
-        await m.addColumn(bodyZones, bodyZones.customName);
-        await m.addColumn(bodyZones, bodyZones.icon);
-        await m.addColumn(bodyZones, bodyZones.type);
-        await m.addColumn(bodyZones, bodyZones.side);
-        await m.addColumn(bodyZones, bodyZones.sortOrder);
-
-        // Aggiorna le zone esistenti con i valori corretti
-        await customStatement('''
-              UPDATE body_zones SET
-                type = CASE code
-                  WHEN 'CD' THEN 'thigh' WHEN 'CS' THEN 'thigh'
-                  WHEN 'BD' THEN 'arm' WHEN 'BS' THEN 'arm'
-                  WHEN 'AD' THEN 'abdomen' WHEN 'AS' THEN 'abdomen'
-                  WHEN 'GD' THEN 'buttock' WHEN 'GS' THEN 'buttock'
-                  ELSE 'custom'
-                END,
-                side = CASE
-                  WHEN code LIKE '%D' THEN 'right'
-                  WHEN code LIKE '%S' THEN 'left'
-                  ELSE 'none'
-                END,
-                sort_order = id
-            ''');
-      }
-      if (from < 3) {
-        // Crea tabella PointConfigs per configurazione punti
-        await m.createTable(pointConfigs);
-      }
-      if (from < 4) {
-        // Aggiungi nuove colonne a TherapyPlans
-        await m.addColumn(therapyPlans, therapyPlans.name);
-        await m.addColumn(therapyPlans, therapyPlans.isActive);
-        // Migra i piani esistenti e crea quelli mancanti
-        await _migrateTherapyPlansToV4();
-      }
-      if (from < 5) {
-        // Correggi le coordinate asimmetriche dei punti (Issue #3)
-        await _fixIncorrectPointCoordinates();
-      }
-      if (from < 6) {
-        // Forza refresh delle coordinate per sincronizzarle con le costanti centralizzate
-        await _fixIncorrectPointCoordinates();
-      }
+      // Schema reset to 1. All legacy migrations removed.
+    },
+    beforeOpen: (details) async {
+      // Sincronizza sempre le coordinate dei punti con le costanti centralizzate
+      await _fixIncorrectPointCoordinates();
     },
   );
 

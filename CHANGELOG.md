@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.3.0 - 2026-01-08
+
+### ⚠️ BREAKING CHANGE
+- **Reset Database**: Lo schema del database è stato riportato alla versione 1 e le migrazioni legacy sono state rimosse per una maggiore stabilità e pulizia del codice.
+- **Sincronizzazione Automatica**: Le coordinate dei punti di iniezione vengono ora sincronizzate automaticamente ad ogni avvio dell'app.
+
 ## 4.2.17 - 2026-01-08
 
 ### Corretto

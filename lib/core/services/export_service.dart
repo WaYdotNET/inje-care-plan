@@ -1,11 +1,12 @@
-import 'dart:io';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
+import 'dart:typed_data';
 
 import '../database/app_database.dart';
+import '../utils/save_helper.dart'
+    if (dart.library.io) '../utils/save_helper_mobile.dart'
+    if (dart.library.html) '../utils/save_helper_web.dart';
 
 /// Export service for PDF and CSV generation
 class ExportService {
@@ -106,18 +107,15 @@ class ExportService {
       ),
     );
 
-    // Save and share
-    final output = await getTemporaryDirectory();
-    final file = File(
-      '${output.path}/injecare_storico_${DateTime.now().millisecondsSinceEpoch}.pdf',
-    );
-    await file.writeAsBytes(await pdf.save());
+    // Save and share/download
+    final bytes = await pdf.save();
+    final fileName = 'injecare_storico_${DateTime.now().millisecondsSinceEpoch}.pdf';
 
-    await SharePlus.instance.share(
-      ShareParams(
-        files: [XFile(file.path)],
-        subject: 'InjeCare Plan - Storico Iniezioni',
-      ),
+    await saveAndShareFile(
+      bytes: bytes,
+      fileName: fileName,
+      mimeType: 'application/pdf',
+      shareSubject: 'InjeCare Plan - Storico Iniezioni',
     );
   }
 
@@ -142,18 +140,15 @@ class ExportService {
       }
     }
 
-    // Save and share
-    final output = await getTemporaryDirectory();
-    final file = File(
-      '${output.path}/injecare_storico_${DateTime.now().millisecondsSinceEpoch}.csv',
-    );
-    await file.writeAsString(buffer.toString());
+    // Save and share/download
+    final bytes = Uint8List.fromList(buffer.toString().codeUnits);
+    final fileName = 'injecare_storico_${DateTime.now().millisecondsSinceEpoch}.csv';
 
-    await SharePlus.instance.share(
-      ShareParams(
-        files: [XFile(file.path)],
-        subject: 'InjeCare Plan - Storico Iniezioni',
-      ),
+    await saveAndShareFile(
+      bytes: bytes,
+      fileName: fileName,
+      mimeType: 'text/csv',
+      shareSubject: 'InjeCare Plan - Storico Iniezioni',
     );
   }
 

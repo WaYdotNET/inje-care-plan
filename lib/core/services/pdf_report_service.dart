@@ -1,8 +1,5 @@
-import 'dart:io';
-
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
@@ -15,7 +12,7 @@ class PdfReportService {
   PdfReportService();
 
   /// Genera un report PDF completo
-  Future<File> generateReport({
+  Future<Uint8List> generateReport({
     required DateTime startDate,
     required DateTime endDate,
     required List<Injection> injections,
@@ -91,13 +88,7 @@ class PdfReportService {
       ),
     );
 
-    // Salva file
-    final output = await getTemporaryDirectory();
-    final fileName = 'InjeCare_Report_${DateFormat('yyyyMMdd').format(DateTime.now())}.pdf';
-    final file = File('${output.path}/$fileName');
-    await file.writeAsBytes(await pdf.save());
-
-    return file;
+    return pdf.save();
   }
 
   pw.Widget _buildHeader(

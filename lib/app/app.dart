@@ -4,6 +4,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import '../core/theme/app_theme.dart';
 import '../core/theme/theme_provider.dart';
+import '../core/widgets/responsive_wrapper.dart';
 import 'router.dart';
 
 /// Main application widget
@@ -26,6 +27,12 @@ class InjeCareApp extends ConsumerWidget {
 
       // Router
       routerConfig: router,
+
+      // Responsive wrapper for all screens
+      builder: (context, child) {
+        if (child == null) return const SizedBox.shrink();
+        return ResponsiveWrapper(child: child);
+      },
 
       // Localization
       localizationsDelegates: const [

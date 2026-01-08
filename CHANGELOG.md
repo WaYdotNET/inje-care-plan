@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.2.12
+
+- Fixed UI layout inconsistencies on ultrawide screens (Web/Desktop)
+- Added global `ResponsiveWrapper` to center and limit content width
+- Improved `MediaQuery` handling for responsive elements
+
 Tutte le modifiche rilevanti a InjeCare Plan sono documentate in questo file.
 
 Il formato segue [Keep a Changelog](https://keepachangelog.com/it/1.0.0/),

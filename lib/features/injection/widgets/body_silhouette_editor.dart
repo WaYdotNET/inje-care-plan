@@ -669,7 +669,7 @@ List<PositionedPoint> generateDefaultPointPositions(
     case 'thigh':
       // Coscia: 6 punti in griglia 2x3 (2 colonne, 3 righe)
       // Vista frontale: parte anteriore e laterale della coscia
-      final baseX = side == 'left' ? 0.28 : 0.64;
+      final baseX = side == 'left' ? 0.36 : 0.64;
       final spacingX = 0.08;
       final baseY = 0.58;
       final spacingY = 0.07;
@@ -686,7 +686,7 @@ List<PositionedPoint> generateDefaultPointPositions(
       // Braccio: 4 punti in griglia 2x2
       // Vista frontale: superficie esterna del braccio superiore
       // Coordinate corrette per essere sopra le braccia della silhouette
-      final baseX = side == 'left' ? 0.18 : 0.74;
+      final baseX = side == 'left' ? 0.26 : 0.74;
       final spacingX = 0.05;
       final baseY = 0.22;
       final spacingY = 0.06;
@@ -700,7 +700,7 @@ List<PositionedPoint> generateDefaultPointPositions(
     case 'abdomen':
       // Addome: 4 punti in griglia 2x2
       // Vista frontale: almeno 5cm dall'ombelico
-      final baseX = side == 'left' ? 0.32 : 0.60;
+      final baseX = side == 'left' ? 0.40 : 0.60;
       final spacingX = 0.06;
       final baseY = 0.34;
       final spacingY = 0.05;
@@ -714,7 +714,7 @@ List<PositionedPoint> generateDefaultPointPositions(
     case 'buttock':
       // Gluteo: 4 punti in griglia 2x2
       // Vista posteriore: quadrante superiore esterno
-      final baseX = side == 'left' ? 0.32 : 0.60;
+      final baseX = side == 'left' ? 0.40 : 0.60;
       final spacingX = 0.06;
       final baseY = 0.50;
       final spacingY = 0.05;

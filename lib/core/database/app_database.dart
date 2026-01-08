@@ -26,7 +26,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -73,6 +73,10 @@ class AppDatabase extends _$AppDatabase {
         await m.addColumn(therapyPlans, therapyPlans.isActive);
         // Migra i piani esistenti e crea quelli mancanti
         await _migrateTherapyPlansToV4();
+      }
+      if (from < 5) {
+        // Correggi le coordinate asimmetriche dei punti (Issue #3)
+        await _fixIncorrectPointCoordinates();
       }
     },
   );
@@ -208,6 +212,41 @@ class AppDatabase extends _$AppDatabase {
       );
       if (!hasActivePlan) hasActivePlan = true;
     }
+  }
+
+  /// Corregge le coordinate asimmetriche dei punti salvate nel database (v5)
+  Future<void> _fixIncorrectPointCoordinates() async {
+    // Braccio Sx: da 0.18 a 0.26 (per simmetria con 0.74 del Braccio Dx)
+    await customStatement('''
+      UPDATE point_configs
+      SET position_x = 0.26
+      WHERE zone_id IN (SELECT id FROM body_zones WHERE code = 'BS')
+      AND position_x = 0.18
+    ''');
+
+    // Coscia Sx: da 0.28 a 0.36 (per simmetria con 0.64 della Coscia Dx)
+    await customStatement('''
+      UPDATE point_configs
+      SET position_x = 0.36
+      WHERE zone_id IN (SELECT id FROM body_zones WHERE code = 'CS')
+      AND position_x = 0.28
+    ''');
+
+    // Addome Sx: da 0.32 a 0.40 (per simmetria con 0.60 dell'Addome Dx)
+    await customStatement('''
+      UPDATE point_configs
+      SET position_x = 0.40
+      WHERE zone_id IN (SELECT id FROM body_zones WHERE code = 'AS')
+      AND position_x = 0.32
+    ''');
+
+    // Gluteo Sx: da 0.32 a 0.40 (per simmetria con 0.60 del Gluteo Dx)
+    await customStatement('''
+      UPDATE point_configs
+      SET position_x = 0.40
+      WHERE zone_id IN (SELECT id FROM body_zones WHERE code = 'GS')
+      AND position_x = 0.32
+    ''');
   }
 
   /// Inserisce i 7 piani terapeutici predefiniti (solo per nuove installazioni)

@@ -1,5 +1,15 @@
 # Changelog
 
+## 4.2.15 - 2026-01-08
+
+### Aggiunto
+- **Sito Web**: Aggiunta sezione Changelog e visualizzazione versione attuale nel footer.
+- **Costanti Coordinate**: Estratte tutte le coordinate dei punti in un file di costanti centralizzato (`point_constants.dart`).
+
+### Corretto
+- **Simmetria Addome Sx**: Implementata la corretta simmetria speculare per le coordinate dei punti dell'addome sinistro.
+- **Consistenza UI/DB**: Allineate le coordinate predefinite utilizzate dal database con quelle visualizzate nell'interfaccia grafica.
+
 ## 4.2.14
 
 - Fixed web favicon and icons (Issue #5)

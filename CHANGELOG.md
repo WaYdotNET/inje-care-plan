@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.2.14
+
+- Fixed web favicon and icons (Issue #5)
+- Updated PWA icons with correct branding
+
 ## 4.2.13
 
 - Fixed asymmetrical injection point coordinates (Issue #3)

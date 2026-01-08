@@ -1,10 +1,12 @@
 # Changelog
 
-## 4.2.12
+## 4.2.13
 
-- Fixed UI layout inconsistencies on ultrawide screens (Web/Desktop)
-- Added global `ResponsiveWrapper` to center and limit content width
-- Improved `MediaQuery` handling for responsive elements
+- Fixed asymmetrical injection point coordinates (Issue #3)
+- Added database migration v5 to correct existing records
+- Included global responsive layout for ultrawide screens (Issue #6)
+
+## 4.2.12
 
 Tutte le modifiche rilevanti a InjeCare Plan sono documentate in questo file.
 

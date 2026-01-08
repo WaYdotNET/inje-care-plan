@@ -200,15 +200,20 @@ class _BodySilhouetteEditorState extends State<BodySilhouetteEditor>
             Expanded(
               child: SizedBox(
                 height: silhouetteHeight > 0 ? silhouetteHeight : 300,
-                child: widget.enableZoom
-                    ? InteractiveViewer(
-                        transformationController: _transformationController,
-                        minScale: 1.0,
-                        maxScale: 3.0,
-                        boundaryMargin: const EdgeInsets.all(80),
-                        child: _buildSilhouetteStack(color, isDark),
-                      )
-                    : _buildSilhouetteStack(color, isDark),
+                child: Center(
+                  child: AspectRatio(
+                    aspectRatio: 360 / 1086,
+                    child: widget.enableZoom
+                        ? InteractiveViewer(
+                            transformationController: _transformationController,
+                            minScale: 1.0,
+                            maxScale: 3.0,
+                            boundaryMargin: const EdgeInsets.all(80),
+                            child: _buildSilhouetteStack(color, isDark),
+                          )
+                        : _buildSilhouetteStack(color, isDark),
+                  ),
+                ),
               ),
             ),
           ],
@@ -229,7 +234,7 @@ class _BodySilhouetteEditorState extends State<BodySilhouetteEditor>
             Positioned.fill(
               child: SvgPicture.asset(
                 _svgAsset,
-                fit: BoxFit.contain,
+                fit: BoxFit.fill, // Now fill is correct because parent has right AspectRatio
                 colorFilter: ColorFilter.mode(
                   color.withValues(alpha: 0.7),
                   BlendMode.srcIn,

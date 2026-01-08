@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.2.16 - 2026-01-08
+
+### Corretto
+- **Scaling Coordinate**: Risolto il problema per cui i punti di iniezione non scalavano correttamente con la silhouette del corpo durante il ridimensionamento della finestra o su schermi diversi.
+
 ## 4.2.15 - 2026-01-08
 
 ### Aggiunto

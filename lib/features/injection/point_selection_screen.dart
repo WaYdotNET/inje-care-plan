@@ -1106,6 +1106,8 @@ class _PointSelectionSilhouette extends StatelessWidget {
       selectedPointNumber: selectedPoint,
       zoneType: zoneType,
       editable: false, // Non trascinabili, solo cliccabili
+      enableZoom: true,
+      pointScale: 0.6,
       onPointMoved: (p1, p2, p3, p4) {}, // Non usato
       onPointTapped: (pointNumber) {
         // Non permettere tap su punti blacklisted

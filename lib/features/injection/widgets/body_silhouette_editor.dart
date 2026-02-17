@@ -53,6 +53,7 @@ class BodySilhouetteEditor extends StatefulWidget {
     this.onViewChanged,
     this.enableZoom = false,
     this.pointScale = 1.0,
+    this.silhouetteColor,
   });
 
   /// Lista dei punti posizionati
@@ -94,6 +95,9 @@ class BodySilhouetteEditor extends StatefulWidget {
 
   /// Scala per i punti (0.5 = metà dimensione, 1.0 = normale)
   final double pointScale;
+
+  /// Colore personalizzato per la silhouette (se null, usa il colore Foam del tema)
+  final Color? silhouetteColor;
 
   @override
   State<BodySilhouetteEditor> createState() => _BodySilhouetteEditorState();
@@ -161,7 +165,8 @@ class _BodySilhouetteEditorState extends State<BodySilhouetteEditor>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final color = isDark ? AppColors.darkFoam : AppColors.dawnFoam;
+    final color = widget.silhouetteColor ??
+        (isDark ? AppColors.darkFoam : AppColors.dawnFoam);
 
     // Se la vista è controllata esternamente, non mostrare il toggle
     final showViewToggle = widget.onViewChanged == null;

@@ -1,6 +1,11 @@
 # Changelog
 
-## Unreleased
+## 4.3.1 - 2026-02-17
+
+### Migliorato
+- **Homepage rinnovata**: Rimossa la data ridondante sopra la card, pulsanti Fronte/Retro spostati sopra la silhouette con colori distinti (teal per Fronte, viola per Retro) che si riflettono nella silhouette stessa.
+- **Selezione punto rinnovata**: Pulsanti vista spostati a fianco della silhouette, silhouette ingrandita (500px), auto-switch vista posteriore per zone glutei, time picker compatto nella AppBar.
+- **Colore silhouette personalizzabile**: Nuovo parametro `silhouetteColor` nel `BodySilhouetteEditor` per distinguere visivamente fronte e retro.
 
 ### Corretto
 - **Ripristino iniezione saltata**: Aggiunta opzione "Ripristina come pianificata" nel bottom sheet del calendario per iniezioni completate o saltate per errore.

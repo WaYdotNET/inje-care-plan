@@ -109,6 +109,22 @@ class _PointSelectionScreenState extends ConsumerState<PointSelectionScreen> {
     });
   }
 
+  Future<void> _showTimePickerDialog() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: _scheduledTime,
+      builder: (context, child) {
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null) {
+      _updateScheduledTime(picked);
+    }
+  }
+
   String get _title => switch (widget.mode) {
     PointSelectionMode.injection => 'Seleziona punto iniezione',
     PointSelectionMode.blacklist => 'Escludi un punto',
@@ -156,6 +172,27 @@ class _PointSelectionScreenState extends ConsumerState<PointSelectionScreen> {
           icon: const Icon(Icons.close),
           onPressed: () => context.pop(),
         ),
+        actions: [
+          if (widget.mode == PointSelectionMode.injection)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: ActionChip(
+                avatar: Icon(
+                  Icons.access_time,
+                  size: 18,
+                  color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
+                ),
+                label: Text(
+                  DateFormat('HH:mm', 'it_IT').format(_scheduledDateTime),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
+                  ),
+                ),
+                onPressed: _showTimePickerDialog,
+              ),
+            ),
+        ],
       ),
       body: zonesAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -165,15 +202,6 @@ class _PointSelectionScreenState extends ConsumerState<PointSelectionScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Date/time header per iniezioni
-              if (widget.mode == PointSelectionMode.injection)
-                _ScheduleDateTimeCard(
-                  scheduledDateTime: _scheduledDateTime,
-                  scheduledTime: _scheduledTime,
-                  isDark: isDark,
-                  onTimeChanged: _updateScheduledTime,
-                ),
-
               // Instructions card
               Card(
                 child: Padding(
@@ -441,155 +469,6 @@ class _SuggestedPointCard extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-/// Card per mostrare e modificare data/ora dell'iniezione
-class _ScheduleDateTimeCard extends StatelessWidget {
-  const _ScheduleDateTimeCard({
-    required this.scheduledDateTime,
-    required this.scheduledTime,
-    required this.isDark,
-    required this.onTimeChanged,
-  });
-
-  final DateTime scheduledDateTime;
-  final TimeOfDay scheduledTime;
-  final bool isDark;
-  final ValueChanged<TimeOfDay> onTimeChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final dateFormat = DateFormat('EEEE d MMMM yyyy', 'it_IT');
-    final timeFormat = DateFormat('HH:mm', 'it_IT');
-
-    return Card(
-      color: isDark
-          ? AppColors.darkFoam.withValues(alpha: 0.15)
-          : AppColors.dawnFoam.withValues(alpha: 0.1),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(
-                  Icons.event,
-                  color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  'Iniezione per:',
-                  style: theme.textTheme.labelMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                // Data
-                Expanded(
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.calendar_today,
-                        size: 18,
-                        color: isDark ? AppColors.darkSubtle : AppColors.dawnSubtle,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          _capitalizeFirst(dateFormat.format(scheduledDateTime)),
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                // Orario modificabile
-                InkWell(
-                  onTap: () => _showTimePicker(context),
-                  borderRadius: BorderRadius.circular(8),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? AppColors.darkOverlay
-                          : AppColors.dawnOverlay,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: isDark
-                            ? AppColors.darkFoam.withValues(alpha: 0.5)
-                            : AppColors.dawnFoam.withValues(alpha: 0.5),
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.access_time,
-                          size: 18,
-                          color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          timeFormat.format(scheduledDateTime),
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        Icon(
-                          Icons.edit,
-                          size: 14,
-                          color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'L\'orario verrà usato per il promemoria',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Future<void> _showTimePicker(BuildContext context) async {
-    final picked = await showTimePicker(
-      context: context,
-      initialTime: scheduledTime,
-      builder: (context, child) {
-        return MediaQuery(
-          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
-          child: child!,
-        );
-      },
-    );
-    if (picked != null) {
-      onTimeChanged(picked);
-    }
-  }
-
-  String _capitalizeFirst(String text) {
-    if (text.isEmpty) return text;
-    return text[0].toUpperCase() + text.substring(1);
   }
 }
 
@@ -977,7 +856,7 @@ class _ZoneDetailCardState extends ConsumerState<_ZoneDetailCard> {
               const Center(child: CircularProgressIndicator())
             else
               SizedBox(
-                height: 420,
+                height: 500,
                 child: _PointSelectionSilhouette(
                   points: _points,
                   selectedPoint: selectedPoint,
@@ -1072,8 +951,8 @@ class _ZoneDetailCardState extends ConsumerState<_ZoneDetailCard> {
   }
 }
 
-/// Silhouette-based point selection widget
-class _PointSelectionSilhouette extends StatelessWidget {
+/// Silhouette-based point selection widget with side view toggle
+class _PointSelectionSilhouette extends StatefulWidget {
   const _PointSelectionSilhouette({
     required this.points,
     required this.selectedPoint,
@@ -1091,30 +970,142 @@ class _PointSelectionSilhouette extends StatelessWidget {
   final void Function(int) onPointTap;
 
   @override
+  State<_PointSelectionSilhouette> createState() =>
+      _PointSelectionSilhouetteState();
+}
+
+class _PointSelectionSilhouetteState extends State<_PointSelectionSilhouette> {
+  late BodyView _currentView;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentView = _viewForZoneType(widget.zoneType);
+  }
+
+  @override
+  void didUpdateWidget(_PointSelectionSilhouette oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.zoneType != widget.zoneType) {
+      setState(() => _currentView = _viewForZoneType(widget.zoneType));
+    }
+  }
+
+  BodyView _viewForZoneType(String type) {
+    return type == 'buttock' ? BodyView.back : BodyView.front;
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // Filtra i punti blacklisted per mostrarli in modo diverso
-    final visiblePoints = points.map((p) {
-      if (blacklistedNumbers.contains(p.pointNumber)) {
-        // Marca i punti blacklisted con un nome speciale per riconoscerli
+    final visiblePoints = widget.points.map((p) {
+      if (widget.blacklistedNumbers.contains(p.pointNumber)) {
         return p.copyWith(customName: '✗');
       }
       return p;
     }).toList();
 
-    return BodySilhouetteEditor(
-      points: visiblePoints,
-      selectedPointNumber: selectedPoint,
-      zoneType: zoneType,
-      editable: false, // Non trascinabili, solo cliccabili
-      enableZoom: true,
-      pointScale: 0.6,
-      onPointMoved: (p1, p2, p3, p4) {}, // Non usato
-      onPointTapped: (pointNumber) {
-        // Non permettere tap su punti blacklisted
-        if (!blacklistedNumbers.contains(pointNumber)) {
-          onPointTap(pointNumber);
-        }
-      },
+    final isDark = widget.isDark;
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        // Compact side toggle for front/back view
+        Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _ViewToggleButton(
+              icon: Icons.person,
+              label: 'Fronte',
+              isSelected: _currentView == BodyView.front,
+              isDark: isDark,
+              onTap: () => setState(() => _currentView = BodyView.front),
+            ),
+            const SizedBox(height: 8),
+            _ViewToggleButton(
+              icon: Icons.person_outline,
+              label: 'Retro',
+              isSelected: _currentView == BodyView.back,
+              isDark: isDark,
+              onTap: () => setState(() => _currentView = BodyView.back),
+            ),
+          ],
+        ),
+        const SizedBox(width: 4),
+        // Silhouette (expanded, toggle controlled externally)
+        Expanded(
+          child: BodySilhouetteEditor(
+            points: visiblePoints,
+            selectedPointNumber: widget.selectedPoint,
+            zoneType: widget.zoneType,
+            editable: false,
+            enableZoom: true,
+            pointScale: 0.6,
+            currentView: _currentView,
+            onViewChanged: (view) => setState(() => _currentView = view),
+            onPointMoved: (p1, p2, p3, p4) {},
+            onPointTapped: (pointNumber) {
+              if (!widget.blacklistedNumbers.contains(pointNumber)) {
+                widget.onPointTap(pointNumber);
+              }
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Compact toggle button for front/back view selection
+class _ViewToggleButton extends StatelessWidget {
+  const _ViewToggleButton({
+    required this.icon,
+    required this.label,
+    required this.isSelected,
+    required this.isDark,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool isSelected;
+  final bool isDark;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isSelected
+        ? (isDark ? AppColors.darkFoam : AppColors.dawnFoam)
+        : (isDark ? AppColors.darkMuted : AppColors.dawnMuted);
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? color.withValues(alpha: 0.2)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected ? color : Colors.transparent,
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: color, size: 22),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 9,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                color: color,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

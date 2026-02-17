@@ -189,12 +189,6 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen> {
                     padding: const EdgeInsets.all(24),
                     child: Column(
                       children: [
-                        _DateHeader(
-                          isDark: isDark,
-                          isScheduled: isScheduled,
-                          displayDate: displayDate,
-                        ),
-                        const SizedBox(height: 24),
                         Expanded(
                           child: _MainCard(
                             zone: zone,
@@ -411,47 +405,8 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen> {
   }
 }
 
-/// Header con la data corrente
-class _DateHeader extends StatelessWidget {
-  const _DateHeader({
-    required this.isDark,
-    required this.displayDate,
-    this.isScheduled = false,
-  });
-
-  final bool isDark;
-  final bool isScheduled;
-  final DateTime displayDate;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final dateFormat = DateFormat('EEEE d MMMM', 'it_IT');
-
-    return Column(
-      children: [
-        Text(
-          dateFormat.format(displayDate),
-          style: theme.textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          isScheduled ? 'Iniezione programmata' : 'Prossima iniezione',
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: isScheduled
-                ? (isDark ? AppColors.darkGold : AppColors.dawnGold)
-                : (isDark ? AppColors.darkMuted : AppColors.dawnMuted),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
 /// Card principale con silhouette e info iniezione
-class _MainCard extends StatelessWidget {
+class _MainCard extends StatefulWidget {
   const _MainCard({
     required this.zone,
     required this.displayDate,
@@ -471,8 +426,31 @@ class _MainCard extends StatelessWidget {
   final int? pointNumber;
 
   @override
+  State<_MainCard> createState() => _MainCardState();
+}
+
+class _MainCardState extends State<_MainCard> {
+  late BodyView _currentView;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentView = widget.view;
+  }
+
+  @override
+  void didUpdateWidget(_MainCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.view != widget.view) {
+      setState(() => _currentView = widget.view);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final zone = widget.zone;
+    final isDark = widget.isDark;
 
     if (zone == null) {
       return Card(
@@ -508,105 +486,201 @@ class _MainCard extends StatelessWidget {
       );
     }
 
-    final displayPointNumber = pointNumber ?? 1; // Usa il punto schedulato o default
+    final displayPointNumber = widget.pointNumber ?? 1;
+    final isFront = _currentView == BodyView.front;
+    final frontColor = isDark ? AppColors.darkFoam : AppColors.dawnFoam;
+    final backColor = isDark ? AppColors.darkIris : AppColors.dawnIris;
+    final activeColor = isFront ? frontColor : backColor;
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
+    return Column(
+      children: [
+        // Toggle fronte/retro sopra la card
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Silhouette con punto evidenziato (scala proporzionale)
-            // Usa le stesse coordinate di generateDefaultPointPositions
-            Expanded(
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  // Scala i punti in base all'altezza disponibile
-                  // Base: 400px = scala 1.0, più piccolo = scala ridotta
-                  final scale = (constraints.maxHeight / 400).clamp(0.5, 0.6);
-
-                  // Usa le coordinate esatte da generateDefaultPointPositions
-                  final allPoints = generateDefaultPointPositions(
-                    zone!.numberOfPoints,
-                    zone!.type,
-                    zone!.side,
-                  );
-
-                  // Trova il punto corretto o usa il primo
-                  final targetPoint = allPoints.firstWhere(
-                    (p) => p.pointNumber == displayPointNumber,
-                    orElse: () => allPoints.isNotEmpty
-                        ? allPoints.first
-                        : PositionedPoint(pointNumber: 1, x: 0.5, y: 0.5),
-                  );
-
-                  return BodySilhouetteEditor(
-                    points: [targetPoint],
-                    onPointMoved: (p, x, y, v) {},
-                    onPointTapped: (p) {},
-                    selectedPointNumber: displayPointNumber,
-                    initialView: view,
-                    editable: false,
-                    zoneType: zone!.type,
-                    pointScale: scale,
-                  );
-                },
-              ),
+            _HomeViewToggle(
+              icon: Icons.person,
+              label: 'Fronte',
+              isSelected: isFront,
+              activeColor: frontColor,
+              isDark: isDark,
+              onTap: () => setState(() => _currentView = BodyView.front),
             ),
-
-            const Divider(),
-
-            // Info zona suggerita
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12),
+            const SizedBox(width: 16),
+            _HomeViewToggle(
+              icon: Icons.person_outline,
+              label: 'Retro',
+              isSelected: !isFront,
+              activeColor: backColor,
+              isDark: isDark,
+              onTap: () => setState(() => _currentView = BodyView.back),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        // Card con silhouette colorata in base alla vista
+        Expanded(
+          child: Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
-                  // Nome zona
-                  Text(
-                    zone!.name,
-                    style: theme.textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? AppColors.darkPine : AppColors.dawnPine,
+                  Expanded(
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final scale =
+                            (constraints.maxHeight / 400).clamp(0.5, 0.6);
+
+                        final allPoints = generateDefaultPointPositions(
+                          zone.numberOfPoints,
+                          zone.type,
+                          zone.side,
+                        );
+
+                        final targetPoint = allPoints.firstWhere(
+                          (p) => p.pointNumber == displayPointNumber,
+                          orElse: () => allPoints.isNotEmpty
+                              ? allPoints.first
+                              : const PositionedPoint(
+                                  pointNumber: 1,
+                                  x: 0.5,
+                                  y: 0.5,
+                                ),
+                        );
+
+                        return BodySilhouetteEditor(
+                          points: [targetPoint],
+                          onPointMoved: (p, x, y, v) {},
+                          onPointTapped: (p) {},
+                          selectedPointNumber: displayPointNumber,
+                          editable: false,
+                          zoneType: zone.type,
+                          pointScale: scale,
+                          currentView: _currentView,
+                          onViewChanged: (v) =>
+                              setState(() => _currentView = v),
+                          silhouetteColor: activeColor,
+                        );
+                      },
                     ),
                   ),
 
-                  const SizedBox(height: 8),
+                  const Divider(),
 
-                  // Orario suggerito
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.access_time,
-                        size: 18,
-                        color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        '${DateFormat('EEEE d MMM', 'it_IT').format(displayDate)} alle $displayTime',
-                        style: theme.textTheme.bodyLarge,
-                      ),
-                    ],
-                  ),
+                  // Info zona
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    child: Column(
+                      children: [
+                        Text(
+                          zone.name,
+                          style: theme.textTheme.headlineSmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: isDark
+                                ? AppColors.darkPine
+                                : AppColors.dawnPine,
+                          ),
+                        ),
 
-                  const SizedBox(height: 12),
+                        const SizedBox(height: 8),
 
-                  // Pattern indicator (minimal)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: (isDark ? AppColors.darkFoam : AppColors.dawnFoam)
-                          .withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Text(
-                      isScheduled ? 'Programmata' : 'Suggerita',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
-                        fontWeight: FontWeight.w600,
-                      ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.access_time,
+                              size: 18,
+                              color: activeColor,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              '${DateFormat('EEEE d MMM', 'it_IT').format(widget.displayDate)} alle ${widget.displayTime}',
+                              style: theme.textTheme.bodyLarge,
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: activeColor.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Text(
+                            widget.isScheduled ? 'Programmata' : 'Suggerita',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: activeColor,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Toggle per vista fronte/retro con colore dedicato
+class _HomeViewToggle extends StatelessWidget {
+  const _HomeViewToggle({
+    required this.icon,
+    required this.label,
+    required this.isSelected,
+    required this.activeColor,
+    required this.isDark,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool isSelected;
+  final Color activeColor;
+  final bool isDark;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isSelected
+        ? activeColor
+        : (isDark ? AppColors.darkMuted : AppColors.dawnMuted);
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? color.withValues(alpha: 0.2)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? color : color.withValues(alpha: 0.3),
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: color, size: 20),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                color: color,
               ),
             ),
           ],
@@ -614,7 +688,6 @@ class _MainCard extends StatelessWidget {
       ),
     );
   }
-
 }
 
 /// Vista errore

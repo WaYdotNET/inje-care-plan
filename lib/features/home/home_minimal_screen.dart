@@ -522,7 +522,7 @@ class _MainCard extends StatelessWidget {
                 builder: (context, constraints) {
                   // Scala i punti in base all'altezza disponibile
                   // Base: 400px = scala 1.0, più piccolo = scala ridotta
-                  final scale = (constraints.maxHeight / 400).clamp(0.5, 1.0);
+                  final scale = (constraints.maxHeight / 400).clamp(0.5, 0.6);
 
                   // Usa le coordinate esatte da generateDefaultPointPositions
                   final allPoints = generateDefaultPointPositions(

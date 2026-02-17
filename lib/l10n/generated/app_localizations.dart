@@ -895,6 +895,12 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Info'**
   String get info;
+
+  /// No description provided for @restoreAsScheduled.
+  ///
+  /// In it, this message translates to:
+  /// **'Ripristina come pianificata'**
+  String get restoreAsScheduled;
 }
 
 class _AppLocalizationsDelegate

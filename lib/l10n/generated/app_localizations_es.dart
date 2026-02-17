@@ -419,4 +419,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get info => 'Info';
+
+  @override
+  String get restoreAsScheduled => 'Restaurar como programada';
 }

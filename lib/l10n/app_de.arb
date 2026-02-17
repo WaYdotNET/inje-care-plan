@@ -173,5 +173,6 @@
   "discardChanges": "Möchten Sie die Änderungen verwerfen?",
   "discard": "Verwerfen",
   "guide": "Anleitung",
-  "info": "Info"
+  "info": "Info",
+  "restoreAsScheduled": "Als geplant wiederherstellen"
 }

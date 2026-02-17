@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Corretto
+- **Ripristino iniezione saltata**: Aggiunta opzione "Ripristina come pianificata" nel bottom sheet del calendario per iniezioni completate o saltate per errore.
+- **Conferma modifica iniezione**: Aggiunto alert di conferma prima di cambiare stato o punto di un'iniezione già registrata, per evitare modifiche accidentali.
+- **Silhouette fronte/retro**: Aumentata visibilità delle etichette "FRONTE"/"RETRO" e degli indicatori anatomici (colonna vertebrale, scapole, vertebre, zone glutei) negli SVG.
+- **ref.listen in initState**: Spostato `ref.listen` da `initState` a `build` in `PointSelectionScreen` per compatibilità con Riverpod 3.x.
+
 ## 4.3.0 - 2026-01-08
 
 ### ⚠️ BREAKING CHANGE

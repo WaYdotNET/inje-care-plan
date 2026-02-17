@@ -176,5 +176,6 @@
   "discardChanges": "Vuoi scartare le modifiche?",
   "discard": "Scarta",
   "guide": "Guida",
-  "info": "Info"
+  "info": "Info",
+  "restoreAsScheduled": "Ripristina come pianificata"
 }

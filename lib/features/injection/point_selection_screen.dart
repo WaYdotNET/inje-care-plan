@@ -62,17 +62,6 @@ class _PointSelectionScreenState extends ConsumerState<PointSelectionScreen> {
       _scheduledTime = TimeOfDay.fromDateTime(_scheduledDateTime);
     }
 
-    // Se il piano terapeutico è configurato e diverso dal fallback, aggiorna (solo se utente non ha cambiato manualmente).
-    ref.listen<AsyncValue<TherapyPlan?>>(
-      therapyPlanProvider,
-      (prev, next) {
-        final preferred = next.asData?.value?.preferredTime;
-        if (preferred == null) return;
-        if (_userChangedTime) return;
-        if (!_usedFallbackPreferredTime) return;
-        _applyPreferredTime(preferred);
-      },
-    );
   }
 
   bool _isDateOnly(DateTime dt) =>
@@ -137,6 +126,18 @@ class _PointSelectionScreenState extends ConsumerState<PointSelectionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Se il piano terapeutico è configurato e diverso dal fallback, aggiorna (solo se utente non ha cambiato manualmente).
+    ref.listen<AsyncValue<TherapyPlan?>>(
+      therapyPlanProvider,
+      (prev, next) {
+        final preferred = next.asData?.value?.preferredTime;
+        if (preferred == null) return;
+        if (_userChangedTime) return;
+        if (!_usedFallbackPreferredTime) return;
+        _applyPreferredTime(preferred);
+      },
+    );
+
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final zonesAsync = ref.watch(enabledZonesProvider);

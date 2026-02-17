@@ -117,6 +117,16 @@ class InjectionRepository {
     ));
   }
 
+  /// Restore an injection to scheduled status
+  Future<void> restoreInjection(int injectionId) async {
+    await _db.updateInjection(InjectionsCompanion(
+      id: Value(injectionId),
+      status: const Value('scheduled'),
+      completedAt: const Value(null),
+      updatedAt: Value(DateTime.now()),
+    ));
+  }
+
   /// Delete an injection
   Future<int> deleteInjection(int injectionId) {
     return _db.deleteInjection(injectionId);

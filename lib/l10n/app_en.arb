@@ -173,5 +173,6 @@
   "discardChanges": "Do you want to discard changes?",
   "discard": "Discard",
   "guide": "Guide",
-  "info": "Info"
+  "info": "Info",
+  "restoreAsScheduled": "Restore as scheduled"
 }

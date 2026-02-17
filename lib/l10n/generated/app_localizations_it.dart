@@ -420,4 +420,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get info => 'Info';
+
+  @override
+  String get restoreAsScheduled => 'Ripristina come pianificata';
 }

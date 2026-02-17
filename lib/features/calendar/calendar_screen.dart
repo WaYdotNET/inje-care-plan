@@ -424,6 +424,34 @@ class _InjectionCard extends ConsumerWidget {
     );
   }
 
+  Future<bool?> _showConfirmDialog(
+    BuildContext context, {
+    required String title,
+    required String message,
+    bool isDestructive = false,
+  }) {
+    return showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Annulla'),
+          ),
+          ElevatedButton(
+            style: isDestructive
+                ? ElevatedButton.styleFrom(backgroundColor: Colors.red)
+                : null,
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(isDestructive ? 'Elimina' : 'Conferma'),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showEditOptions(BuildContext context, WidgetRef ref) {
     showModalBottomSheet<void>(
       context: context,
@@ -438,40 +466,57 @@ class _InjectionCard extends ConsumerWidget {
         },
         onSkip: () async {
           Navigator.pop(ctx);
+          if (injection.status == 'completed') {
+            final confirm = await _showConfirmDialog(
+              context,
+              title: 'Cambia stato',
+              message: 'Questa iniezione è registrata come completata. '
+                  'Vuoi davvero segnarla come saltata?',
+            );
+            if (confirm != true) return;
+          }
           final repository = ref.read(injectionRepositoryProvider);
           await repository.skipInjection(injection.id);
           ref.invalidate(injectionsProvider);
         },
+        onRestore: () async {
+          Navigator.pop(ctx);
+          final confirm = await _showConfirmDialog(
+            context,
+            title: 'Ripristina iniezione',
+            message: 'Vuoi davvero ripristinare questa iniezione come pianificata?',
+          );
+          if (confirm != true) return;
+          final repository = ref.read(injectionRepositoryProvider);
+          await repository.restoreInjection(injection.id);
+          ref.invalidate(injectionsProvider);
+        },
         onDelete: () async {
           Navigator.pop(ctx);
-          final confirm = await showDialog<bool>(
-            context: context,
-            builder: (ctx) => AlertDialog(
-              title: const Text('Elimina iniezione'),
-              content: const Text('Vuoi davvero eliminare questa iniezione?'),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(ctx, false),
-                  child: const Text('Annulla'),
-                ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                  ),
-                  onPressed: () => Navigator.pop(ctx, true),
-                  child: const Text('Elimina'),
-                ),
-              ],
-            ),
+          final confirm = await _showConfirmDialog(
+            context,
+            title: 'Elimina iniezione',
+            message: 'Vuoi davvero eliminare questa iniezione?',
+            isDestructive: true,
           );
-          if (confirm == true) {
-            final repository = ref.read(injectionRepositoryProvider);
-            await repository.deleteInjection(injection.id);
-            ref.invalidate(injectionsProvider);
-          }
+          if (confirm != true) return;
+          final repository = ref.read(injectionRepositoryProvider);
+          await repository.deleteInjection(injection.id);
+          ref.invalidate(injectionsProvider);
         },
-        onChangePoint: () {
+        onChangePoint: () async {
           Navigator.pop(ctx);
+          if (injection.status == 'completed' ||
+              injection.status == 'skipped') {
+            final confirm = await _showConfirmDialog(
+              context,
+              title: 'Cambia punto',
+              message: 'Questa iniezione è già stata registrata. '
+                  'Cambiare il punto modificherà i dati esistenti. Continuare?',
+            );
+            if (confirm != true) return;
+          }
+          if (!context.mounted) return;
           context.push(
             AppRoutes.bodyMap,
             extra: {
@@ -491,6 +536,7 @@ class _InjectionEditSheet extends StatelessWidget {
     required this.isDark,
     required this.onComplete,
     required this.onSkip,
+    required this.onRestore,
     required this.onDelete,
     required this.onChangePoint,
   });
@@ -499,6 +545,7 @@ class _InjectionEditSheet extends StatelessWidget {
   final bool isDark;
   final VoidCallback onComplete;
   final VoidCallback onSkip;
+  final VoidCallback onRestore;
   final VoidCallback onDelete;
   final VoidCallback onChangePoint;
 
@@ -560,6 +607,15 @@ class _InjectionEditSheet extends StatelessWidget {
                 ),
                 title: const Text('Segna come saltata'),
                 onTap: onSkip,
+              ),
+            if (isCompleted || isSkipped)
+              ListTile(
+                leading: Icon(
+                  Icons.restore,
+                  color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
+                ),
+                title: const Text('Ripristina come pianificata'),
+                onTap: onRestore,
               ),
             ListTile(
               leading: Icon(

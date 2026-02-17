@@ -173,5 +173,6 @@
   "discardChanges": "¿Deseas descartar los cambios?",
   "discard": "Descartar",
   "guide": "Guía",
-  "info": "Info"
+  "info": "Info",
+  "restoreAsScheduled": "Restaurar como programada"
 }

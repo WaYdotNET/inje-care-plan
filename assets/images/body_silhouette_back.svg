@@ -11,7 +11,7 @@
   </g>
 
   <!-- INDICATORI VISTA POSTERIORE: Nuca e capelli stilizzati -->
-  <g id="back-of-head" opacity="0.5">
+  <g id="back-of-head" opacity="0.6">
     <!-- Capelli/Nuca - linee curve -->
     <path d="M 160 8 Q 170 3, 180 3 Q 190 3, 200 8"
           stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
@@ -29,17 +29,17 @@
 
   <!-- Colonna vertebrale stilizzata (piu' evidente) -->
   <line x1="180" y1="65" x2="180" y2="560"
-        stroke="currentColor" stroke-width="2.5" stroke-opacity="0.2"
+        stroke="currentColor" stroke-width="3" stroke-opacity="0.35"
         stroke-dasharray="10,5"/>
 
   <!-- Scapole stilizzate (piu' evidenti) -->
   <path d="M 120 115 Q 145 145, 175 128"
-        stroke="currentColor" stroke-width="2" stroke-opacity="0.2" fill="none"/>
+        stroke="currentColor" stroke-width="2.5" stroke-opacity="0.35" fill="none"/>
   <path d="M 240 115 Q 215 145, 185 128"
-        stroke="currentColor" stroke-width="2" stroke-opacity="0.2" fill="none"/>
+        stroke="currentColor" stroke-width="2.5" stroke-opacity="0.35" fill="none"/>
 
   <!-- Vertebre cervicali -->
-  <g opacity="0.15">
+  <g opacity="0.3">
     <circle cx="180" cy="62" r="3" fill="currentColor"/>
     <circle cx="180" cy="72" r="2.5" fill="currentColor"/>
     <circle cx="180" cy="80" r="2.5" fill="currentColor"/>
@@ -47,23 +47,23 @@
 
   <!-- Zona lombare evidenziata -->
   <ellipse cx="180" cy="280" rx="38" ry="28"
-           fill="currentColor" fill-opacity="0.06"
-           stroke="currentColor" stroke-width="1" stroke-opacity="0.12"/>
+           fill="currentColor" fill-opacity="0.1"
+           stroke="currentColor" stroke-width="1" stroke-opacity="0.2"/>
 
   <!-- Zona glutei (per iniezioni) -->
   <ellipse cx="140" cy="580" rx="32" ry="28"
-           fill="currentColor" fill-opacity="0.06"
-           stroke="currentColor" stroke-width="1" stroke-opacity="0.12"/>
+           fill="currentColor" fill-opacity="0.1"
+           stroke="currentColor" stroke-width="1" stroke-opacity="0.2"/>
   <ellipse cx="220" cy="580" rx="32" ry="28"
-           fill="currentColor" fill-opacity="0.06"
-           stroke="currentColor" stroke-width="1" stroke-opacity="0.12"/>
+           fill="currentColor" fill-opacity="0.1"
+           stroke="currentColor" stroke-width="1" stroke-opacity="0.2"/>
 
   <!-- Etichetta RETRO -->
   <text x="180" y="1075"
         text-anchor="middle"
         font-family="sans-serif"
-        font-size="18"
+        font-size="24"
         font-weight="bold"
         fill="currentColor"
-        opacity="0.4">RETRO</text>
+        opacity="0.7">RETRO</text>
 </svg>

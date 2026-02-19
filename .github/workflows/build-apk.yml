@@ -1,4 +1,4 @@
-name: Build APK
+name: Build APK & App Bundle
 
 on:
   push:
@@ -42,11 +42,21 @@ jobs:
       - name: Build APK (release)
         run: flutter build apk --release
 
+      - name: Build App Bundle (release)
+        run: flutter build appbundle --release
+
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-release
+          name: app-release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30
+
+      - name: Upload Release App Bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-aab
+          path: build/app/outputs/bundle/release/app-release.aab
           retention-days: 30
 
   release:
@@ -82,10 +92,15 @@ jobs:
       - name: Build Release APK
         run: flutter build apk --release
 
+      - name: Build Release App Bundle
+        run: flutter build appbundle --release
+
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          files: build/app/outputs/flutter-apk/app-release.apk
+          files: |
+            build/app/outputs/flutter-apk/app-release.apk
+            build/app/outputs/bundle/release/app-release.aab
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

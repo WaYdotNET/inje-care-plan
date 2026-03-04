@@ -6,6 +6,7 @@ import 'package:file_picker/file_picker.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/theme_provider.dart';
 import '../info/info_screen.dart' show packageInfoProvider;
+import '../../core/services/backup_service.dart';
 import '../../core/services/export_service.dart';
 import '../../core/services/import_service.dart';
 import '../../core/services/notification_service.dart';
@@ -13,7 +14,7 @@ import '../../core/services/notification_settings_provider.dart';
 import '../../core/utils/picked_file_to_string.dart';
 import '../../core/database/app_database.dart' as db;
 import '../../core/database/database_provider.dart';
-import '../../core/ml/rotation_pattern_engine.dart';
+import '../../core/ml/rotation_pattern_engine.dart' hide bodyZonesProvider;
 import '../../app/router.dart';
 import '../../models/rotation_pattern.dart';
 import '../../models/therapy_plan.dart';
@@ -276,6 +277,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             icon: Icons.upload_file,
             title: 'Importa da CSV',
             onTap: () => _importFromCsv(context),
+          ),
+          _SettingsTile(
+            icon: Icons.backup,
+            title: 'Backup completo (JSON)',
+            onTap: () => _exportJsonBackup(context),
+          ),
+          _SettingsTile(
+            icon: Icons.restore,
+            title: 'Ripristina da backup',
+            onTap: () => _importJsonBackup(context),
           ),
           _SettingsTile(
             title: 'Elimina tutti i dati',
@@ -773,6 +784,165 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         Navigator.pop(context);
       }
 
+      if (mounted) {
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text('Errore: $e'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _exportJsonBackup(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final db = ref.read(databaseProvider);
+
+    try {
+      await BackupService.instance.exportBackup(db);
+      if (mounted) {
+        messenger.showSnackBar(
+          SnackBar(
+            content: const Text('Backup esportato'),
+            backgroundColor: Theme.of(context).colorScheme.primary,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text('Errore: $e'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _importJsonBackup(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final db = ref.read(databaseProvider);
+
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+        allowMultiple: false,
+      );
+
+      if (result == null || result.files.isEmpty) return;
+
+      // Scegli strategia
+      final strategy = await showDialog<ImportStrategy>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Strategia di ripristino'),
+          content: const Text(
+            'Scegli come ripristinare i dati:',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Annulla'),
+            ),
+            TextButton(
+              onPressed: () =>
+                  Navigator.pop(ctx, ImportStrategy.mergeKeepExisting),
+              child: const Text('Unisci (mantieni esistenti)'),
+            ),
+            ElevatedButton(
+              onPressed: () =>
+                  Navigator.pop(ctx, ImportStrategy.replaceAll),
+              child: const Text('Sostituisci tutto'),
+            ),
+          ],
+        ),
+      );
+
+      if (strategy == null) return;
+
+      // Loading dialog
+      if (mounted) {
+        showDialog<void>(
+          context: context,
+          barrierDismissible: false,
+          builder: (ctx) => const AlertDialog(
+            content: Row(
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(width: 24),
+                Text('Ripristino in corso...'),
+              ],
+            ),
+          ),
+        );
+      }
+
+      final content = await readPickedFileAsString(result.files.first);
+      final importResult = await BackupService.instance.importBackup(
+        db,
+        content,
+        strategy: strategy,
+      );
+
+      // Close loading dialog
+      if (mounted) {
+        Navigator.pop(context);
+      }
+
+      // Invalidate all providers
+      ref.invalidate(injectionsProvider);
+      ref.invalidate(adherenceStatsProvider);
+      ref.invalidate(bodyZonesProvider);
+      ref.invalidate(therapyPlanProvider);
+      ref.invalidate(blacklistedPointsProvider);
+
+      if (mounted) {
+        if (importResult.hasErrors) {
+          showDialog<void>(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              title: const Text('Ripristino con errori'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Tabelle: ${importResult.tablesProcessed}'),
+                  Text('Record: ${importResult.recordsImported}'),
+                  const SizedBox(height: 16),
+                  const Text('Errori:'),
+                  const SizedBox(height: 8),
+                  Text(
+                    importResult.errors.join('\n'),
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+              ),
+              actions: [
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text('OK'),
+                ),
+              ],
+            ),
+          );
+        } else {
+          messenger.showSnackBar(
+            SnackBar(
+              content: Text(
+                'Ripristinati ${importResult.recordsImported} record da ${importResult.tablesProcessed} tabelle',
+              ),
+              backgroundColor: Theme.of(context).colorScheme.primary,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted && Navigator.canPop(context)) {
+        Navigator.pop(context);
+      }
       if (mounted) {
         messenger.showSnackBar(
           SnackBar(

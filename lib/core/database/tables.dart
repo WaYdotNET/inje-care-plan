@@ -99,6 +99,7 @@ class PointConfigs extends Table {
   RealColumn get positionX => real().withDefault(const Constant(0.5))(); // Posizione X normalizzata (0-1)
   RealColumn get positionY => real().withDefault(const Constant(0.5))(); // Posizione Y normalizzata (0-1)
   TextColumn get bodyView => text().withDefault(const Constant('front'))(); // front, back
+  BoolColumn get isCustomPosition => boolean().withDefault(const Constant(false))(); // true se l'utente ha personalizzato la posizione
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
 

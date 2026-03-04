@@ -27,7 +27,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -38,7 +38,9 @@ class AppDatabase extends _$AppDatabase {
       await _seedDefaultTherapyPlans();
     },
     onUpgrade: (m, from, to) async {
-      // Schema reset to 1. All legacy migrations removed.
+      if (from < 2) {
+        await m.addColumn(pointConfigs, pointConfigs.isCustomPosition);
+      }
     },
     beforeOpen: (details) async {
       // Sincronizza sempre le coordinate dei punti con le costanti centralizzate
@@ -192,7 +194,7 @@ class AppDatabase extends _$AppDatabase {
           final pointNum = i + 1;
           final point = defaultPoints[i];
 
-          // Aggiorna la posizione del punto se esiste già nel database
+          // Aggiorna solo i punti NON personalizzati dall'utente
           b.update(
             pointConfigs,
             PointConfigsCompanion(
@@ -200,7 +202,10 @@ class AppDatabase extends _$AppDatabase {
               positionY: Value(point.y),
               updatedAt: Value(DateTime.now()),
             ),
-            where: (p) => p.zoneId.equals(zone.id) & p.pointNumber.equals(pointNum),
+            where: (p) =>
+                p.zoneId.equals(zone.id) &
+                p.pointNumber.equals(pointNum) &
+                p.isCustomPosition.equals(false),
           );
         }
       }
@@ -511,6 +516,8 @@ class AppDatabase extends _$AppDatabase {
   )..where((b) => b.pointCode.equals(pointCode))).go();
 
   // --- App Settings ---
+  Future<List<AppSetting>> getAllSettings() => select(appSettings).get();
+
   Future<String?> getSetting(String key) async {
     final result = await (select(
       appSettings,
@@ -545,6 +552,8 @@ class AppDatabase extends _$AppDatabase {
   }
 
   // --- Point Configs ---
+  Future<List<PointConfig>> getAllPointConfigs() => select(pointConfigs).get();
+
   Future<List<PointConfig>> getPointConfigsForZone(int zoneId) =>
       (select(pointConfigs)
             ..where((p) => p.zoneId.equals(zoneId))
@@ -589,6 +598,7 @@ class AppDatabase extends _$AppDatabase {
           positionX: Value(x),
           positionY: Value(y),
           bodyView: Value(bodyView),
+          isCustomPosition: const Value(true),
           updatedAt: Value(DateTime.now()),
         ),
       );
@@ -600,6 +610,7 @@ class AppDatabase extends _$AppDatabase {
           positionX: Value(x),
           positionY: Value(y),
           bodyView: Value(bodyView),
+          isCustomPosition: const Value(true),
         ),
       );
     }

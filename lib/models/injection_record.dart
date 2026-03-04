@@ -13,6 +13,7 @@ class InjectionRecord {
     this.notes = '',
     this.sideEffects = const [],
     this.calendarEventId = '',
+    this.customPointLabel,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -26,6 +27,7 @@ class InjectionRecord {
   final String notes;
   final List<String> sideEffects;
   final String calendarEventId;
+  final String? customPointLabel;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -50,8 +52,8 @@ class InjectionRecord {
   /// Get point code (e.g., "CD-3")
   String get pointCode => '$zoneCode-$pointNumber';
 
-  /// Get point label (e.g., "Coscia Dx · 3")
-  String get pointLabel => '$zoneName · $pointNumber';
+  /// Get point label (e.g., "Coscia Dx · 3") — uses custom label if set
+  String get pointLabel => customPointLabel ?? '$zoneName · $pointNumber';
 
   /// Get emoji for zone
   String get emoji => switch (zoneId) {
@@ -79,6 +81,7 @@ class InjectionRecord {
       notes: json['notes'] as String? ?? '',
       sideEffects: (json['sideEffects'] as String?)?.split(',').where((s) => s.isNotEmpty).toList() ?? [],
       calendarEventId: json['calendarEventId'] as String? ?? '',
+      customPointLabel: json['customPointLabel'] as String?,
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
     );
@@ -97,6 +100,7 @@ class InjectionRecord {
     'notes': notes,
     'sideEffects': sideEffects.join(','),
     'calendarEventId': calendarEventId,
+    'customPointLabel': customPointLabel,
     'createdAt': createdAt.toIso8601String(),
     'updatedAt': updatedAt.toIso8601String(),
   };
@@ -112,6 +116,7 @@ class InjectionRecord {
     String? notes,
     List<String>? sideEffects,
     String? calendarEventId,
+    String? customPointLabel,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) => InjectionRecord(
@@ -124,6 +129,7 @@ class InjectionRecord {
     notes: notes ?? this.notes,
     sideEffects: sideEffects ?? this.sideEffects,
     calendarEventId: calendarEventId ?? this.calendarEventId,
+    customPointLabel: customPointLabel ?? this.customPointLabel,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
@@ -133,11 +139,13 @@ class InjectionRecord {
     required int zoneId,
     required int pointNumber,
     required DateTime scheduledAt,
+    String? customPointLabel,
   }) => InjectionRecord(
     zoneId: zoneId,
     pointNumber: pointNumber,
     scheduledAt: scheduledAt,
     status: InjectionStatus.scheduled,
+    customPointLabel: customPointLabel,
     createdAt: DateTime.now(),
     updatedAt: DateTime.now(),
   );

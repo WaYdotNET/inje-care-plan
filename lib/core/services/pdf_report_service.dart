@@ -375,8 +375,8 @@ class PdfReportService {
             border: pw.TableBorder.all(color: PdfColors.grey300),
             columnWidths: {
               0: const pw.FlexColumnWidth(2),
-              1: const pw.FlexColumnWidth(3),
-              2: const pw.FlexColumnWidth(1),
+              1: const pw.FlexColumnWidth(2),
+              2: const pw.FlexColumnWidth(3),
               3: const pw.FlexColumnWidth(2),
             },
             children: [
@@ -415,7 +415,7 @@ class PdfReportService {
                       zone != null ? '${zone.emoji} ${zone.displayName}' : 'Zona ${injection.zoneId}',
                       ttf,
                     ),
-                    _tableCell('${injection.pointNumber}', ttf),
+                    _tableCell(injection.pointLabel, ttf),
                     pw.Padding(
                       padding: const pw.EdgeInsets.all(6),
                       child: pw.Text(

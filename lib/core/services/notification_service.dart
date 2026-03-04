@@ -167,10 +167,96 @@ class NotificationService {
     );
   }
 
+  /// Schedule a 1-minute pre-injection reminder
+  Future<void> scheduleOneMinuteReminder({
+    required int id,
+    required DateTime scheduledTime,
+    required String pointLabel,
+  }) async {
+    final reminderTime = scheduledTime.subtract(const Duration(minutes: 1));
+
+    // Don't schedule if reminder time is in the past
+    if (reminderTime.isBefore(DateTime.now())) return;
+
+    const androidDetails = AndroidNotificationDetails(
+      'injection_reminders',
+      'Promemoria iniezioni',
+      channelDescription: 'Notifiche per le iniezioni programmate',
+      importance: Importance.max,
+      priority: Priority.max,
+      icon: '@mipmap/ic_launcher',
+    );
+
+    const iosDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
+
+    const details = NotificationDetails(
+      android: androidDetails,
+      iOS: iosDetails,
+    );
+
+    await _notifications.zonedSchedule(
+      id + 20000, // Offset to avoid ID conflicts
+      'Iniezione tra 1 minuto',
+      'Preparati: $pointLabel',
+      tz.TZDateTime.from(reminderTime, tz.local),
+      details,
+      androidScheduleMode: await _androidScheduleMode(),
+    );
+  }
+
+  /// Schedule a side effects reminder after injection completion
+  Future<void> scheduleSideEffectsReminder({
+    required int id,
+    required DateTime completedAt,
+    required String pointLabel,
+    int hoursAfter = 4,
+  }) async {
+    final reminderTime = completedAt.add(Duration(hours: hoursAfter));
+
+    // Don't schedule if reminder time is in the past
+    if (reminderTime.isBefore(DateTime.now())) return;
+
+    const androidDetails = AndroidNotificationDetails(
+      'side_effects_reminders',
+      'Promemoria effetti collaterali',
+      channelDescription: 'Notifiche per registrare effetti collaterali post-iniezione',
+      importance: Importance.defaultImportance,
+      priority: Priority.defaultPriority,
+      icon: '@mipmap/ic_launcher',
+    );
+
+    const iosDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
+
+    const details = NotificationDetails(
+      android: androidDetails,
+      iOS: iosDetails,
+    );
+
+    await _notifications.zonedSchedule(
+      id + 30000, // Offset to avoid ID conflicts
+      'Come è andata l\'iniezione?',
+      'Registra eventuali effetti collaterali: $pointLabel',
+      tz.TZDateTime.from(reminderTime, tz.local),
+      details,
+      androidScheduleMode: await _androidScheduleMode(),
+      payload: 'side_effects:$id',
+    );
+  }
+
   /// Cancel a scheduled notification
   Future<void> cancelNotification(int id) async {
     await _notifications.cancel(id);
-    await _notifications.cancel(id + 10000); // Cancel missed dose reminder too
+    await _notifications.cancel(id + 10000); // Cancel missed dose reminder
+    await _notifications.cancel(id + 20000); // Cancel 1-minute reminder
+    await _notifications.cancel(id + 30000); // Cancel side effects reminder
   }
 
   /// Cancel all scheduled notifications
@@ -222,6 +308,13 @@ class NotificationService {
       scheduledTime: injection.scheduledAt,
       pointLabel: injection.pointLabel,
       minutesBefore: minutesBefore,
+    );
+
+    // Schedule 1-minute pre-injection reminder
+    await scheduleOneMinuteReminder(
+      id: id,
+      scheduledTime: injection.scheduledAt,
+      pointLabel: injection.pointLabel,
     );
 
     // Schedule missed dose reminder if enabled

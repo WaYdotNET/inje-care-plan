@@ -21,11 +21,12 @@ class ImportResult {
 
 /// Service per importare dati da CSV
 ///
-/// Formato CSV supportato:
+/// Formato CSV supportato (4 o 5 colonne):
 /// ```
 /// data,zona,punto,stato
+/// data,zona,punto,label,stato
 /// 2024-07-15 20:00,CD,3,completed
-/// 2024-07-17 20:00,CS,1,completed
+/// 2024-07-15 20:00,CD,3,Coscia Dx · ABC (3),completed
 /// ```
 ///
 /// Zone code: CD, CS, BD, BS, AD, AS, GD, GS
@@ -134,8 +135,19 @@ class ImportService {
         return _ParseResult.failure('Numero punto non valido: ${parts[2]}');
       }
 
-      // Parse status
-      final status = parts[3].toLowerCase();
+      // Supporta sia formato a 4 colonne (data,zona,punto,stato)
+      // che a 5 colonne (data,zona,punto,label,stato)
+      final String status;
+      final String? customLabel;
+      if (parts.length >= 5 && !_validStatuses.contains(parts[3].toLowerCase())) {
+        // 5-column format: label is at index 3, status at index 4
+        customLabel = parts[3];
+        status = parts[4].toLowerCase();
+      } else {
+        // 4-column format: status at index 3
+        customLabel = null;
+        status = parts[3].toLowerCase();
+      }
       if (!_validStatuses.contains(status)) {
         return _ParseResult.failure(
           'Stato non valido: $status (usa: completed, scheduled, skipped, delayed, missed)',
@@ -149,11 +161,14 @@ class ImportService {
       }
 
       // Insert injection
+      final pointLabel = customLabel?.isNotEmpty == true
+          ? customLabel!
+          : '${zoneInfo.name} · $pointNumber';
       await db.insertInjection(InjectionsCompanion.insert(
         zoneId: zoneInfo.id,
         pointNumber: pointNumber,
         pointCode: '$zoneCode-$pointNumber',
-        pointLabel: '${zoneInfo.name} · $pointNumber',
+        pointLabel: pointLabel,
         scheduledAt: date,
         completedAt: Value(completedAt),
         status: Value(status),

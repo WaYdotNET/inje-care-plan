@@ -8,6 +8,8 @@ import '../../core/theme/app_colors.dart';
 import '../../core/database/app_database.dart' as db;
 import '../../app/router.dart';
 import '../../core/services/missed_injection_service.dart';
+import '../../core/services/notification_service.dart';
+import '../../core/services/notification_settings_provider.dart';
 import '../injection/injection_provider.dart';
 
 /// Calendar screen with injection schedule
@@ -462,6 +464,19 @@ class _InjectionCard extends ConsumerWidget {
           Navigator.pop(ctx);
           final repository = ref.read(injectionRepositoryProvider);
           await repository.completeInjection(injection.id);
+
+          // Schedula promemoria effetti collaterali
+          final notifSettings = ref.read(notificationSettingsProvider);
+          if (notifSettings.enabled && notifSettings.permissionsGranted) {
+            final notifId = injection.scheduledAt.millisecondsSinceEpoch ~/ 1000;
+            await NotificationService.instance.scheduleSideEffectsReminder(
+              id: notifId,
+              completedAt: DateTime.now(),
+              pointLabel: injection.pointLabel,
+              hoursAfter: notifSettings.sideEffectsReminderHours,
+            );
+          }
+
           ref.invalidate(injectionsProvider);
         },
         onSkip: () async {

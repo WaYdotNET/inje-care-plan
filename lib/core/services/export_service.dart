@@ -124,17 +124,22 @@ class ExportService {
   Future<void> exportToCsv(List<dynamic> injections) async {
     final buffer = StringBuffer();
 
-    // Header semplice
-    buffer.writeln('data,zona,punto,stato');
+    // Header con label per mostrare nomi custom + default
+    buffer.writeln('data,zona,punto,label,stato');
 
-    // Data rows - formato semplice
+    // Data rows - formato con label personalizzato
     for (final inj in injections) {
       if (inj is Injection) {
         final date = inj.completedAt ?? inj.scheduledAt;
+        // Escape pointLabel per CSV (potrebbe contenere virgole)
+        final escapedLabel = inj.pointLabel.contains(',')
+            ? '"${inj.pointLabel}"'
+            : inj.pointLabel;
         buffer.writeln([
           DateFormat('yyyy-MM-dd HH:mm').format(date),
           inj.pointCode.split('-').first, // Zone code (es. CD, CS, BD, BS, AD, AS, GD, GS)
           inj.pointNumber,
+          escapedLabel,
           inj.status,
         ].join(','));
       }

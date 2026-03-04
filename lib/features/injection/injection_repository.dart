@@ -11,6 +11,24 @@ class InjectionRepository {
 
   final AppDatabase _db;
 
+  /// Resolve the display label for a point, using custom names if configured.
+  /// Format: "ZoneName · CustomName (N)" when custom name exists,
+  /// otherwise "ZoneName · N" (default format).
+  Future<String> resolvePointLabel(int zoneId, int pointNumber) async {
+    final zone = await _db.getZoneById(zoneId);
+    if (zone == null) return 'Punto $pointNumber';
+
+    final zoneName = zone.customName?.isNotEmpty == true
+        ? zone.customName!
+        : zone.name;
+
+    final config = await _db.getPointConfig(zoneId, pointNumber);
+    if (config != null && config.customName.isNotEmpty) {
+      return '$zoneName · ${config.customName} ($pointNumber)';
+    }
+    return '$zoneName · $pointNumber';
+  }
+
   // ============================================================================
   // Injections
   // ============================================================================
@@ -103,6 +121,15 @@ class InjectionRepository {
       status: const Value('completed'),
       completedAt: Value(DateTime.now()),
       notes: Value(notes ?? ''),
+      sideEffects: Value(sideEffects.join(',')),
+      updatedAt: Value(DateTime.now()),
+    ));
+  }
+
+  /// Update side effects for an existing injection
+  Future<void> updateSideEffects(int injectionId, List<String> sideEffects) async {
+    await _db.updateInjection(InjectionsCompanion(
+      id: Value(injectionId),
       sideEffects: Value(sideEffects.join(',')),
       updatedAt: Value(DateTime.now()),
     ));
@@ -325,5 +352,10 @@ class InjectionRepository {
   /// Get injection by ID
   Future<Injection?> getInjectionById(int id) {
     return _db.getInjectionById(id);
+  }
+
+  /// Get last completed injection without side effects logged
+  Future<Injection?> getLastCompletedInjectionWithoutSideEffects() {
+    return _db.getLastCompletedInjectionWithoutSideEffects();
   }
 }

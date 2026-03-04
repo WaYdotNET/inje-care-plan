@@ -183,6 +183,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       .setMissedDoseReminder(value)
                 : null,
           ),
+          _SettingsTile(
+            title: 'Promemoria effetti collaterali',
+            trailing: Text('${notificationSettings.sideEffectsReminderHours} ore'),
+            onTap: () => _editSideEffectsReminderHours(
+              context,
+              notificationSettings.sideEffectsReminderHours,
+            ),
+          ),
           ListTile(
             title: const Text('Testa notifica'),
             subtitle: const Text('Visualizza un esempio di promemoria'),
@@ -611,6 +619,50 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ref
                     .read(notificationSettingsProvider.notifier)
                     .setMinutesBefore(value);
+              },
+              child: const Text('Salva'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _editSideEffectsReminderHours(BuildContext context, int currentValue) {
+    showDialog<void>(
+      context: context,
+      builder: (context) {
+        int value = currentValue;
+        return AlertDialog(
+          title: const Text('Promemoria effetti collaterali'),
+          content: StatefulBuilder(
+            builder: (context, setState) => RadioGroup<int>(
+              groupValue: value,
+              onChanged: (v) => setState(() => value = v!),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [2, 4, 6, 8]
+                    .map(
+                      (n) => RadioListTile<int>(
+                        title: Text('$n ore dopo l\'iniezione'),
+                        value: n,
+                      ),
+                    )
+                    .toList(),
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Annulla'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+                ref
+                    .read(notificationSettingsProvider.notifier)
+                    .setSideEffectsReminderHours(value);
               },
               child: const Text('Salva'),
             ),

@@ -3935,6 +3935,21 @@ class $PointConfigsTable extends PointConfigs
     requiredDuringInsert: false,
     defaultValue: const Constant('front'),
   );
+  static const VerificationMeta _isCustomPositionMeta = const VerificationMeta(
+    'isCustomPosition',
+  );
+  @override
+  late final GeneratedColumn<bool> isCustomPosition = GeneratedColumn<bool>(
+    'is_custom_position',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_custom_position" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -3968,6 +3983,7 @@ class $PointConfigsTable extends PointConfigs
     positionX,
     positionY,
     bodyView,
+    isCustomPosition,
     createdAt,
     updatedAt,
   ];
@@ -4029,6 +4045,15 @@ class $PointConfigsTable extends PointConfigs
         bodyView.isAcceptableOrUnknown(data['body_view']!, _bodyViewMeta),
       );
     }
+    if (data.containsKey('is_custom_position')) {
+      context.handle(
+        _isCustomPositionMeta,
+        isCustomPosition.isAcceptableOrUnknown(
+          data['is_custom_position']!,
+          _isCustomPositionMeta,
+        ),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -4082,6 +4107,10 @@ class $PointConfigsTable extends PointConfigs
         DriftSqlType.string,
         data['${effectivePrefix}body_view'],
       )!,
+      isCustomPosition: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_custom_position'],
+      )!,
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -4107,6 +4136,7 @@ class PointConfig extends DataClass implements Insertable<PointConfig> {
   final double positionX;
   final double positionY;
   final String bodyView;
+  final bool isCustomPosition;
   final DateTime createdAt;
   final DateTime updatedAt;
   const PointConfig({
@@ -4117,6 +4147,7 @@ class PointConfig extends DataClass implements Insertable<PointConfig> {
     required this.positionX,
     required this.positionY,
     required this.bodyView,
+    required this.isCustomPosition,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -4130,6 +4161,7 @@ class PointConfig extends DataClass implements Insertable<PointConfig> {
     map['position_x'] = Variable<double>(positionX);
     map['position_y'] = Variable<double>(positionY);
     map['body_view'] = Variable<String>(bodyView);
+    map['is_custom_position'] = Variable<bool>(isCustomPosition);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     return map;
@@ -4144,6 +4176,7 @@ class PointConfig extends DataClass implements Insertable<PointConfig> {
       positionX: Value(positionX),
       positionY: Value(positionY),
       bodyView: Value(bodyView),
+      isCustomPosition: Value(isCustomPosition),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
@@ -4162,6 +4195,7 @@ class PointConfig extends DataClass implements Insertable<PointConfig> {
       positionX: serializer.fromJson<double>(json['positionX']),
       positionY: serializer.fromJson<double>(json['positionY']),
       bodyView: serializer.fromJson<String>(json['bodyView']),
+      isCustomPosition: serializer.fromJson<bool>(json['isCustomPosition']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
@@ -4177,6 +4211,7 @@ class PointConfig extends DataClass implements Insertable<PointConfig> {
       'positionX': serializer.toJson<double>(positionX),
       'positionY': serializer.toJson<double>(positionY),
       'bodyView': serializer.toJson<String>(bodyView),
+      'isCustomPosition': serializer.toJson<bool>(isCustomPosition),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
@@ -4190,6 +4225,7 @@ class PointConfig extends DataClass implements Insertable<PointConfig> {
     double? positionX,
     double? positionY,
     String? bodyView,
+    bool? isCustomPosition,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) => PointConfig(
@@ -4200,6 +4236,7 @@ class PointConfig extends DataClass implements Insertable<PointConfig> {
     positionX: positionX ?? this.positionX,
     positionY: positionY ?? this.positionY,
     bodyView: bodyView ?? this.bodyView,
+    isCustomPosition: isCustomPosition ?? this.isCustomPosition,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
@@ -4216,6 +4253,9 @@ class PointConfig extends DataClass implements Insertable<PointConfig> {
       positionX: data.positionX.present ? data.positionX.value : this.positionX,
       positionY: data.positionY.present ? data.positionY.value : this.positionY,
       bodyView: data.bodyView.present ? data.bodyView.value : this.bodyView,
+      isCustomPosition: data.isCustomPosition.present
+          ? data.isCustomPosition.value
+          : this.isCustomPosition,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -4231,6 +4271,7 @@ class PointConfig extends DataClass implements Insertable<PointConfig> {
           ..write('positionX: $positionX, ')
           ..write('positionY: $positionY, ')
           ..write('bodyView: $bodyView, ')
+          ..write('isCustomPosition: $isCustomPosition, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -4246,6 +4287,7 @@ class PointConfig extends DataClass implements Insertable<PointConfig> {
     positionX,
     positionY,
     bodyView,
+    isCustomPosition,
     createdAt,
     updatedAt,
   );
@@ -4260,6 +4302,7 @@ class PointConfig extends DataClass implements Insertable<PointConfig> {
           other.positionX == this.positionX &&
           other.positionY == this.positionY &&
           other.bodyView == this.bodyView &&
+          other.isCustomPosition == this.isCustomPosition &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -4272,6 +4315,7 @@ class PointConfigsCompanion extends UpdateCompanion<PointConfig> {
   final Value<double> positionX;
   final Value<double> positionY;
   final Value<String> bodyView;
+  final Value<bool> isCustomPosition;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   const PointConfigsCompanion({
@@ -4282,6 +4326,7 @@ class PointConfigsCompanion extends UpdateCompanion<PointConfig> {
     this.positionX = const Value.absent(),
     this.positionY = const Value.absent(),
     this.bodyView = const Value.absent(),
+    this.isCustomPosition = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
   });
@@ -4293,6 +4338,7 @@ class PointConfigsCompanion extends UpdateCompanion<PointConfig> {
     this.positionX = const Value.absent(),
     this.positionY = const Value.absent(),
     this.bodyView = const Value.absent(),
+    this.isCustomPosition = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
   }) : zoneId = Value(zoneId),
@@ -4305,6 +4351,7 @@ class PointConfigsCompanion extends UpdateCompanion<PointConfig> {
     Expression<double>? positionX,
     Expression<double>? positionY,
     Expression<String>? bodyView,
+    Expression<bool>? isCustomPosition,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
   }) {
@@ -4316,6 +4363,7 @@ class PointConfigsCompanion extends UpdateCompanion<PointConfig> {
       if (positionX != null) 'position_x': positionX,
       if (positionY != null) 'position_y': positionY,
       if (bodyView != null) 'body_view': bodyView,
+      if (isCustomPosition != null) 'is_custom_position': isCustomPosition,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
     });
@@ -4329,6 +4377,7 @@ class PointConfigsCompanion extends UpdateCompanion<PointConfig> {
     Value<double>? positionX,
     Value<double>? positionY,
     Value<String>? bodyView,
+    Value<bool>? isCustomPosition,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
   }) {
@@ -4340,6 +4389,7 @@ class PointConfigsCompanion extends UpdateCompanion<PointConfig> {
       positionX: positionX ?? this.positionX,
       positionY: positionY ?? this.positionY,
       bodyView: bodyView ?? this.bodyView,
+      isCustomPosition: isCustomPosition ?? this.isCustomPosition,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -4369,6 +4419,9 @@ class PointConfigsCompanion extends UpdateCompanion<PointConfig> {
     if (bodyView.present) {
       map['body_view'] = Variable<String>(bodyView.value);
     }
+    if (isCustomPosition.present) {
+      map['is_custom_position'] = Variable<bool>(isCustomPosition.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -4388,6 +4441,7 @@ class PointConfigsCompanion extends UpdateCompanion<PointConfig> {
           ..write('positionX: $positionX, ')
           ..write('positionY: $positionY, ')
           ..write('bodyView: $bodyView, ')
+          ..write('isCustomPosition: $isCustomPosition, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -6845,6 +6899,7 @@ typedef $$PointConfigsTableCreateCompanionBuilder =
       Value<double> positionX,
       Value<double> positionY,
       Value<String> bodyView,
+      Value<bool> isCustomPosition,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
     });
@@ -6857,6 +6912,7 @@ typedef $$PointConfigsTableUpdateCompanionBuilder =
       Value<double> positionX,
       Value<double> positionY,
       Value<String> bodyView,
+      Value<bool> isCustomPosition,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
     });
@@ -6921,6 +6977,11 @@ class $$PointConfigsTableFilterComposer
 
   ColumnFilters<String> get bodyView => $composableBuilder(
     column: $table.bodyView,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isCustomPosition => $composableBuilder(
+    column: $table.isCustomPosition,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -6997,6 +7058,11 @@ class $$PointConfigsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get isCustomPosition => $composableBuilder(
+    column: $table.isCustomPosition,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -7061,6 +7127,11 @@ class $$PointConfigsTableAnnotationComposer
 
   GeneratedColumn<String> get bodyView =>
       $composableBuilder(column: $table.bodyView, builder: (column) => column);
+
+  GeneratedColumn<bool> get isCustomPosition => $composableBuilder(
+    column: $table.isCustomPosition,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -7127,6 +7198,7 @@ class $$PointConfigsTableTableManager
                 Value<double> positionX = const Value.absent(),
                 Value<double> positionY = const Value.absent(),
                 Value<String> bodyView = const Value.absent(),
+                Value<bool> isCustomPosition = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
               }) => PointConfigsCompanion(
@@ -7137,6 +7209,7 @@ class $$PointConfigsTableTableManager
                 positionX: positionX,
                 positionY: positionY,
                 bodyView: bodyView,
+                isCustomPosition: isCustomPosition,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
               ),
@@ -7149,6 +7222,7 @@ class $$PointConfigsTableTableManager
                 Value<double> positionX = const Value.absent(),
                 Value<double> positionY = const Value.absent(),
                 Value<String> bodyView = const Value.absent(),
+                Value<bool> isCustomPosition = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
               }) => PointConfigsCompanion.insert(
@@ -7159,6 +7233,7 @@ class $$PointConfigsTableTableManager
                 positionX: positionX,
                 positionY: positionY,
                 bodyView: bodyView,
+                isCustomPosition: isCustomPosition,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
               ),

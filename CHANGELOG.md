@@ -1,5 +1,16 @@
 # Changelog
 
+## 4.4.0 - 2026-03-04
+
+### Aggiunto
+- **Backup completo (JSON)**: Nuovo sistema di backup/ripristino che esporta tutte le 7 tabelle del database (zone, piani, iniezioni, punti esclusi, configurazioni punti, impostazioni, profilo utente) in un unico file JSON.
+- **Due strategie di import**: "Sostituisci tutto" per ripristino completo o "Unisci" per aggiungere dati senza sovrascrivere quelli esistenti.
+- **Nuovi metodi DAO**: `getAllPointConfigs()` e `getAllSettings()` per accesso diretto alle tabelle.
+
+### Corretto
+- **Posizioni personalizzate perse al riavvio**: Le coordinate dei punti personalizzate dall'utente venivano sovrascritte ad ogni avvio dell'app dal metodo `_fixIncorrectPointCoordinates()`. Aggiunta colonna `isCustomPosition` che protegge le posizioni personalizzate dal reset automatico.
+- **Migrazione database v2**: Aggiunta migrazione schema da v1 a v2 per la nuova colonna `isCustomPosition` nella tabella `PointConfigs`.
+
 ## 4.3.1 - 2026-02-17
 
 ### Migliorato

@@ -1,5 +1,21 @@
 # Changelog
 
+## 4.5.0 - 2026-03-04
+
+### Aggiunto
+- **Nomi personalizzati nei record**: Quando si crea un'iniezione, il `pointLabel` ora include il nome custom del punto (es. "Coscia Dx · ABC (3)") con il numero originale tra parentesi per riferimento.
+- **Promemoria 1 minuto**: Notifica urgente 1 minuto prima dell'iniezione programmata, in aggiunta al promemoria configurabile esistente.
+- **Promemoria effetti collaterali**: Notifica configurabile (default 4h) dopo il completamento dell'iniezione per registrare eventuali effetti collaterali.
+- **Dialog effetti collaterali ritardato**: Gli effetti collaterali vengono chiesti alla registrazione dell'iniezione successiva, non più immediatamente.
+- **Export CSV con label**: Il CSV ora include la colonna `label` con il nome personalizzato del punto.
+
+### Migliorato
+- **Import CSV retrocompatibile**: Supporta sia il formato a 4 colonne (vecchio) che a 5 colonne (con label).
+- **Report PDF con nomi custom**: La colonna "Punto" nel report PDF ora mostra il label completo (inclusi nomi personalizzati).
+
+### Corretto
+- **Nomi custom non usati**: I nomi personalizzati dei punti (da ZonePointsEditor) non venivano propagati alla creazione dell'iniezione, mostrando sempre il formato default nel calendario, storico e notifiche.
+
 ## 4.4.0 - 2026-03-04
 
 ### Aggiunto

@@ -10,6 +10,7 @@ class NotificationSettings {
   final bool missedDoseReminder;
   final bool permissionsGranted;
   final int overdueGraceMinutes;
+  final int sideEffectsReminderHours;
 
   const NotificationSettings({
     this.enabled = true,
@@ -17,6 +18,7 @@ class NotificationSettings {
     this.missedDoseReminder = true,
     this.permissionsGranted = false,
     this.overdueGraceMinutes = 60,
+    this.sideEffectsReminderHours = 4,
   });
 
   NotificationSettings copyWith({
@@ -25,6 +27,7 @@ class NotificationSettings {
     bool? missedDoseReminder,
     bool? permissionsGranted,
     int? overdueGraceMinutes,
+    int? sideEffectsReminderHours,
   }) {
     return NotificationSettings(
       enabled: enabled ?? this.enabled,
@@ -32,6 +35,7 @@ class NotificationSettings {
       missedDoseReminder: missedDoseReminder ?? this.missedDoseReminder,
       permissionsGranted: permissionsGranted ?? this.permissionsGranted,
       overdueGraceMinutes: overdueGraceMinutes ?? this.overdueGraceMinutes,
+      sideEffectsReminderHours: sideEffectsReminderHours ?? this.sideEffectsReminderHours,
     );
   }
 }
@@ -43,6 +47,7 @@ class NotificationSettingsNotifier extends Notifier<NotificationSettings> {
   static const _keyMissedDose = 'notification_missed_dose';
   static const _keyPermissionsGranted = 'notification_permissions_granted';
   static const _keyOverdueGraceMinutes = 'notification_overdue_grace_minutes';
+  static const _keySideEffectsReminderHours = 'side_effects_reminder_hours';
 
   @override
   NotificationSettings build() {
@@ -58,6 +63,7 @@ class NotificationSettingsNotifier extends Notifier<NotificationSettings> {
       missedDoseReminder: prefs.getBool(_keyMissedDose) ?? true,
       permissionsGranted: prefs.getBool(_keyPermissionsGranted) ?? false,
       overdueGraceMinutes: prefs.getInt(_keyOverdueGraceMinutes) ?? 60,
+      sideEffectsReminderHours: prefs.getInt(_keySideEffectsReminderHours) ?? 4,
     );
   }
 
@@ -83,6 +89,12 @@ class NotificationSettingsNotifier extends Notifier<NotificationSettings> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_keyOverdueGraceMinutes, value);
     state = state.copyWith(overdueGraceMinutes: value);
+  }
+
+  Future<void> setSideEffectsReminderHours(int value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_keySideEffectsReminderHours, value);
+    state = state.copyWith(sideEffectsReminderHours: value);
   }
 
   /// Request notification permissions

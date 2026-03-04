@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -11,6 +12,7 @@ import '../../models/injection_record.dart';
 import '../../core/services/notification_service.dart';
 import '../../core/services/notification_settings_provider.dart';
 import '../../core/ml/rotation_pattern_engine.dart';
+import '../../core/widgets/side_effects_dialog.dart';
 import 'injection_provider.dart';
 import 'zone_provider.dart';
 
@@ -36,8 +38,8 @@ class RecordInjectionScreen extends ConsumerStatefulWidget {
 
 class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
   final _notesController = TextEditingController();
-  final Set<String> _selectedSideEffects = {};
   bool _isLoading = false;
+  bool _sideEffectsChecked = false;
 
   BodyZone? _getZone(List<BodyZone> zones) {
     final zone = zones.where((z) => z.id == widget.zoneId).firstOrNull;
@@ -45,9 +47,36 @@ class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      _checkPendingSideEffects();
+    });
+  }
+
+  @override
   void dispose() {
     _notesController.dispose();
     super.dispose();
+  }
+
+  Future<void> _checkPendingSideEffects() async {
+    if (_sideEffectsChecked) return;
+    _sideEffectsChecked = true;
+
+    final repository = ref.read(injectionRepositoryProvider);
+    final pending = await repository.getLastCompletedInjectionWithoutSideEffects();
+
+    if (pending != null && mounted) {
+      final effects = await SideEffectsDialog.show(
+        context,
+        injectionId: pending.id,
+        pointLabel: pending.pointLabel,
+      );
+      if (effects != null) {
+        await repository.updateSideEffects(pending.id, effects);
+      }
+    }
   }
 
   @override
@@ -159,37 +188,6 @@ class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
               ),
             ),
 
-            const SizedBox(height: 24),
-
-            // Side effects
-            Text(
-              'Effetti collaterali',
-              style: theme.textTheme.titleMedium,
-            ),
-            const SizedBox(height: 8),
-
-            ...[
-              'Rossore nel punto',
-              'Dolore locale',
-              'Stanchezza',
-              'Sintomi influenzali',
-              'Altro',
-            ].map((effect) => CheckboxListTile(
-              title: Text(effect),
-              value: _selectedSideEffects.contains(effect),
-              onChanged: (value) {
-                setState(() {
-                  if (value == true) {
-                    _selectedSideEffects.add(effect);
-                  } else {
-                    _selectedSideEffects.remove(effect);
-                  }
-                });
-              },
-              controlAffinity: ListTileControlAffinity.leading,
-              contentPadding: EdgeInsets.zero,
-            )),
-
             const SizedBox(height: 32),
 
             // Confirm button
@@ -227,6 +225,12 @@ class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
       // Questo permette all'utente di programmare e poi confermare
       const status = InjectionStatus.scheduled;
 
+      // Risolvi il label personalizzato (custom point/zone names)
+      final resolvedLabel = await repository.resolvePointLabel(
+        widget.zoneId,
+        widget.pointNumber,
+      );
+
       // Create injection record - sempre come "scheduled" inizialmente
       final record = InjectionRecord(
         zoneId: widget.zoneId,
@@ -235,7 +239,8 @@ class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
         completedAt: null, // Non completata ancora
         status: status,
         notes: _notesController.text.isNotEmpty ? _notesController.text : '',
-        sideEffects: _selectedSideEffects.toList(),
+        sideEffects: const [],
+        customPointLabel: resolvedLabel,
         createdAt: now,
         updatedAt: now,
       );
@@ -315,11 +320,23 @@ class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
 
           if (shouldComplete == true && mounted) {
             // Segna come completata
+            final completedAt = DateTime.now();
             final completedRecord = record.copyWith(
               status: InjectionStatus.completed,
-              completedAt: DateTime.now(),
+              completedAt: completedAt,
             );
             await repository.updateInjection(injectionId, completedRecord);
+
+            // Schedula promemoria effetti collaterali
+            if (notificationSettings.enabled && notificationSettings.permissionsGranted) {
+              final notifId = record.scheduledAt.millisecondsSinceEpoch ~/ 1000;
+              await NotificationService.instance.scheduleSideEffectsReminder(
+                id: notifId,
+                completedAt: completedAt,
+                pointLabel: record.pointLabel,
+                hoursAfter: notificationSettings.sideEffectsReminderHours,
+              );
+            }
 
             if (mounted) {
               ScaffoldMessenger.of(context)

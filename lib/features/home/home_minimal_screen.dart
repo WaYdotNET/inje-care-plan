@@ -179,6 +179,7 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen> {
                               scheduledInjectionId,
                               zone!,
                               pointNumber ?? 1,
+                              scheduledAt: displayDate,
                             );
                           } else {
                             _navigateToRecord(context, zone!.id, displayDate);
@@ -242,14 +243,20 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen> {
     BuildContext context,
     int injectionId,
     model.BodyZone zone,
-    int pointNumber,
-  ) async {
+    int pointNumber, {
+    DateTime? scheduledAt,
+  }) async {
+    final repository = ref.read(injectionRepositoryProvider);
+    final resolvedLabel = await repository.resolvePointLabel(zone.id, pointNumber);
+
+    if (!context.mounted) return;
+
     final shouldComplete = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Conferma iniezione'),
         content: Text(
-          'Vuoi segnare ${zone.pointLabel(pointNumber)} come completata?',
+          'Vuoi segnare $resolvedLabel come completata?',
         ),
         actions: [
           TextButton(
@@ -265,9 +272,19 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen> {
     );
 
     if (shouldComplete == true && context.mounted) {
-      final repository = ref.read(injectionRepositoryProvider);
-
       await repository.completeInjection(injectionId);
+
+      // Schedula promemoria effetti collaterali
+      final notifSettings = ref.read(notificationSettingsProvider);
+      if (notifSettings.enabled && notifSettings.permissionsGranted && scheduledAt != null) {
+        final notifId = scheduledAt.millisecondsSinceEpoch ~/ 1000;
+        await NotificationService.instance.scheduleSideEffectsReminder(
+          id: notifId,
+          completedAt: DateTime.now(),
+          pointLabel: resolvedLabel,
+          hoursAfter: notifSettings.sideEffectsReminderHours,
+        );
+      }
 
       // Refresh dei providers
       ref.invalidate(nextScheduledInjectionProvider);
@@ -278,7 +295,7 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen> {
           ..clearSnackBars()
           ..showSnackBar(
             SnackBar(
-              content: Text('✓ ${zone.pointLabel(pointNumber)} completata!'),
+              content: Text('✓ $resolvedLabel completata!'),
               backgroundColor: Colors.green,
               duration: const Duration(seconds: 2),
             ),
@@ -356,11 +373,17 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen> {
       );
       if (suggested == null) continue;
 
+      final resolvedLabel = await repository.resolvePointLabel(
+        suggested.zoneId,
+        suggested.pointNumber,
+      );
+
       final record = inj.InjectionRecord(
         zoneId: suggested.zoneId,
         pointNumber: suggested.pointNumber,
         scheduledAt: scheduledAt,
         status: inj.InjectionStatus.scheduled,
+        customPointLabel: resolvedLabel,
         createdAt: now,
         updatedAt: now,
       );

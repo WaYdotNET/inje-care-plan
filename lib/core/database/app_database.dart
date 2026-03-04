@@ -684,6 +684,16 @@ class AppDatabase extends _$AppDatabase {
   Future<Injection?> getInjectionById(int id) =>
       (select(injections)..where((i) => i.id.equals(id))).getSingleOrNull();
 
+  /// Restituisce l'ultima iniezione completata senza effetti collaterali registrati
+  Future<Injection?> getLastCompletedInjectionWithoutSideEffects() =>
+      (select(injections)
+            ..where(
+              (i) => i.status.equals('completed') & i.sideEffects.equals(''),
+            )
+            ..orderBy([(i) => OrderingTerm.desc(i.completedAt)])
+            ..limit(1))
+          .getSingleOrNull();
+
   // --- Utilities ---
   Future<void> deleteAllData() async {
     await delete(injections).go();

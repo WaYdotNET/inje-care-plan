@@ -1,8 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz_data;
 
 import '../../models/injection_record.dart';
+
+/// Suono personalizzato per le notifiche
+const _androidSound = RawResourceAndroidNotificationSound('gentle_chime');
+const _iosSound = 'gentle_chime.wav';
 
 /// Notification service for scheduling injection reminders
 class NotificationService {
@@ -11,10 +17,14 @@ class NotificationService {
   static final instance = NotificationService._();
 
   final _notifications = FlutterLocalNotificationsPlugin();
+  final _responseController = StreamController<NotificationResponse>.broadcast();
   AndroidFlutterLocalNotificationsPlugin? get _android => _notifications
       .resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin
       >();
+
+  /// Stream di risposte alle notifiche (tap dell'utente)
+  Stream<NotificationResponse> get onNotificationTapped => _responseController.stream;
 
   /// Initialize the notification service
   Future<void> initialize() async {
@@ -42,6 +52,26 @@ class NotificationService {
       settings,
       onDidReceiveNotificationResponse: _onNotificationResponse,
     );
+
+    // Migra canali Android per suono personalizzato
+    await _migrateChannels();
+  }
+
+  /// Elimina vecchi canali Android (senza suono custom) per forzare ricreazione
+  Future<void> _migrateChannels() async {
+    final android = _android;
+    if (android == null) return;
+
+    const oldChannels = [
+      'injection_reminders',
+      'missed_dose_reminders',
+      'side_effects_reminders',
+      'weekly_proposals',
+      'general',
+    ];
+    for (final channel in oldChannels) {
+      await android.deleteNotificationChannel(channel);
+    }
   }
 
   Future<AndroidScheduleMode> _androidScheduleMode() async {
@@ -77,8 +107,7 @@ class NotificationService {
 
   /// Handle notification response
   void _onNotificationResponse(NotificationResponse response) {
-    // Handle notification tap
-    // TODO: Navigate to relevant screen based on payload
+    _responseController.add(response);
   }
 
   /// Schedule an injection reminder
@@ -96,18 +125,21 @@ class NotificationService {
     if (reminderTime.isBefore(DateTime.now())) return;
 
     const androidDetails = AndroidNotificationDetails(
-      'injection_reminders',
+      'injection_reminders_v2',
       'Promemoria iniezioni',
       channelDescription: 'Notifiche per le iniezioni programmate',
       importance: Importance.high,
       priority: Priority.high,
       icon: '@mipmap/ic_launcher',
+      sound: _androidSound,
+      playSound: true,
     );
 
     const iosDetails = DarwinNotificationDetails(
       presentAlert: true,
       presentBadge: true,
       presentSound: true,
+      sound: _iosSound,
     );
 
     const details = NotificationDetails(
@@ -138,18 +170,21 @@ class NotificationService {
     if (reminderTime.isBefore(DateTime.now())) return;
 
     const androidDetails = AndroidNotificationDetails(
-      'missed_dose_reminders',
+      'missed_dose_reminders_v2',
       'Promemoria dosi saltate',
       channelDescription: 'Notifiche per le dosi non registrate',
       importance: Importance.high,
       priority: Priority.high,
       icon: '@mipmap/ic_launcher',
+      sound: _androidSound,
+      playSound: true,
     );
 
     const iosDetails = DarwinNotificationDetails(
       presentAlert: true,
       presentBadge: true,
       presentSound: true,
+      sound: _iosSound,
     );
 
     const details = NotificationDetails(
@@ -179,18 +214,21 @@ class NotificationService {
     if (reminderTime.isBefore(DateTime.now())) return;
 
     const androidDetails = AndroidNotificationDetails(
-      'injection_reminders',
+      'injection_reminders_v2',
       'Promemoria iniezioni',
       channelDescription: 'Notifiche per le iniezioni programmate',
       importance: Importance.max,
       priority: Priority.max,
       icon: '@mipmap/ic_launcher',
+      sound: _androidSound,
+      playSound: true,
     );
 
     const iosDetails = DarwinNotificationDetails(
       presentAlert: true,
       presentBadge: true,
       presentSound: true,
+      sound: _iosSound,
     );
 
     const details = NotificationDetails(
@@ -213,7 +251,7 @@ class NotificationService {
     required int id,
     required DateTime completedAt,
     required String pointLabel,
-    int hoursAfter = 4,
+    int hoursAfter = 2,
   }) async {
     final reminderTime = completedAt.add(Duration(hours: hoursAfter));
 
@@ -221,18 +259,21 @@ class NotificationService {
     if (reminderTime.isBefore(DateTime.now())) return;
 
     const androidDetails = AndroidNotificationDetails(
-      'side_effects_reminders',
+      'side_effects_reminders_v2',
       'Promemoria effetti collaterali',
       channelDescription: 'Notifiche per registrare effetti collaterali post-iniezione',
       importance: Importance.defaultImportance,
       priority: Priority.defaultPriority,
       icon: '@mipmap/ic_launcher',
+      sound: _androidSound,
+      playSound: true,
     );
 
     const iosDetails = DarwinNotificationDetails(
       presentAlert: true,
       presentBadge: true,
       presentSound: true,
+      sound: _iosSound,
     );
 
     const details = NotificationDetails(
@@ -271,18 +312,21 @@ class NotificationService {
     required String body,
   }) async {
     const androidDetails = AndroidNotificationDetails(
-      'general',
+      'general_v2',
       'Notifiche generali',
       channelDescription: 'Notifiche generali dell\'app',
       importance: Importance.defaultImportance,
       priority: Priority.defaultPriority,
       icon: '@mipmap/ic_launcher',
+      sound: _androidSound,
+      playSound: true,
     );
 
     const iosDetails = DarwinNotificationDetails(
       presentAlert: true,
       presentBadge: true,
       presentSound: true,
+      sound: _iosSound,
     );
 
     const details = NotificationDetails(
@@ -361,19 +405,22 @@ class NotificationService {
     }
 
     const androidDetails = AndroidNotificationDetails(
-      'weekly_proposals',
+      'weekly_proposals_v2',
       'Proposte settimanali',
       channelDescription:
           'Promemoria domenicale per confermare le iniezioni della settimana',
       importance: Importance.high,
       priority: Priority.high,
       icon: '@mipmap/ic_launcher',
+      sound: _androidSound,
+      playSound: true,
     );
 
     const iosDetails = DarwinNotificationDetails(
       presentAlert: true,
       presentBadge: true,
       presentSound: true,
+      sound: _iosSound,
     );
 
     const details = NotificationDetails(

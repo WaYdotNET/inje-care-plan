@@ -18,7 +18,7 @@ class NotificationSettings {
     this.missedDoseReminder = true,
     this.permissionsGranted = false,
     this.overdueGraceMinutes = 60,
-    this.sideEffectsReminderHours = 4,
+    this.sideEffectsReminderHours = 2,
   });
 
   NotificationSettings copyWith({
@@ -63,7 +63,7 @@ class NotificationSettingsNotifier extends Notifier<NotificationSettings> {
       missedDoseReminder: prefs.getBool(_keyMissedDose) ?? true,
       permissionsGranted: prefs.getBool(_keyPermissionsGranted) ?? false,
       overdueGraceMinutes: prefs.getInt(_keyOverdueGraceMinutes) ?? 60,
-      sideEffectsReminderHours: prefs.getInt(_keySideEffectsReminderHours) ?? 4,
+      sideEffectsReminderHours: prefs.getInt(_keySideEffectsReminderHours) ?? 2,
     );
   }
 

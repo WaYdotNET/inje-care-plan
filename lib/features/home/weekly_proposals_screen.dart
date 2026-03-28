@@ -393,6 +393,12 @@ class _WeeklyProposalsScreenState
     final repository = ref.read(injectionRepositoryProvider);
     final now = DateTime.now();
 
+    // Risolvi etichetta custom del punto
+    final customLabel = await repository.resolvePointLabel(
+      proposal.suggestion!.zoneId,
+      proposal.suggestion!.pointNumber,
+    );
+
     // Crea l'evento nel database
     await repository.createInjection(InjectionRecord(
       zoneId: proposal.suggestion!.zoneId,
@@ -402,6 +408,7 @@ class _WeeklyProposalsScreenState
         minutes: int.tryParse(proposal.preferredTime?.split(':')[1] ?? '0') ?? 0,
       )),
       status: InjectionStatus.scheduled,
+      customPointLabel: customLabel,
       notes: '',
       sideEffects: [],
       createdAt: now,

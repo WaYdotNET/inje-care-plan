@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -12,7 +11,6 @@ import '../../models/injection_record.dart';
 import '../../core/services/notification_service.dart';
 import '../../core/services/notification_settings_provider.dart';
 import '../../core/ml/rotation_pattern_engine.dart';
-import '../../core/widgets/side_effects_dialog.dart';
 import 'injection_provider.dart';
 import 'zone_provider.dart';
 
@@ -39,7 +37,6 @@ class RecordInjectionScreen extends ConsumerStatefulWidget {
 class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
   final _notesController = TextEditingController();
   bool _isLoading = false;
-  bool _sideEffectsChecked = false;
 
   BodyZone? _getZone(List<BodyZone> zones) {
     final zone = zones.where((z) => z.id == widget.zoneId).firstOrNull;
@@ -47,36 +44,9 @@ class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    SchedulerBinding.instance.addPostFrameCallback((_) {
-      _checkPendingSideEffects();
-    });
-  }
-
-  @override
   void dispose() {
     _notesController.dispose();
     super.dispose();
-  }
-
-  Future<void> _checkPendingSideEffects() async {
-    if (_sideEffectsChecked) return;
-    _sideEffectsChecked = true;
-
-    final repository = ref.read(injectionRepositoryProvider);
-    final pending = await repository.getLastCompletedInjectionWithoutSideEffects();
-
-    if (pending != null && mounted) {
-      final effects = await SideEffectsDialog.show(
-        context,
-        injectionId: pending.id,
-        pointLabel: pending.pointLabel,
-      );
-      if (effects != null) {
-        await repository.updateSideEffects(pending.id, effects);
-      }
-    }
   }
 
   @override
@@ -326,6 +296,13 @@ class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
               completedAt: completedAt,
             );
             await repository.updateInjection(injectionId, completedRecord);
+
+            // Cancella notifiche programmate per questa iniezione
+            final notifId = record.scheduledAt.millisecondsSinceEpoch ~/ 1000;
+            await NotificationService.instance.cancelNotification(notifId);
+
+            // Aggiorna providers
+            ref.invalidate(injectionsProvider);
 
             // Schedula promemoria effetti collaterali
             if (notificationSettings.enabled && notificationSettings.permissionsGranted) {

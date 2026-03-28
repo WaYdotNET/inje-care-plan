@@ -18,7 +18,7 @@ class InjectionRepository {
     final zone = await _db.getZoneById(zoneId);
     if (zone == null) return 'Punto $pointNumber';
 
-    final zoneName = zone.customName?.isNotEmpty == true
+    final zoneName = (zone.customName != null && zone.customName!.isNotEmpty)
         ? zone.customName!
         : zone.name;
 

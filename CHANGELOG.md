@@ -1,5 +1,20 @@
 # Changelog
 
+## 4.6.0 - 2026-03-28
+
+### Aggiunto
+- **Suono personalizzato nelle notifiche**: Tutte le notifiche (promemoria iniezione, dose saltata, effetti collaterali, proposte settimanali) ora utilizzano un suono personalizzato gradevole al posto di quello di sistema.
+- **Gestione tap notifica effetti collaterali**: Toccando la notifica degli effetti collaterali si apre direttamente il dialog per registrarli.
+
+### Migliorato
+- **Promemoria effetti collaterali**: Il default è ora 2 ore (era 4h) e la domanda sugli effetti collaterali non viene più mostrata automaticamente all'apertura della schermata di registrazione.
+- **Nomi custom delle zone**: Corretto l'uso di `zone.displayName` in homepage, selezione punti, editor pattern personalizzato e proposte settimanali.
+
+### Corretto
+- **Iniezioni completate mostrate come "da fare"**: Aggiunto `ref.invalidate(injectionsProvider)` nei percorsi di completamento da homepage e schermata registrazione, risolvendo lo stato stale nel calendario.
+- **Nomi custom non mostrati nelle proposte settimanali**: Le iniezioni create dalle proposte settimanali ora includono il `customPointLabel` risolto.
+- **Reminder dopo completamento**: Le notifiche programmate (promemoria, dose saltata, 1 minuto) vengono ora cancellate quando un'iniezione viene completata o saltata da qualsiasi schermata.
+
 ## 4.5.0 - 2026-03-04
 
 ### Aggiunto

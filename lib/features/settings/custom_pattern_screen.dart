@@ -151,7 +151,9 @@ class _CustomPatternScreenState extends ConsumerState<CustomPatternScreen> {
                           return _ZoneReorderTile(
                             key: ValueKey(zoneId),
                             index: index,
-                            zoneName: zone.name,
+                            zoneName: zone.customName?.isNotEmpty == true
+                                ? zone.customName!
+                                : zone.name,
                             zoneEmoji: _getZoneEmoji(zone.type),
                             zoneSide: zone.side,
                             isDark: isDark,
@@ -236,7 +238,11 @@ class _CustomPatternScreenState extends ConsumerState<CustomPatternScreen> {
                   _getZoneEmoji(zone.type),
                   style: const TextStyle(fontSize: 24),
                 ),
-                title: Text(zone.name),
+                title: Text(
+                  zone.customName?.isNotEmpty == true
+                      ? zone.customName!
+                      : zone.name,
+                ),
                 subtitle: Text(_getSideLabel(zone.side)),
                 onTap: () {
                   setState(() {

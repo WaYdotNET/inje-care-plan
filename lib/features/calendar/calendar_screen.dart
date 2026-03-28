@@ -463,6 +463,11 @@ class _InjectionCard extends ConsumerWidget {
         onComplete: () async {
           Navigator.pop(ctx);
           final repository = ref.read(injectionRepositoryProvider);
+
+          // Cancella notifiche programmate per questa iniezione
+          final notifId = injection.scheduledAt.millisecondsSinceEpoch ~/ 1000;
+          await NotificationService.instance.cancelNotification(notifId);
+
           await repository.completeInjection(injection.id);
 
           // Schedula promemoria effetti collaterali
@@ -491,6 +496,11 @@ class _InjectionCard extends ConsumerWidget {
             if (confirm != true) return;
           }
           final repository = ref.read(injectionRepositoryProvider);
+
+          // Cancella notifiche programmate
+          final notifId = injection.scheduledAt.millisecondsSinceEpoch ~/ 1000;
+          await NotificationService.instance.cancelNotification(notifId);
+
           await repository.skipInjection(injection.id);
           ref.invalidate(injectionsProvider);
         },

@@ -79,6 +79,7 @@ class Fixtures {
       positionX: x,
       positionY: y,
       bodyView: 'front',
+      isCustomPosition: false,
       createdAt: now,
       updatedAt: now,
     );

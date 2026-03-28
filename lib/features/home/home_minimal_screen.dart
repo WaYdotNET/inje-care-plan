@@ -272,6 +272,12 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen> {
     );
 
     if (shouldComplete == true && context.mounted) {
+      // Cancella notifiche programmate per questa iniezione
+      if (scheduledAt != null) {
+        final notifId = scheduledAt.millisecondsSinceEpoch ~/ 1000;
+        await NotificationService.instance.cancelNotification(notifId);
+      }
+
       await repository.completeInjection(injectionId);
 
       // Schedula promemoria effetti collaterali
@@ -289,6 +295,7 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen> {
       // Refresh dei providers
       ref.invalidate(nextScheduledInjectionProvider);
       ref.invalidate(weeklyEventsProvider);
+      ref.invalidate(injectionsProvider);
 
       if (context.mounted) {
         ScaffoldMessenger.of(context)
@@ -596,7 +603,7 @@ class _MainCardState extends State<_MainCard> {
                     child: Column(
                       children: [
                         Text(
-                          zone.name,
+                          zone.displayName,
                           style: theme.textTheme.headlineSmall?.copyWith(
                             fontWeight: FontWeight.bold,
                             color: isDark

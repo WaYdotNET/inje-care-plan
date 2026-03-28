@@ -766,7 +766,7 @@ class _ZoneDetailCardState extends ConsumerState<_ZoneDetailCard> {
       orElse: () => PositionedPoint(pointNumber: pointNumber, x: 0.5, y: 0.5),
     );
     if (point.customName != null && point.customName!.isNotEmpty) {
-      return '${widget.zone.name} · ${point.customName}';
+      return '${widget.zone.displayName} · ${point.customName}';
     }
     return widget.zone.pointLabel(pointNumber);
   }

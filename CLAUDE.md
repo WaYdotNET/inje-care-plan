@@ -15,7 +15,7 @@ flutter pub get
 # Generate code (Drift database + Riverpod providers) — required after modifying tables or @riverpod annotations
 dart run build_runner build --delete-conflicting-outputs
 
-# Run all tests (642 tests, 100% coverage on non-generated files)
+# Run all tests (672 tests, 100% coverage on non-generated files)
 flutter test
 
 # Run a single test file
@@ -88,7 +88,15 @@ Tests in `test/` organized as `unit/`, `widget/`, `integration/`. Uses `mocktail
 
 When bumping the version and releasing, **always** update all of these:
 
-1. `pubspec.yaml` — bump `version` (e.g. `4.3.1+2`)
+1. `pubspec.yaml` — bump `version` (e.g. `4.7.0+7`). **IMPORTANT**: the version code (number after `+`) must be strictly greater than any previously uploaded to Google Play Store. Current highest: **7**.
 2. `CHANGELOG.md` — move Unreleased items under the new version heading
 3. `pages/index.html` — update the changelog section (both IT and EN) and the version in the footer
-4. Commit, push, and verify GitHub Actions pipelines (Deploy Pages + Build APK)
+4. `.github/workflows/build-apk.yml` and `pages.yml` — if Flutter SDK was upgraded, update `flutter-version` to match (currently `3.41.6`)
+5. Commit, tag (`v<version>`), push with `--tags` to trigger GitHub Actions release
+6. Verify all 3 pipelines: Deploy Pages, Build APK (main), Build APK + Release (tag)
+
+### Two BodyZone types
+
+The codebase has two distinct `BodyZone` types — be careful which one you're working with:
+- **`lib/models/body_zone.dart`** — app model with `displayName` getter (prefers `customName`)
+- **`lib/core/database/app_database.g.dart`** — Drift-generated DataClass, no `displayName`. Use `zone.customName?.isNotEmpty == true ? zone.customName! : zone.name` instead.

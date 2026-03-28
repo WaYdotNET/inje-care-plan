@@ -1,14 +1,19 @@
 # Changelog
 
-## 4.6.0 - 2026-03-28
+## 4.7.0 - 2026-03-28
 
 ### Aggiunto
 - **Suono personalizzato nelle notifiche**: Tutte le notifiche (promemoria iniezione, dose saltata, effetti collaterali, proposte settimanali) ora utilizzano un suono personalizzato gradevole al posto di quello di sistema.
 - **Gestione tap notifica effetti collaterali**: Toccando la notifica degli effetti collaterali si apre direttamente il dialog per registrarli.
+- **Storico nella barra di navigazione**: Lo storico è ora accessibile direttamente dalla bottom navigation bar al posto del pulsante "Nuova".
 
 ### Migliorato
 - **Promemoria effetti collaterali**: Il default è ora 2 ore (era 4h) e la domanda sugli effetti collaterali non viene più mostrata automaticamente all'apertura della schermata di registrazione.
 - **Nomi custom delle zone**: Corretto l'uso di `zone.displayName` in homepage, selezione punti, editor pattern personalizzato e proposte settimanali.
+- **Aggiornamento Flutter**: Da 3.38.5 a 3.41.6 (Dart 3.11.4) con aggiornamento dipendenze.
+
+### Rimosso
+- **Homepage classica**: Rimossa la variante "classica" della homepage (HomeScreen) e i relativi componenti (SmartSuggestionCard, WeeklyEventItem), selettore stile home nelle impostazioni. Resta solo la homepage minimalista.
 
 ### Corretto
 - **Iniezioni completate mostrate come "da fare"**: Aggiunto `ref.invalidate(injectionsProvider)` nei percorsi di completamento da homepage e schermata registrazione, risolvendo lo stato stale nel calendario.

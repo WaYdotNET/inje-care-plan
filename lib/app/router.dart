@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../features/auth/login_screen.dart';
 import '../features/auth/auth_provider.dart';
-import '../features/home/home_screen.dart';
 import '../features/home/home_minimal_screen.dart';
 import '../features/calendar/calendar_screen.dart';
 import '../features/injection/zone_detail_screen.dart';
@@ -81,13 +80,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: AppRoutes.home,
             name: 'home',
-            builder: (context, state) {
-              // Seleziona la home in base alla preferenza
-              final homeStyle = authState.homeStyle;
-              return homeStyle == HomeStyle.minimal
-                  ? const HomeMinimalScreen()
-                  : const HomeScreen();
-            },
+            builder: (context, state) => const HomeMinimalScreen(),
           ),
           GoRoute(
             path: AppRoutes.calendar,
@@ -231,9 +224,9 @@ class _MainShell extends StatelessWidget {
             label: 'Calendario',
           ),
           NavigationDestination(
-            icon: Icon(Icons.add_circle_outline_rounded),
-            selectedIcon: Icon(Icons.add_circle_rounded),
-            label: 'Nuova',
+            icon: Icon(Icons.history_outlined),
+            selectedIcon: Icon(Icons.history_rounded),
+            label: 'Storico',
           ),
           NavigationDestination(
             icon: Icon(Icons.settings_outlined),
@@ -249,6 +242,7 @@ class _MainShell extends StatelessWidget {
     final location = GoRouterState.of(context).matchedLocation;
     if (location == AppRoutes.home) return 0;
     if (location == AppRoutes.calendar) return 1;
+    if (location == AppRoutes.history) return 2;
     if (location == AppRoutes.settings) return 3;
     return 0;
   }
@@ -260,7 +254,7 @@ class _MainShell extends StatelessWidget {
       case 1:
         context.go(AppRoutes.calendar);
       case 2:
-        context.push(AppRoutes.bodyMap);
+        context.go(AppRoutes.history);
       case 3:
         context.go(AppRoutes.settings);
     }

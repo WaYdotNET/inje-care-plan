@@ -58,8 +58,6 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen> {
             tooltip: 'Menu',
             onSelected: (value) {
               switch (value) {
-                case 'history':
-                  context.go(AppRoutes.history);
                 case 'statistics':
                   context.push(AppRoutes.statistics);
                 case 'guide':
@@ -69,15 +67,6 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen> {
               }
             },
             itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'history',
-                child: ListTile(
-                  leading: Icon(Icons.history),
-                  title: Text('Storico'),
-                  contentPadding: EdgeInsets.zero,
-                  visualDensity: VisualDensity.compact,
-                ),
-              ),
               const PopupMenuItem(
                 value: 'statistics',
                 child: ListTile(
@@ -106,14 +95,6 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen> {
                 ),
               ),
             ],
-          ),
-          // Settings
-          IconButton(
-            icon: const CircleAvatar(
-              radius: 16,
-              child: Icon(Icons.settings, size: 18),
-            ),
-            onPressed: () => context.go(AppRoutes.settings),
           ),
         ],
       ),

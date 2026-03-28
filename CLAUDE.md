@@ -88,7 +88,7 @@ Tests in `test/` organized as `unit/`, `widget/`, `integration/`. Uses `mocktail
 
 When bumping the version and releasing, **always** update all of these:
 
-1. `pubspec.yaml` — bump `version` (e.g. `4.7.0+7`). **IMPORTANT**: the version code (number after `+`) must be strictly greater than any previously uploaded to Google Play Store. Current highest: **7**.
+1. `pubspec.yaml` — bump `version` (e.g. `4.7.0+7`). **IMPORTANT**: the version code (number after `+`) must be strictly greater than any previously uploaded to Google Play Store. Current highest: **8**.
 2. `CHANGELOG.md` — move Unreleased items under the new version heading
 3. `pages/index.html` — update the changelog section (both IT and EN) and the version in the footer
 4. `.github/workflows/build-apk.yml` and `pages.yml` — if Flutter SDK was upgraded, update `flutter-version` to match (currently `3.41.6`)

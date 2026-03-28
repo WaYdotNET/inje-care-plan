@@ -1,9 +1,8 @@
 # Changelog
 
-## 4.7.0 - 2026-03-28
+## 4.7.1 - 2026-03-28
 
 ### Aggiunto
-- **Suono personalizzato nelle notifiche**: Tutte le notifiche (promemoria iniezione, dose saltata, effetti collaterali, proposte settimanali) ora utilizzano un suono personalizzato gradevole al posto di quello di sistema.
 - **Gestione tap notifica effetti collaterali**: Toccando la notifica degli effetti collaterali si apre direttamente il dialog per registrarli.
 - **Storico nella barra di navigazione**: Lo storico è ora accessibile direttamente dalla bottom navigation bar al posto del pulsante "Nuova".
 

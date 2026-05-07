@@ -244,13 +244,8 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
     );
   }
 
-  BodyView _getViewForZone(String? zoneType) {
-    if (zoneType == null) return BodyView.front;
-    // Zone posteriori
-    if (zoneType == 'buttock') return BodyView.back;
-    // Zone frontali
-    return BodyView.front;
-  }
+  BodyView _getViewForZone(String? zoneType) =>
+      defaultBodyViewForZoneType(zoneType);
 
   void _navigateToRecord(BuildContext context, int zoneId, DateTime scheduledAt) {
     context.push(

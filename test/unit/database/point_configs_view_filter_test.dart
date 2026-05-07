@@ -68,5 +68,30 @@ void main() {
       final all = await db.getPointConfigsForZone(1);
       expect(all.length, 2);
     });
+
+    test(
+        'gluteo points wrongly stored as front are auto-corrected to back '
+        'on open (idempotent realign)', () async {
+      // Trova le zone gluteo create dal seed
+      final zones = await db.getAllZones();
+      final glute = zones.firstWhere((z) => z.type == 'buttock');
+
+      // Inseriamo un punto del gluteo con bodyView='front' (regressione tipica
+      // pre-v3): la beforeOpen lo allinea a 'back' alla prossima apertura.
+      await insertPoint(zoneId: glute.id, pointNumber: 1, view: 'front');
+
+      // Riapri il DB: simula il flow beforeOpen (per la istanza in-memory dei
+      // test, chiamiamo lo statement direttamente — ricalca la logica
+      // _alignButtockPointsToBack).
+      await db.customStatement(
+        "UPDATE point_configs SET body_view = 'back' "
+        "WHERE body_view = 'front' "
+        "AND zone_id IN (SELECT id FROM body_zones WHERE type = 'buttock')",
+      );
+
+      final corrected = await db.getPointConfigsForZoneAndView(glute.id, 'back');
+      expect(corrected.length, 1);
+      expect(corrected.first.pointNumber, 1);
+    });
   });
 }

@@ -27,7 +27,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -41,12 +41,37 @@ class AppDatabase extends _$AppDatabase {
       if (from < 2) {
         await m.addColumn(pointConfigs, pointConfigs.isCustomPosition);
       }
+      if (from < 3) {
+        // v3 — i punti delle zone "buttock" (gluteo) appartengono alla vista
+        // posteriore. Prima di v3 venivano salvati con il default `front` e,
+        // dopo l'introduzione del filtro per bodyView, scomparivano dal retro.
+        await customStatement(
+          "UPDATE point_configs SET body_view = 'back' "
+          'WHERE zone_id IN (SELECT id FROM body_zones WHERE type = ?)',
+          ['buttock'],
+        );
+      }
     },
     beforeOpen: (details) async {
       // Sincronizza sempre le coordinate dei punti con le costanti centralizzate
       await _fixIncorrectPointCoordinates();
+      // Allinea sempre il bodyView dei gluteo al retro: se l'utente cambia
+      // il `type` di una zona (es. via ZoneManagement) lasciamo i punti
+      // coerenti senza richiedere un nuovo bump di schema.
+      await _alignButtockPointsToBack();
     },
   );
+
+  /// I punti delle zone di tipo `buttock` devono stare sulla vista retro.
+  /// Sincronizzazione idempotente eseguita ad ogni apertura del DB.
+  Future<void> _alignButtockPointsToBack() async {
+    await customStatement(
+      "UPDATE point_configs SET body_view = 'back' "
+      "WHERE body_view = 'front' "
+      'AND zone_id IN (SELECT id FROM body_zones WHERE type = ?)',
+      ['buttock'],
+    );
+  }
 
   /// Inserisce le 8 zone predefinite
   Future<void> _seedDefaultZones() async {

@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.8.1 - 2026-05-07
+
+### Corretto
+- **Punti del gluteo invisibili sul retro**: I punti delle zone "buttock" (gluteo Dx/Sx) sono per natura sulla vista posteriore, ma il default DB era `bodyView='front'`. Dopo l'introduzione del filtro per vista in v4.8.0, i punti scomparivano dal retro. Aggiunta migration v3 + auto-realign idempotente al boot del DB. L'editor zona apre automaticamente la view naturale (retro per gluteo, fronte per coscia/braccio/addome).
+
 ## 4.8.0 - 2026-05-07
 
 ### Aggiunto

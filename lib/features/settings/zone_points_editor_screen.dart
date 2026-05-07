@@ -47,6 +47,9 @@ class _ZonePointsEditorScreenState
       return;
     }
 
+    // Vista naturale: i gluteo partono sul retro, tutto il resto sul fronte.
+    _currentView = defaultBodyViewForZoneType(zone.type);
+
     final configs = await db.getPointConfigsForZone(widget.zoneId);
 
     if (configs.isEmpty) {
@@ -54,11 +57,11 @@ class _ZonePointsEditorScreenState
         zone.numberOfPoints,
         zone.type,
         zone.side,
-      );
+      ).map((p) => p.copyWith(bodyView: _currentView)).toList();
     } else {
       _points = configs.map((c) => c.toPositionedPoint()).toList();
 
-      // Riempi eventuali pointNumber mancanti con default sulla view corrente.
+      // Riempi eventuali pointNumber mancanti con default sulla view naturale.
       final existingNumbers = _points.map((p) => p.pointNumber).toSet();
       for (var i = 1; i <= zone.numberOfPoints; i++) {
         if (existingNumbers.contains(i)) continue;

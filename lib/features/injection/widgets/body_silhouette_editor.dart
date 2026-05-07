@@ -8,6 +8,14 @@ import '../../../core/database/point_constants.dart';
 /// Vista del corpo (frontale o posteriore)
 enum BodyView { front, back }
 
+/// Vista anatomica naturale per un dato `type` di zona.
+/// Le zone "buttock" appartengono al retro; tutto il resto (thigh, arm,
+/// abdomen, custom) al fronte.
+BodyView defaultBodyViewForZoneType(String? zoneType) {
+  if (zoneType == 'buttock') return BodyView.back;
+  return BodyView.front;
+}
+
 /// Rappresenta un punto posizionato sulla silhouette
 class PositionedPoint {
   final int pointNumber;

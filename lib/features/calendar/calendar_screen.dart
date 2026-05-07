@@ -11,6 +11,7 @@ import '../../core/services/missed_injection_service.dart';
 import '../../core/services/notification_service.dart';
 import '../../core/services/notification_settings_provider.dart';
 import '../injection/injection_provider.dart';
+import '../injection/injection_repository.dart';
 
 /// Calendar screen with injection schedule
 class CalendarScreen extends ConsumerStatefulWidget {
@@ -464,18 +465,27 @@ class _InjectionCard extends ConsumerWidget {
           Navigator.pop(ctx);
           final repository = ref.read(injectionRepositoryProvider);
 
-          // Cancella notifiche programmate per questa iniezione
-          final notifId = injection.scheduledAt.millisecondsSinceEpoch ~/ 1000;
-          await NotificationService.instance.cancelNotification(notifId);
+          await NotificationService.instance.cancelNotification(injection.id);
 
-          await repository.completeInjection(injection.id);
+          try {
+            await repository.completeInjection(injection.id);
+          } on StateError catch (_) {
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    'Disponibile dal ${DateFormat('d MMM yyyy', 'it_IT').format(injection.scheduledAt)}',
+                  ),
+                ),
+              );
+            }
+            return;
+          }
 
-          // Schedula promemoria effetti collaterali
           final notifSettings = ref.read(notificationSettingsProvider);
           if (notifSettings.enabled && notifSettings.permissionsGranted) {
-            final notifId = injection.scheduledAt.millisecondsSinceEpoch ~/ 1000;
             await NotificationService.instance.scheduleSideEffectsReminder(
-              id: notifId,
+              id: injection.id,
               completedAt: DateTime.now(),
               pointLabel: injection.pointLabel,
               hoursAfter: notifSettings.sideEffectsReminderHours,
@@ -497,9 +507,7 @@ class _InjectionCard extends ConsumerWidget {
           }
           final repository = ref.read(injectionRepositoryProvider);
 
-          // Cancella notifiche programmate
-          final notifId = injection.scheduledAt.millisecondsSinceEpoch ~/ 1000;
-          await NotificationService.instance.cancelNotification(notifId);
+          await NotificationService.instance.cancelNotification(injection.id);
 
           await repository.skipInjection(injection.id);
           ref.invalidate(injectionsProvider);
@@ -550,6 +558,10 @@ class _InjectionCard extends ConsumerWidget {
             },
           );
         },
+        onOpenDetail: () {
+          Navigator.pop(ctx);
+          context.push(AppRoutes.injectionDetailPath(injection.id));
+        },
       ),
     );
   }
@@ -564,6 +576,7 @@ class _InjectionEditSheet extends StatelessWidget {
     required this.onRestore,
     required this.onDelete,
     required this.onChangePoint,
+    required this.onOpenDetail,
   });
 
   final db.Injection injection;
@@ -573,12 +586,14 @@ class _InjectionEditSheet extends StatelessWidget {
   final VoidCallback onRestore;
   final VoidCallback onDelete;
   final VoidCallback onChangePoint;
+  final VoidCallback onOpenDetail;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isCompleted = injection.status == 'completed';
     final isSkipped = injection.status == 'skipped';
+    final canComplete = canCompleteNow(injection.scheduledAt);
 
     return SafeArea(
       child: Padding(
@@ -617,12 +632,25 @@ class _InjectionEditSheet extends StatelessWidget {
             // Actions
             if (!isCompleted)
               ListTile(
+                enabled: canComplete,
                 leading: Icon(
                   Icons.check_circle,
-                  color: isDark ? AppColors.darkPine : AppColors.dawnPine,
+                  color: !canComplete
+                      ? (isDark ? AppColors.darkMuted : AppColors.dawnMuted)
+                      : (isDark ? AppColors.darkPine : AppColors.dawnPine),
                 ),
                 title: const Text('Segna come completata'),
-                onTap: onComplete,
+                subtitle: !canComplete
+                    ? Text(
+                        'Disponibile dal ${DateFormat('d MMM yyyy', 'it_IT').format(injection.scheduledAt)}',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: isDark
+                              ? AppColors.darkMuted
+                              : AppColors.dawnMuted,
+                        ),
+                      )
+                    : null,
+                onTap: canComplete ? onComplete : null,
               ),
             if (!isSkipped)
               ListTile(
@@ -642,6 +670,14 @@ class _InjectionEditSheet extends StatelessWidget {
                 title: const Text('Ripristina come pianificata'),
                 onTap: onRestore,
               ),
+            ListTile(
+              leading: Icon(
+                Icons.edit_note,
+                color: isDark ? AppColors.darkIris : AppColors.dawnIris,
+              ),
+              title: const Text('Apri dettaglio (note + effetti)'),
+              onTap: onOpenDetail,
+            ),
             ListTile(
               leading: Icon(
                 Icons.edit,

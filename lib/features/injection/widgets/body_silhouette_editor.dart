@@ -5,18 +5,23 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/database/app_database.dart' as db;
 import '../../../core/database/point_constants.dart';
 
+/// Vista del corpo (frontale o posteriore)
+enum BodyView { front, back }
+
 /// Rappresenta un punto posizionato sulla silhouette
 class PositionedPoint {
   final int pointNumber;
   final String? customName;
   final double x; // 0.0 - 1.0 normalized
   final double y; // 0.0 - 1.0 normalized
+  final BodyView bodyView; // front (default for legacy data) or back
 
   const PositionedPoint({
     required this.pointNumber,
     this.customName,
     required this.x,
     required this.y,
+    this.bodyView = BodyView.front,
   });
 
   PositionedPoint copyWith({
@@ -24,17 +29,16 @@ class PositionedPoint {
     String? customName,
     double? x,
     double? y,
+    BodyView? bodyView,
   }) =>
       PositionedPoint(
         pointNumber: pointNumber ?? this.pointNumber,
         customName: customName ?? this.customName,
         x: x ?? this.x,
         y: y ?? this.y,
+        bodyView: bodyView ?? this.bodyView,
       );
 }
-
-/// Vista del corpo (frontale o posteriore)
-enum BodyView { front, back }
 
 /// Editor visuale per posizionare punti di iniezione sulla silhouette del corpo
 class BodySilhouetteEditor extends StatefulWidget {
@@ -251,12 +255,14 @@ class _BodySilhouetteEditorState extends State<BodySilhouetteEditor>
             if (widget.zoneType != null && widget.editable)
               _buildZoneHighlight(constraints, isDark),
 
-            // Draggable points
-            ...widget.points.map((point) => _buildDraggablePoint(
-                  point,
-                  constraints,
-                  isDark,
-                )),
+            // Draggable points — only those belonging to the current view
+            ...widget.points
+                .where((p) => p.bodyView == _currentView)
+                .map((point) => _buildDraggablePoint(
+                      point,
+                      constraints,
+                      isDark,
+                    )),
 
             // Empty hint
             if (widget.editable && widget.points.isEmpty)
@@ -663,6 +669,7 @@ extension PointConfigToPositionedPoint on db.PointConfig {
         customName: customName.isNotEmpty ? customName : null,
         x: positionX,
         y: positionY,
+        bodyView: bodyView == 'back' ? BodyView.back : BodyView.front,
       );
 }
 

@@ -566,6 +566,28 @@ class AppDatabase extends _$AppDatabase {
             ..orderBy([(p) => OrderingTerm.asc(p.pointNumber)]))
           .watch();
 
+  /// Filtered variant — returns only points configured for the given body view
+  /// ('front' or 'back'). Use when rendering on a single silhouette side.
+  Future<List<PointConfig>> getPointConfigsForZoneAndView(
+    int zoneId,
+    String bodyView,
+  ) =>
+      (select(pointConfigs)
+            ..where((p) =>
+                p.zoneId.equals(zoneId) & p.bodyView.equals(bodyView))
+            ..orderBy([(p) => OrderingTerm.asc(p.pointNumber)]))
+          .get();
+
+  Stream<List<PointConfig>> watchPointConfigsForZoneAndView(
+    int zoneId,
+    String bodyView,
+  ) =>
+      (select(pointConfigs)
+            ..where((p) =>
+                p.zoneId.equals(zoneId) & p.bodyView.equals(bodyView))
+            ..orderBy([(p) => OrderingTerm.asc(p.pointNumber)]))
+          .watch();
+
   Future<PointConfig?> getPointConfig(int zoneId, int pointNumber) =>
       (select(pointConfigs)..where(
             (p) => p.zoneId.equals(zoneId) & p.pointNumber.equals(pointNumber),

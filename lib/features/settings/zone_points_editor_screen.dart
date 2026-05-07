@@ -58,7 +58,10 @@ class _ZonePointsEditorScreenState
     } else {
       _points = configs.map((c) => c.toPositionedPoint()).toList();
 
-      for (var i = configs.length + 1; i <= zone.numberOfPoints; i++) {
+      // Riempi eventuali pointNumber mancanti con default sulla view corrente.
+      final existingNumbers = _points.map((p) => p.pointNumber).toSet();
+      for (var i = 1; i <= zone.numberOfPoints; i++) {
+        if (existingNumbers.contains(i)) continue;
         final defaults = generateDefaultPointPositions(
           zone.numberOfPoints,
           zone.type,
@@ -68,7 +71,7 @@ class _ZonePointsEditorScreenState
           (p) => p.pointNumber == i,
           orElse: () => PositionedPoint(pointNumber: i, x: 0.5, y: 0.5),
         );
-        _points.add(defaultPoint);
+        _points.add(defaultPoint.copyWith(bodyView: _currentView));
       }
     }
 
@@ -84,7 +87,7 @@ class _ZonePointsEditorScreenState
         point.pointNumber,
         point.x,
         point.y,
-        _currentView == BodyView.front ? 'front' : 'back',
+        point.bodyView == BodyView.front ? 'front' : 'back',
       );
       if (point.customName != null && point.customName!.isNotEmpty) {
         await database.updatePointName(
@@ -118,7 +121,8 @@ class _ZonePointsEditorScreenState
     setState(() {
       final index = _points.indexWhere((p) => p.pointNumber == pointNumber);
       if (index != -1) {
-        _points[index] = _points[index].copyWith(x: x, y: y);
+        _points[index] =
+            _points[index].copyWith(x: x, y: y, bodyView: view);
         _hasChanges = true;
       }
       _draggingPointNumber = pointNumber;

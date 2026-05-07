@@ -22,6 +22,57 @@ void main() {
   });
 
   group('InjectionRepository - Injections', () {
+    test('completeInjection throws on future-day injection (Bug E guard)',
+        () async {
+      final zones = await db.getAllZones();
+      final tomorrow = DateTime.now().add(const Duration(days: 1));
+      final id = await db.insertInjection(InjectionsCompanion.insert(
+        zoneId: zones.first.id,
+        pointNumber: 1,
+        pointCode: 'CD-1',
+        pointLabel: 'Test',
+        scheduledAt: tomorrow,
+      ));
+
+      expect(
+        () => repository.completeInjection(id),
+        throwsA(isA<StateError>()),
+      );
+    });
+
+    test('completeInjection succeeds for today (Bug E)', () async {
+      final zones = await db.getAllZones();
+      final today = DateTime.now();
+      final id = await db.insertInjection(InjectionsCompanion.insert(
+        zoneId: zones.first.id,
+        pointNumber: 1,
+        pointCode: 'CD-1',
+        pointLabel: 'Test',
+        scheduledAt: today,
+      ));
+
+      await repository.completeInjection(id);
+      final after = await db.getInjectionById(id);
+      expect(after?.status, 'completed');
+    });
+
+    test('updateNotes persists without affecting status (Bug H)', () async {
+      final zones = await db.getAllZones();
+      final id = await db.insertInjection(InjectionsCompanion.insert(
+        zoneId: zones.first.id,
+        pointNumber: 1,
+        pointCode: 'CD-1',
+        pointLabel: 'Test',
+        scheduledAt: DateTime.now(),
+        status: const Value('completed'),
+      ));
+
+      await repository.updateNotes(id, 'Andata bene, leggero rossore');
+      final after = await db.getInjectionById(id);
+      expect(after?.notes, 'Andata bene, leggero rossore');
+      expect(after?.status, 'completed');
+    });
+
     test('watchInjections returns stream of injections', () async {
       final zones = await db.getAllZones();
 

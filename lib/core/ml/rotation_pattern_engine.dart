@@ -38,6 +38,11 @@ class RotationPatternEngine {
   final List<BodyZone> zones;
   final RotationPattern currentPattern;
 
+  /// Drift `BodyZone` non ha `displayName`: usa `customName` se presente,
+  /// altrimenti il nome di default. Vedi CLAUDE.md ("Two BodyZone types").
+  static String _displayName(BodyZone zone) =>
+      zone.customName?.isNotEmpty == true ? zone.customName! : zone.name;
+
   /// Ottiene il prossimo suggerimento in base al pattern configurato
   Future<ZoneSuggestion?> getNextSuggestion() async {
     if (zones.isEmpty) return null;
@@ -75,7 +80,7 @@ class RotationPatternEngine {
 
     return ZoneSuggestion(
       zoneId: bestZone.id,
-      zoneName: bestZone.name,
+      zoneName: _displayName(bestZone),
       reason: 'Zona consigliata dall\'AI',
     );
   }
@@ -97,7 +102,7 @@ class RotationPatternEngine {
 
     return ZoneSuggestion(
       zoneId: zone.id,
-      zoneName: zone.name,
+      zoneName: _displayName(zone),
       reason: 'Prossimo nella sequenza (${currentIndex + 1}/${sequence.length})',
     );
   }
@@ -113,7 +118,7 @@ class RotationPatternEngine {
       final zone = zones.first;
       return ZoneSuggestion(
         zoneId: zone.id,
-        zoneName: zone.name,
+        zoneName: _displayName(zone),
         reason: 'Nessuna zona per lato $nextSide',
       );
     }
@@ -131,7 +136,7 @@ class RotationPatternEngine {
     final sideLabel = nextSide == 'left' ? 'sinistra' : 'destra';
     return ZoneSuggestion(
       zoneId: selectedZone.id,
-      zoneName: selectedZone.name,
+      zoneName: _displayName(selectedZone),
       reason: 'Alternanza lato $sideLabel',
     );
   }
@@ -154,7 +159,7 @@ class RotationPatternEngine {
       final zone = zones.first;
       return ZoneSuggestion(
         zoneId: zone.id,
-        zoneName: zone.name,
+        zoneName: _displayName(zone),
         reason: 'Nessuna zona per gruppo $currentGroup',
       );
     }
@@ -172,7 +177,7 @@ class RotationPatternEngine {
 
     return ZoneSuggestion(
       zoneId: selectedZone.id,
-      zoneName: selectedZone.name,
+      zoneName: _displayName(selectedZone),
       reason: 'Settimana ${_capitalizeFirst(currentGroup)} (settimana ${weeksPassed + 1})',
     );
   }
@@ -198,7 +203,7 @@ class RotationPatternEngine {
 
     return ZoneSuggestion(
       zoneId: zone.id,
-      zoneName: zone.name,
+      zoneName: _displayName(zone),
       reason: 'Sequenza personalizzata (${currentIndex + 1}/${customSequence.length})',
     );
   }
@@ -221,7 +226,7 @@ class RotationPatternEngine {
 
     return ZoneSuggestion(
       zoneId: zone.id,
-      zoneName: zone.name,
+      zoneName: _displayName(zone),
       reason: 'Rotazione oraria (${currentIndex + 1}/${sequence.length})',
     );
   }
@@ -243,7 +248,7 @@ class RotationPatternEngine {
 
     return ZoneSuggestion(
       zoneId: zone.id,
-      zoneName: zone.name,
+      zoneName: _displayName(zone),
       reason: 'Rotazione antioraria (${currentIndex + 1}/${sequence.length})',
     );
   }

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../app/router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/services/export_service.dart';
 import '../../core/database/app_database.dart' as db;
@@ -227,7 +229,7 @@ class _HistoryCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: InkWell(
-        onTap: () => _showDetails(context),
+        onTap: () => context.push(AppRoutes.injectionDetailPath(injection.id)),
         borderRadius: BorderRadius.circular(16),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -321,122 +323,6 @@ class _HistoryCard extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  void _showDetails(BuildContext context) {
-    final theme = Theme.of(context);
-    final date = injection.completedAt ?? injection.scheduledAt;
-    final dateFormat = DateFormat('EEEE d MMMM yyyy, HH:mm', 'it_IT');
-
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.5,
-        minChildSize: 0.3,
-        maxChildSize: 0.9,
-        expand: false,
-        builder: (context, scrollController) => ListView(
-          controller: scrollController,
-          padding: const EdgeInsets.all(24),
-          children: [
-            Row(
-              children: [
-                Text(_emoji, style: const TextStyle(fontSize: 40)),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        injection.pointLabel,
-                        style: theme.textTheme.headlineSmall,
-                      ),
-                      Text(
-                        injection.pointCode,
-                        style: theme.textTheme.bodyMedium,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            _DetailRow(
-              icon: Icons.calendar_today,
-              label: 'Data',
-              value: dateFormat.format(date),
-            ),
-            _DetailRow(
-              icon: Icons.check_circle_outline,
-              label: 'Stato',
-              value: _statusLabel,
-              valueColor: _statusColor,
-            ),
-            if (injection.notes.isNotEmpty)
-              _DetailRow(
-                icon: Icons.notes,
-                label: 'Note',
-                value: injection.notes,
-              ),
-            if (injection.sideEffects.isNotEmpty)
-              _DetailRow(
-                icon: Icons.warning_amber_rounded,
-                label: 'Effetti collaterali',
-                value: injection.sideEffects,
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _DetailRow extends StatelessWidget {
-  const _DetailRow({
-    required this.icon,
-    required this.label,
-    required this.value,
-    this.valueColor,
-  });
-
-  final IconData icon;
-  final String label;
-  final String value;
-  final Color? valueColor;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, size: 20),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: theme.textTheme.labelMedium,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  value,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: valueColor,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }

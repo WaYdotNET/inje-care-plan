@@ -8,8 +8,6 @@ import '../core/services/notification_service.dart';
 import '../core/theme/app_theme.dart';
 import '../core/theme/theme_provider.dart';
 import '../core/widgets/responsive_wrapper.dart';
-import '../core/widgets/side_effects_dialog.dart';
-import '../features/injection/injection_provider.dart';
 import 'router.dart';
 
 /// Main application widget
@@ -37,34 +35,31 @@ class _InjeCareAppState extends ConsumerState<InjeCareApp> {
     super.dispose();
   }
 
+  /// Routes the user to the injection detail screen when a notification is
+  /// tapped. Supports two payload prefixes:
+  ///   - `injection:<id>` — pre-injection reminders (Bug C deep-link target)
+  ///   - `side_effects:<id>` — post-injection follow-up reminder
+  /// Both lead to the same detail screen, which exposes notes + side-effects.
   Future<void> _handleNotificationTap(dynamic response) async {
     final payload = response.payload as String?;
-    if (payload == null || !payload.startsWith('side_effects:')) return;
+    if (payload == null) return;
 
-    final idStr = payload.substring('side_effects:'.length);
-    final injectionId = int.tryParse(idStr);
+    int? injectionId;
+    for (final prefix in const ['injection:', 'side_effects:']) {
+      if (payload.startsWith(prefix)) {
+        injectionId = int.tryParse(payload.substring(prefix.length));
+        break;
+      }
+    }
     if (injectionId == null) return;
 
-    // Attendi che il router sia pronto
+    // Attendi che il router sia pronto (cold-start: navigatorKey può non avere
+    // ancora un context montato).
     await Future<void>.delayed(const Duration(milliseconds: 500));
     if (!mounted) return;
 
     final router = ref.read(routerProvider);
-    final navContext = router.routerDelegate.navigatorKey.currentContext;
-    if (navContext == null) return;
-
-    final repository = ref.read(injectionRepositoryProvider);
-    final injection = await repository.getInjectionById(injectionId);
-    if (injection == null || !mounted) return;
-
-    final effects = await SideEffectsDialog.show(
-      navContext,
-      injectionId: injectionId,
-      pointLabel: injection.pointLabel,
-    );
-    if (effects != null) {
-      await repository.updateSideEffects(injectionId, effects);
-    }
+    router.go(AppRoutes.injectionDetailPath(injectionId));
   }
 
   @override

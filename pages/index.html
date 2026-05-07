@@ -315,14 +315,16 @@
       <div class="lang" data-lang="it">
         <h2 class="section-title">Changelog</h2>
         <div class="card kcard">
-          <h3>Versione 4.7.1 (28 mar 2026)</h3>
+          <h3>Versione 4.8.0 (7 mag 2026)</h3>
           <ul style="margin: 8px 0 0; padding-left: 18px; color: var(--muted); font-size: 14px;">
-            <li><strong>Suono personalizzato</strong>: Tutte le notifiche ora usano un suono gradevole personalizzato</li>
-            <li><strong>Effetti collaterali migliorati</strong>: Promemoria dopo 2h dal completamento, dialog diretto dal tap sulla notifica</li>
-            <li><strong>Bug fix calendario</strong>: Le iniezioni completate non vengono più mostrate come "da fare"</li>
-            <li><strong>Nomi custom corretti</strong>: I nomi personalizzati delle zone e dei punti ora appaiono correttamente ovunque</li>
-            <li><strong>Storico in basso</strong>: Lo storico è ora nella barra di navigazione principale</li>
-            <li><strong>Flutter 3.41.6</strong>: Aggiornamento framework e dipendenze</li>
+            <li><strong>Dettaglio iniezione</strong>: Nuova schermata per modificare note ed effetti collaterali in qualunque momento, anche dopo il completamento</li>
+            <li><strong>Reminder duplicati risolti</strong>: ID notifiche stabili (per iniezione) e cancel-before-schedule idempotente</li>
+            <li><strong>Reminder mancanti</strong>: Diagnostica permessi e banner in home se le notifiche sono bloccate dal sistema</li>
+            <li><strong>Tap notifica funzionante</strong>: Aprendo una notifica si va al dettaglio dell'iniezione (prima si apriva l'app senza navigare)</li>
+            <li><strong>Iniezione futura non più completabile</strong>: Bloccato il "segna come fatta" su iniezioni schedulate per giorni futuri</li>
+            <li><strong>Rotazione con conferma</strong>: Warning se si sceglie una zona diversa da quella consigliata</li>
+            <li><strong>Nomi custom nei suggerimenti</strong>: Le notifiche di suggerimento zona mostrano il nome personalizzato</li>
+            <li><strong>Flip body view</strong>: I punti restano sul lato corretto quando si gira la silhouette fronte/retro</li>
           </ul>
           <p style="margin-top: 12px; font-size: 13px;">
             <a href="https://github.com/WaYdotNET/inje-care-plan/blob/main/CHANGELOG.md">Vedi lo storico completo su
@@ -333,14 +335,16 @@
       <div class="lang" data-lang="en">
         <h2 class="section-title">Changelog</h2>
         <div class="card kcard">
-          <h3>Version 4.7.1 (Mar 28, 2026)</h3>
+          <h3>Version 4.8.0 (May 7, 2026)</h3>
           <ul style="margin: 8px 0 0; padding-left: 18px; color: var(--muted); font-size: 14px;">
-            <li><strong>Custom notification sound</strong>: All notifications now use a pleasant custom chime</li>
-            <li><strong>Improved side effects</strong>: Reminder after 2h from completion, direct dialog from notification tap</li>
-            <li><strong>Calendar bug fix</strong>: Completed injections no longer shown as "to do"</li>
-            <li><strong>Custom names fixed</strong>: Custom zone and point names now correctly shown everywhere</li>
-            <li><strong>History in nav bar</strong>: History is now accessible from the main bottom navigation</li>
-            <li><strong>Flutter 3.41.6</strong>: Framework and dependencies update</li>
+            <li><strong>Injection detail</strong>: New screen to edit notes and side effects at any time, even after completion</li>
+            <li><strong>Duplicate reminders fixed</strong>: Stable per-injection IDs and idempotent cancel-before-schedule</li>
+            <li><strong>Missing reminders</strong>: Permission diagnostics and an in-app banner when the system blocks notifications</li>
+            <li><strong>Notification tap works</strong>: Tapping a reminder now opens the injection detail (used to open the app without navigating)</li>
+            <li><strong>Future injection cannot be completed</strong>: "Mark as done" is blocked for injections scheduled on future days</li>
+            <li><strong>Rotation confirmation</strong>: Warning when choosing a zone different from the recommended one</li>
+            <li><strong>Custom names in suggestions</strong>: Zone-suggestion notifications now show the user-defined name</li>
+            <li><strong>Body view flip</strong>: Points stay on the correct side when toggling front/back of the silhouette</li>
           </ul>
           <p style="margin-top: 12px; font-size: 13px;">
             <a href="https://github.com/WaYdotNET/inje-care-plan/blob/main/CHANGELOG.md">View full history on GitHub</a>
@@ -359,7 +363,7 @@
           Autore: <a href="https://waydotnet.com">waydotnet.com</a>
         </p>
         <p style="margin: 0">
-          Licenza: GPL-3.0 · InjeCare Plan v4.7.1 © 2024–2026 Carlo Bertini (WaYdotNET)
+          Licenza: GPL-3.0 · InjeCare Plan v4.8.0 © 2024–2026 Carlo Bertini (WaYdotNET)
         </p>
       </div>
       <div class="lang" data-lang="en">
@@ -369,7 +373,7 @@
           Author: <a href="https://waydotnet.com">waydotnet.com</a>
         </p>
         <p style="margin: 0">
-          License: GPL-3.0 · InjeCare Plan v4.7.1 © 2024–2026 Carlo Bertini (WaYdotNET)
+          License: GPL-3.0 · InjeCare Plan v4.8.0 © 2024–2026 Carlo Bertini (WaYdotNET)
         </p>
       </div>
     </div>

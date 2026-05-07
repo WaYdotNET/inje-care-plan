@@ -15,7 +15,10 @@ flutter pub get
 # Generate code (Drift database + Riverpod providers) — required after modifying tables or @riverpod annotations
 dart run build_runner build --delete-conflicting-outputs
 
-# Run all tests (672 tests, 100% coverage on non-generated files)
+# Same, but watch & regenerate on save (preferred while editing tables/providers)
+dart run build_runner watch --delete-conflicting-outputs
+
+# Run the full test suite
 flutter test
 
 # Run a single test file
@@ -55,6 +58,10 @@ lib/
 ├── models/           # Shared data models (BodyZone, RotationPattern, etc.)
 └── l10n/             # ARB localization files (IT default, EN, DE, FR, ES)
 ```
+
+Other top-level dirs you may see in `git status`:
+- `pages/` — static GitHub Pages landing site (HTML/CSS/JS, IT+EN); has its own changelog kept in sync via the release checklist
+- `store_listing/` — Google Play Store assets (feature graphic, IT listing copy)
 
 **Data flow pattern**: Feature Screen → Provider (Riverpod) → Repository → Database (Drift)
 

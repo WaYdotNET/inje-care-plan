@@ -8,6 +8,7 @@ import '../features/home/home_minimal_screen.dart';
 import '../features/calendar/calendar_screen.dart';
 import '../features/injection/zone_detail_screen.dart';
 import '../features/injection/record_screen.dart';
+import '../features/injection/injection_detail_screen.dart';
 import '../features/history/history_screen.dart';
 import '../features/settings/settings_screen.dart';
 import '../features/info/info_screen.dart';
@@ -38,6 +39,10 @@ sealed class AppRoutes {
   static const weeklyProposals = '/weekly-proposals';
   static const statistics = '/statistics';
   static const customPattern = '/custom-pattern';
+  static const injectionDetail = '/injection/:id';
+
+  /// Helper to build the concrete path for [injectionDetail].
+  static String injectionDetailPath(int id) => '/injection/$id';
 }
 
 /// Router provider
@@ -194,6 +199,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.customPattern,
         name: 'customPattern',
         builder: (context, state) => const CustomPatternScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.injectionDetail,
+        name: 'injectionDetail',
+        builder: (context, state) {
+          final id = int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
+          return InjectionDetailScreen(injectionId: id);
+        },
       ),
     ],
   );

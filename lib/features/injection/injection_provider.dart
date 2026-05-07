@@ -19,6 +19,15 @@ final injectionsProvider = StreamProvider<List<db.Injection>>((ref) {
   return repository.watchInjections();
 });
 
+/// Single injection by ID provider (used by injection detail screen)
+final injectionByIdProvider =
+    FutureProvider.family<db.Injection?, int>((ref, id) async {
+  // Re-fetch when the underlying list changes so edits propagate.
+  ref.watch(injectionsProvider);
+  final repository = ref.watch(injectionRepositoryProvider);
+  return repository.getInjectionById(id);
+});
+
 /// Injections for a date range provider
 final injectionsInRangeProvider = StreamProvider.family<
     List<db.Injection>,

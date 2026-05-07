@@ -5,6 +5,16 @@ import '../../models/injection_record.dart' as models;
 import '../../models/blacklisted_point.dart' as models;
 import '../../models/therapy_plan.dart' as models;
 
+/// Returns true if an injection scheduled at [scheduledAt] can be completed now.
+/// Rule: same calendar day or earlier — future days are blocked.
+bool canCompleteNow(DateTime scheduledAt, {DateTime? now}) {
+  final ref = now ?? DateTime.now();
+  final today = DateTime(ref.year, ref.month, ref.day);
+  final scheduledDay =
+      DateTime(scheduledAt.year, scheduledAt.month, scheduledAt.day);
+  return !scheduledDay.isAfter(today);
+}
+
 /// Injection repository per operazioni Drift (offline-first)
 class InjectionRepository {
   InjectionRepository({required AppDatabase database}) : _db = database;
@@ -110,12 +120,19 @@ class InjectionRepository {
     ));
   }
 
-  /// Complete an injection
+  /// Complete an injection. Throws [StateError] if the injection is scheduled
+  /// for a future calendar day (defensive guard against UI bypass).
   Future<void> completeInjection(
     int injectionId, {
     String? notes,
     List<String> sideEffects = const [],
   }) async {
+    final injection = await _db.getInjectionById(injectionId);
+    if (injection != null && !canCompleteNow(injection.scheduledAt)) {
+      throw StateError(
+        'Cannot complete an injection scheduled for a future day',
+      );
+    }
     await _db.updateInjection(InjectionsCompanion(
       id: Value(injectionId),
       status: const Value('completed'),
@@ -131,6 +148,15 @@ class InjectionRepository {
     await _db.updateInjection(InjectionsCompanion(
       id: Value(injectionId),
       sideEffects: Value(sideEffects.join(',')),
+      updatedAt: Value(DateTime.now()),
+    ));
+  }
+
+  /// Update notes for an existing injection (editable at any time)
+  Future<void> updateNotes(int injectionId, String? notes) async {
+    await _db.updateInjection(InjectionsCompanion(
+      id: Value(injectionId),
+      notes: Value(notes ?? ''),
       updatedAt: Value(DateTime.now()),
     ));
   }

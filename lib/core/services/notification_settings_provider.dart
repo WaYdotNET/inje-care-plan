@@ -108,6 +108,19 @@ class NotificationSettingsNotifier extends Notifier<NotificationSettings> {
     return granted;
   }
 
+  /// Refresh the cached permission flag by re-querying the OS (Android only).
+  /// Call on app resume to keep the in-app banner state honest after the user
+  /// toggles the system permission.
+  Future<void> refreshPermissionStatus() async {
+    final enabled =
+        await NotificationService.instance.areAndroidNotificationsEnabled();
+    if (enabled == null) return; // iOS or query failed — leave state as-is
+    if (enabled == state.permissionsGranted) return;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_keyPermissionsGranted, enabled);
+    state = state.copyWith(permissionsGranted: enabled);
+  }
+
   /// Check if we should request permissions (first time or not granted)
   Future<bool> shouldRequestPermissions() async {
     final prefs = await SharedPreferences.getInstance();

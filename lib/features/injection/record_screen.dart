@@ -184,6 +184,40 @@ class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
   }
 
   Future<void> _confirmInjection(BodyZone zone, List<BodyZone> zones) async {
+    // Bug F — rotazione: se l'utente sta scegliendo una zona diversa da
+    // quella consigliata dal pattern di rotazione, chiediamo conferma esplicita.
+    // (Solo per nuove iniezioni: in editing della stessa iniezione il warning
+    // non ha senso.)
+    if (widget.existingInjectionId == null) {
+      final suggestion =
+          await ref.read(patternBasedZoneSuggestionProvider.future);
+      if (suggestion != null && suggestion.zoneId != zone.id) {
+        if (!mounted) return;
+        final proceed = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('Rotazione consigliata diversa'),
+            content: Text(
+              'La rotazione consiglia: ${suggestion.zoneName}.\n'
+              'Hai scelto: ${zone.displayName}.\n\n'
+              'Continuare comunque con la zona scelta?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(false),
+                child: const Text('Annulla'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.of(ctx).pop(true),
+                child: const Text('Continua'),
+              ),
+            ],
+          ),
+        );
+        if (proceed != true) return;
+      }
+    }
+
     setState(() => _isLoading = true);
 
     try {
@@ -218,13 +252,8 @@ class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
       // Se stiamo modificando un'iniezione esistente, aggiorna invece di creare
       int injectionId;
       if (widget.existingInjectionId != null) {
-        // Cancella eventuali notifiche precedenti legate alla vecchia data/ora
-        final existing = await repository.getInjectionById(widget.existingInjectionId!);
-        if (existing != null) {
-          final oldNotifId = existing.scheduledAt.millisecondsSinceEpoch ~/ 1000;
-          await NotificationService.instance.cancelNotification(oldNotifId);
-        }
-
+        // Le notifiche per questo id verranno cancellate dentro
+        // scheduleInjectionNotifications (cancel-before-schedule).
         await repository.updateInjection(widget.existingInjectionId!, record);
         injectionId = widget.existingInjectionId!;
       } else {
@@ -243,7 +272,7 @@ class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
 
       if (notificationSettings.enabled && notificationSettings.permissionsGranted) {
         await NotificationService.instance.scheduleInjectionNotifications(
-          injection: record,
+          injection: record.copyWith(id: injectionId),
           minutesBefore: notificationSettings.minutesBefore,
           missedDoseReminder: notificationSettings.missedDoseReminder,
         );
@@ -297,18 +326,15 @@ class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
             );
             await repository.updateInjection(injectionId, completedRecord);
 
-            // Cancella notifiche programmate per questa iniezione
-            final notifId = record.scheduledAt.millisecondsSinceEpoch ~/ 1000;
-            await NotificationService.instance.cancelNotification(notifId);
+            // Cancella notifiche pre-iniezione e schedula side-effects reminder
+            // usando l'id stabile dell'iniezione.
+            await NotificationService.instance.cancelNotification(injectionId);
 
-            // Aggiorna providers
             ref.invalidate(injectionsProvider);
 
-            // Schedula promemoria effetti collaterali
             if (notificationSettings.enabled && notificationSettings.permissionsGranted) {
-              final notifId = record.scheduledAt.millisecondsSinceEpoch ~/ 1000;
               await NotificationService.instance.scheduleSideEffectsReminder(
-                id: notifId,
+                id: injectionId,
                 completedAt: completedAt,
                 pointLabel: record.pointLabel,
                 hoursAfter: notificationSettings.sideEffectsReminderHours,

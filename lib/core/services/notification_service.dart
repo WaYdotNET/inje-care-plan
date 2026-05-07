@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz_data;
@@ -53,32 +54,55 @@ class NotificationService {
   Future<AndroidScheduleMode> _androidScheduleMode() async {
     try {
       final canExact = await _android?.canScheduleExactNotifications();
-      // Se non possiamo schedulare "exact", fallback a inexact (meno preciso ma affidabile)
+      if (canExact != true) {
+        debugPrint(
+          '[NotificationService] exact alarm permission not granted — '
+          'falling back to inexactAllowWhileIdle (delivery may be delayed)',
+        );
+      }
       return (canExact ?? false)
           ? AndroidScheduleMode.exactAllowWhileIdle
           : AndroidScheduleMode.inexactAllowWhileIdle;
-    } catch (_) {
+    } catch (e) {
+      debugPrint('[NotificationService] _androidScheduleMode error: $e');
       return AndroidScheduleMode.inexactAllowWhileIdle;
     }
   }
 
-  /// Request notification permissions
+  /// Request notification permissions. Logs each platform result so silent
+  /// permission denials are visible in debug builds.
   Future<bool> requestPermissions() async {
-    // Request iOS permissions
     final iosResult = await _notifications
         .resolvePlatformSpecificImplementation<
           IOSFlutterLocalNotificationsPlugin
         >()
         ?.requestPermissions(alert: true, badge: true, sound: true);
 
-    // Request Android permissions
     final androidResult = await _notifications
         .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin
         >()
         ?.requestNotificationsPermission();
 
+    if (iosResult == false) {
+      debugPrint('[NotificationService] iOS notification permission DENIED');
+    }
+    if (androidResult == false) {
+      debugPrint('[NotificationService] Android notification permission DENIED');
+    }
+
     return (iosResult ?? true) && (androidResult ?? true);
+  }
+
+  /// Whether Android notifications are currently enabled by the OS.
+  /// Returns null on iOS (permission state queried via the plugin elsewhere).
+  Future<bool?> areAndroidNotificationsEnabled() async {
+    try {
+      return await _android?.areNotificationsEnabled();
+    } catch (e) {
+      debugPrint('[NotificationService] areNotificationsEnabled error: $e');
+      return null;
+    }
   }
 
   /// Handle notification response
@@ -92,6 +116,7 @@ class NotificationService {
     required DateTime scheduledTime,
     required String pointLabel,
     int minutesBefore = 30,
+    String? payload,
   }) async {
     final reminderTime = scheduledTime.subtract(
       Duration(minutes: minutesBefore),
@@ -128,6 +153,7 @@ class NotificationService {
       tz.TZDateTime.from(reminderTime, tz.local),
       details,
       androidScheduleMode: await _androidScheduleMode(),
+      payload: payload,
     );
   }
 
@@ -137,6 +163,7 @@ class NotificationService {
     required DateTime scheduledTime,
     required String pointLabel,
     int hoursAfter = 2,
+    String? payload,
   }) async {
     final reminderTime = scheduledTime.add(Duration(hours: hoursAfter));
 
@@ -171,6 +198,7 @@ class NotificationService {
       tz.TZDateTime.from(reminderTime, tz.local),
       details,
       androidScheduleMode: await _androidScheduleMode(),
+      payload: payload,
     );
   }
 
@@ -179,6 +207,7 @@ class NotificationService {
     required int id,
     required DateTime scheduledTime,
     required String pointLabel,
+    String? payload,
   }) async {
     final reminderTime = scheduledTime.subtract(const Duration(minutes: 1));
 
@@ -213,6 +242,7 @@ class NotificationService {
       tz.TZDateTime.from(reminderTime, tz.local),
       details,
       androidScheduleMode: await _androidScheduleMode(),
+      payload: payload,
     );
   }
 
@@ -303,36 +333,54 @@ class NotificationService {
     await _notifications.show(id, title, body, details);
   }
 
-  /// Schedule notifications for an injection
+  /// Schedule notifications for an injection. Idempotent: cancels any
+  /// previously scheduled notifications for the same injection id before
+  /// scheduling the new ones, so repeated calls don't duplicate.
+  ///
+  /// The injection's primary key (`injection.id`) is used as the stable
+  /// notification id, so editing `scheduledAt` will replace — not duplicate —
+  /// the existing reminders.
   Future<void> scheduleInjectionNotifications({
     required InjectionRecord injection,
     required int minutesBefore,
     required bool missedDoseReminder,
   }) async {
-    // Generate a unique ID from the injection
-    final id = injection.scheduledAt.millisecondsSinceEpoch ~/ 1000;
+    final injectionId = injection.id;
+    if (injectionId == null) {
+      debugPrint(
+        '[NotificationService] scheduleInjectionNotifications called without '
+        'an injection.id — skipping (cannot dedupe).',
+      );
+      return;
+    }
 
-    // Schedule pre-injection reminder
+    // Cancel any previously-scheduled reminders for this injection so a
+    // re-schedule (e.g. after editing scheduledAt) does not stack duplicates.
+    await cancelNotification(injectionId);
+
+    final payload = 'injection:$injectionId';
+
     await scheduleInjectionReminder(
-      id: id,
+      id: injectionId,
       scheduledTime: injection.scheduledAt,
       pointLabel: injection.pointLabel,
       minutesBefore: minutesBefore,
+      payload: payload,
     );
 
-    // Schedule 1-minute pre-injection reminder
     await scheduleOneMinuteReminder(
-      id: id,
+      id: injectionId,
       scheduledTime: injection.scheduledAt,
       pointLabel: injection.pointLabel,
+      payload: payload,
     );
 
-    // Schedule missed dose reminder if enabled
     if (missedDoseReminder) {
       await scheduleMissedDoseReminder(
-        id: id,
+        id: injectionId,
         scheduledTime: injection.scheduledAt,
         pointLabel: injection.pointLabel,
+        payload: payload,
       );
     }
   }

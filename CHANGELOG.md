@@ -1,5 +1,20 @@
 # Changelog
 
+## 4.8.0 - 2026-05-07
+
+### Aggiunto
+- **Schermata dettaglio iniezione**: Nuova schermata `/injection/:id` accessibile dal calendario, dallo storico e dal tap sulle notifiche. Permette di **modificare le note in qualunque momento**, anche per iniezioni già completate, e di registrare gli effetti collaterali inline.
+- **Banner permessi notifiche**: Banner non bloccante in home se le notifiche sono abilitate ma il sistema non ha concesso il permesso; tap per richiederlo. Lo stato viene riverificato al resume dell'app.
+- **Warning rotazione**: Quando si registra un'iniezione su una zona diversa da quella consigliata dal pattern di rotazione, viene mostrato un dialog di conferma esplicita.
+
+### Corretto
+- **Reminder duplicati**: L'ID delle notifiche ora deriva da `injection.id` (chiave stabile) invece che dal timestamp; cancel-before-schedule idempotente nel `scheduleInjectionNotifications` evita stack di notifiche dopo modifiche o riempimenti settimanali ripetuti.
+- **Reminder mancanti silenziosi**: Logging diagnostico sui rami di failure di `requestPermissions` e `_androidScheduleMode` (exact alarm). Re-query del permesso al resume dell'app.
+- **Tap notifica post-iniezione che non portava da nessuna parte**: I payload `injection:` e `side_effects:` ora aprono la nuova schermata di dettaglio invece di un dialog modale che falliva silenziosamente al cold-start.
+- **Nomi custom non visibili nei suggerimenti di rotazione**: `RotationPatternEngine` ora usa il display name (custom name se presente) in tutti i 7 pattern, così le notifiche di suggerimento zona mostrano il nome scelto dall'utente.
+- **Iniezione futura segnata come fatta**: Helper `canCompleteNow` blocca il completamento di iniezioni schedulate in giorni futuri (oggi resta consentito anche prima dell'orario). Throw difensivo nel repository, UI gate in calendario, home e dettaglio.
+- **Flip body view: punti sul lato sbagliato**: `getPointConfigsForZoneAndView` filtra per `bodyView`; il widget editor mostra solo i punti del lato corrente. Il `bodyView` viene propagato in salvataggio e movimento.
+
 ## 4.7.1 - 2026-03-28
 
 ### Aggiunto

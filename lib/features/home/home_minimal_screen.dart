@@ -15,6 +15,7 @@ import '../../core/services/notification_service.dart';
 import '../../core/ml/rotation_pattern_engine.dart';
 import '../../core/utils/schedule_utils.dart';
 import '../injection/injection_provider.dart' hide bodyZonesProvider;
+import '../injection/injection_repository.dart';
 import '../injection/zone_provider.dart';
 import '../injection/widgets/body_silhouette_editor.dart';
 
@@ -26,8 +27,33 @@ class HomeMinimalScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeMinimalScreen> createState() => _HomeMinimalScreenState();
 }
 
-class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen> {
+class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
+    with WidgetsBindingObserver {
   bool _weekFillPromptShown = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    // Re-check sistema permessi all'avvio (l'utente potrebbe averli revocati
+    // manualmente nelle impostazioni Android tra una sessione e l'altra).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(notificationSettingsProvider.notifier).refreshPermissionStatus();
+    });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      ref.read(notificationSettingsProvider.notifier).refreshPermissionStatus();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -99,10 +125,14 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen> {
         ],
       ),
       body: SafeArea(
-        child: zonesAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, st) => _ErrorView(message: e.toString()),
-          data: (zones) {
+        child: Column(
+          children: [
+            const _NotificationPermissionBanner(),
+            Expanded(
+              child: zonesAsync.when(
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (e, st) => _ErrorView(message: e.toString()),
+                data: (zones) {
             final plan = therapyPlanAsync.asData?.value;
             final weekEmpty = weekInjectionsAsync.asData?.value.isEmpty ?? false;
             if (!_weekFillPromptShown && plan != null && weekEmpty) {
@@ -147,6 +177,7 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen> {
                 }
 
                 final isScheduled = nextScheduled != null;
+                final canComplete = canCompleteNow(displayDate);
                 final view = _getViewForZone(zone?.type);
 
                 final displayTime = DateFormat('HH:mm').format(displayDate);
@@ -155,6 +186,10 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen> {
                   onTap: zone != null
                       ? () {
                           if (isScheduled && scheduledInjectionId != null) {
+                            if (!canComplete) {
+                              context.push('/injection/$scheduledInjectionId');
+                              return;
+                            }
                             _showCompleteDialog(
                               context,
                               scheduledInjectionId,
@@ -185,7 +220,11 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen> {
                         const SizedBox(height: 24),
                         if (zone != null)
                           Text(
-                            isScheduled ? 'Tocca per completare' : 'Tocca per registrare',
+                            isScheduled
+                                ? (canComplete
+                                    ? 'Tocca per completare'
+                                    : 'Tocca per vedere il dettaglio')
+                                : 'Tocca per registrare',
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
                             ),
@@ -197,6 +236,9 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen> {
               },
             );
           },
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -232,6 +274,19 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen> {
 
     if (!context.mounted) return;
 
+    if (scheduledAt != null && !canCompleteNow(scheduledAt)) {
+      ScaffoldMessenger.of(context)
+        ..clearSnackBars()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(
+              'Disponibile dal ${DateFormat('d MMM yyyy', 'it_IT').format(scheduledAt)}',
+            ),
+          ),
+        );
+      return;
+    }
+
     final shouldComplete = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -253,20 +308,16 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen> {
     );
 
     if (shouldComplete == true && context.mounted) {
-      // Cancella notifiche programmate per questa iniezione
-      if (scheduledAt != null) {
-        final notifId = scheduledAt.millisecondsSinceEpoch ~/ 1000;
-        await NotificationService.instance.cancelNotification(notifId);
-      }
+      // Cancella le notifiche pre-iniezione e schedula side-effects reminder
+      // usando l'id stabile dell'iniezione (no più id derivato da timestamp).
+      await NotificationService.instance.cancelNotification(injectionId);
 
       await repository.completeInjection(injectionId);
 
-      // Schedula promemoria effetti collaterali
       final notifSettings = ref.read(notificationSettingsProvider);
-      if (notifSettings.enabled && notifSettings.permissionsGranted && scheduledAt != null) {
-        final notifId = scheduledAt.millisecondsSinceEpoch ~/ 1000;
+      if (notifSettings.enabled && notifSettings.permissionsGranted) {
         await NotificationService.instance.scheduleSideEffectsReminder(
-          id: notifId,
+          id: injectionId,
           completedAt: DateTime.now(),
           pointLabel: resolvedLabel,
           hoursAfter: notifSettings.sideEffectsReminderHours,
@@ -376,7 +427,7 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen> {
         updatedAt: now,
       );
 
-      await repository.createInjection(record);
+      final newId = await repository.createInjection(record);
       created++;
 
       // Avanza il pattern (persistente) per la prossima proposta
@@ -391,7 +442,7 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen> {
       if (notificationSettings.enabled &&
           notificationSettings.permissionsGranted) {
         await NotificationService.instance.scheduleInjectionNotifications(
-          injection: record,
+          injection: record.copyWith(id: newId),
           minutesBefore: notificationSettings.minutesBefore,
           missedDoseReminder: notificationSettings.missedDoseReminder,
         );
@@ -728,6 +779,51 @@ class _ErrorView extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Banner non bloccante mostrato in cima alla home quando le notifiche
+/// sono abilitate dall'utente ma il sistema non ha concesso il permesso.
+/// Cliccando si tenta una nuova richiesta esplicita di permesso.
+class _NotificationPermissionBanner extends ConsumerWidget {
+  const _NotificationPermissionBanner();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final settings = ref.watch(notificationSettingsProvider);
+    if (!settings.enabled || settings.permissionsGranted) {
+      return const SizedBox.shrink();
+    }
+
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final bg = (isDark ? AppColors.darkGold : AppColors.dawnGold)
+        .withValues(alpha: 0.15);
+    final fg = isDark ? AppColors.darkGold : AppColors.dawnGold;
+
+    return Material(
+      color: bg,
+      child: InkWell(
+        onTap: () =>
+            ref.read(notificationSettingsProvider.notifier).requestPermissions(),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          child: Row(
+            children: [
+              Icon(Icons.notifications_off, color: fg, size: 20),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'I promemoria sono disattivati. Tocca per concedere il permesso.',
+                  style: theme.textTheme.bodySmall?.copyWith(color: fg),
+                ),
+              ),
+              Icon(Icons.chevron_right, color: fg, size: 20),
+            ],
+          ),
         ),
       ),
     );

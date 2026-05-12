@@ -1,5 +1,16 @@
 # Changelog
 
+## 4.8.2 - 2026-05-12
+
+### Corretto
+- **Posizione punti braccia**: i pallini di Braccio Dx/Sx non sono più sulla clavicola/spalla — ricalibrate le Y dei punti predefiniti.
+- **Silhouette vuota nella schermata "Seleziona punto"**: se tutti i punti di una zona sono su un solo lato (fronte o retro), l'editor parte da quel lato invece che dal default per tipo. Nuovo helper `pickInitialBodyView`.
+- **Colori calendario/storico indistinguibili**: stato iniezione ora usa palette semaforo — **verde** completata, **giallo** programmata, **rosso** saltata/mancata. Nuovo colore `Success` aggiunto al tema Rosé Pine.
+- **Side zone invertito ("Coscia Sx → Destro")**: migration v4 + auto-repair idempotente al boot del DB riallinea `body_zones.side` al suffisso del code (D=right, S=left).
+
+### Aggiunto
+- **Spostamento punto fra fronte e retro**: nel popup di modifica del singolo punto (editor zone) c'è ora un toggle Fronte/Retro per cambiare la vista del punto senza doverlo trascinare sull'altra silhouette.
+
 ## 4.8.1 - 2026-05-07
 
 ### Corretto

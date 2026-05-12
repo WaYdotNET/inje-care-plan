@@ -192,14 +192,8 @@ class _HistoryCard extends StatelessWidget {
   final db.Injection injection;
   final bool isDark;
 
-  Color get _statusColor => switch (injection.status) {
-    'completed' => isDark ? AppColors.darkPine : AppColors.dawnPine,
-    'skipped' => isDark ? AppColors.darkLove : AppColors.dawnLove,
-    'delayed' => isDark ? AppColors.darkGold : AppColors.dawnGold,
-    'scheduled' => isDark ? AppColors.darkFoam : AppColors.dawnFoam,
-    'missed' => isDark ? AppColors.darkLove : AppColors.dawnLove,
-    _ => isDark ? AppColors.darkMuted : AppColors.dawnMuted,
-  };
+  Color get _statusColor =>
+      InjectionStatusColors.getStatusColor(injection.status, isDark: isDark);
 
   String get _statusLabel => switch (injection.status) {
     'completed' => 'Completata',

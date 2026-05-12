@@ -169,21 +169,8 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: events.take(3).map((inj) {
-          Color color;
-          switch (inj.status) {
-            case 'completed':
-              color = isDark ? AppColors.darkPine : AppColors.dawnPine;
-              break;
-            case 'skipped':
-              color = isDark ? AppColors.darkLove : AppColors.dawnLove;
-              break;
-            case 'missed':
-              color = isDark ? AppColors.darkLove : AppColors.dawnLove;
-              break;
-            default:
-              color = isDark ? AppColors.darkFoam : AppColors.dawnFoam;
-          }
-
+          final color =
+              InjectionStatusColors.getStatusColor(inj.status, isDark: isDark);
           return Container(
             margin: const EdgeInsets.symmetric(horizontal: 1),
             width: 6,

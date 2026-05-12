@@ -131,17 +131,17 @@ void main() {
 
   group('InjectionStatusColors', () {
     group('getStatusColorLight', () {
-      test('returns dawnPine for completed', () {
+      test('returns dawnSuccess (green) for completed', () {
         expect(
           InjectionStatusColors.getStatusColorLight('completed'),
-          AppColors.dawnPine,
+          AppColors.dawnSuccess,
         );
       });
 
-      test('returns dawnFoam for scheduled', () {
+      test('returns dawnGold (yellow) for scheduled', () {
         expect(
           InjectionStatusColors.getStatusColorLight('scheduled'),
-          AppColors.dawnFoam,
+          AppColors.dawnGold,
         );
       });
 
@@ -175,17 +175,17 @@ void main() {
     });
 
     group('getStatusColorDark', () {
-      test('returns darkPine for completed', () {
+      test('returns darkSuccess (green) for completed', () {
         expect(
           InjectionStatusColors.getStatusColorDark('completed'),
-          AppColors.darkPine,
+          AppColors.darkSuccess,
         );
       });
 
-      test('returns darkFoam for scheduled', () {
+      test('returns darkGold (yellow) for scheduled', () {
         expect(
           InjectionStatusColors.getStatusColorDark('scheduled'),
-          AppColors.darkFoam,
+          AppColors.darkGold,
         );
       });
 

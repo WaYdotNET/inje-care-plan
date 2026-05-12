@@ -254,20 +254,14 @@ class _StatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (label, color) = switch (status) {
-      'completed' => (
-        'Completata',
-        isDark ? AppColors.darkPine : AppColors.dawnPine,
-      ),
-      'skipped' => (
-        'Saltata',
-        isDark ? AppColors.darkGold : AppColors.dawnGold,
-      ),
-      _ => (
-        'Pianificata',
-        isDark ? AppColors.darkFoam : AppColors.dawnFoam,
-      ),
+    final label = switch (status) {
+      'completed' => 'Completata',
+      'skipped' => 'Saltata',
+      'missed' => 'Mancata',
+      'delayed' => 'In ritardo',
+      _ => 'Pianificata',
     };
+    final color = InjectionStatusColors.getStatusColor(status, isDark: isDark);
     return Chip(
       label: Text(label),
       backgroundColor: color.withValues(alpha: 0.18),

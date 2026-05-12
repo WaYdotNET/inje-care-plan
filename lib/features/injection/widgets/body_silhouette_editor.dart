@@ -16,6 +16,22 @@ BodyView defaultBodyViewForZoneType(String? zoneType) {
   return BodyView.front;
 }
 
+/// Sceglie la view iniziale da mostrare per un set di punti.
+/// Se tutti i punti sono su un solo lato → torna quel lato.
+/// Altrimenti (mix o vuoto) → fallback al default per tipo zona.
+BodyView pickInitialBodyView(
+  Iterable<PositionedPoint> points,
+  String? zoneType,
+) {
+  final list = points.toList();
+  if (list.isEmpty) return defaultBodyViewForZoneType(zoneType);
+  final front = list.where((p) => p.bodyView == BodyView.front).length;
+  final back = list.length - front;
+  if (front > 0 && back == 0) return BodyView.front;
+  if (back > 0 && front == 0) return BodyView.back;
+  return defaultBodyViewForZoneType(zoneType);
+}
+
 /// Rappresenta un punto posizionato sulla silhouette
 class PositionedPoint {
   final int pointNumber;

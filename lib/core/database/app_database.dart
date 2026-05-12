@@ -27,7 +27,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -51,6 +51,12 @@ class AppDatabase extends _$AppDatabase {
           ['buttock'],
         );
       }
+      if (from < 4) {
+        // v4 — riallinea `body_zones.side` al suffisso del code (D=right, S=left).
+        // Alcuni utenti vedono il side invertito (es. Coscia Sx con side='right')
+        // probabilmente per un seed errato in una build precedente.
+        await _alignZoneSideToCode();
+      }
     },
     beforeOpen: (details) async {
       // Sincronizza sempre le coordinate dei punti con le costanti centralizzate
@@ -59,6 +65,9 @@ class AppDatabase extends _$AppDatabase {
       // il `type` di una zona (es. via ZoneManagement) lasciamo i punti
       // coerenti senza richiedere un nuovo bump di schema.
       await _alignButtockPointsToBack();
+      // Stessa filosofia per `side`: convenzione code suffix D=right, S=left.
+      // Idempotente, ignora zone custom (code arbitrario senza suffisso).
+      await _alignZoneSideToCode();
     },
   );
 
@@ -70,6 +79,19 @@ class AppDatabase extends _$AppDatabase {
       "WHERE body_view = 'front' "
       'AND zone_id IN (SELECT id FROM body_zones WHERE type = ?)',
       ['buttock'],
+    );
+  }
+
+  /// Riallinea `body_zones.side` al suffisso del code: D=right, S=left.
+  /// Idempotente. Ignora le zone custom create dall'utente con code arbitrari.
+  Future<void> _alignZoneSideToCode() async {
+    await customStatement(
+      "UPDATE body_zones SET side = 'right' "
+      "WHERE code LIKE '%D' AND side != 'right'",
+    );
+    await customStatement(
+      "UPDATE body_zones SET side = 'left' "
+      "WHERE code LIKE '%S' AND side != 'left'",
     );
   }
 

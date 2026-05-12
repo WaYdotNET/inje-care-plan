@@ -980,19 +980,18 @@ class _PointSelectionSilhouetteState extends State<_PointSelectionSilhouette> {
   @override
   void initState() {
     super.initState();
-    _currentView = _viewForZoneType(widget.zoneType);
+    _currentView = pickInitialBodyView(widget.points, widget.zoneType);
   }
 
   @override
   void didUpdateWidget(_PointSelectionSilhouette oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.zoneType != widget.zoneType) {
-      setState(() => _currentView = _viewForZoneType(widget.zoneType));
+    if (oldWidget.zoneType != widget.zoneType ||
+        oldWidget.points.length != widget.points.length) {
+      setState(() {
+        _currentView = pickInitialBodyView(widget.points, widget.zoneType);
+      });
     }
-  }
-
-  BodyView _viewForZoneType(String type) {
-    return type == 'buttock' ? BodyView.back : BodyView.front;
   }
 
   @override

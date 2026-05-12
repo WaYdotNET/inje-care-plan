@@ -23,6 +23,9 @@ sealed class AppColors {
   static const dawnHighlightMed = Color(0xFFdfdad9);
   static const dawnHighlightHigh = Color(0xFFcecacd);
 
+  // Semaforo (light) — verde puro per completed, riusa Gold/Love per warn/danger
+  static const dawnSuccess = Color(0xFF618c4f);
+
   // ==========================================================================
   // ROSÉ PINE (Dark Mode)
   // ==========================================================================
@@ -42,27 +45,36 @@ sealed class AppColors {
   static const darkHighlightLow = Color(0xFF21202e);
   static const darkHighlightMed = Color(0xFF403d52);
   static const darkHighlightHigh = Color(0xFF524f67);
+
+  // Semaforo (dark)
+  static const darkSuccess = Color(0xFF8bc474);
 }
 
-/// Semantic colors for injection status
+/// Semantic colors for injection status (schema "semaforo": verde/giallo/rosso)
 extension InjectionStatusColors on AppColors {
   /// Get color for injection status (light mode)
   static Color getStatusColorLight(String status) => switch (status) {
-    'completed' => AppColors.dawnPine,
-    'scheduled' => AppColors.dawnFoam,
+    'completed' => AppColors.dawnSuccess,
+    'scheduled' => AppColors.dawnGold,
     'delayed' => AppColors.dawnGold,
     'skipped' => AppColors.dawnLove,
+    'missed' => AppColors.dawnLove,
     'blacklisted' => AppColors.dawnMuted,
     _ => AppColors.dawnSubtle,
   };
 
   /// Get color for injection status (dark mode)
   static Color getStatusColorDark(String status) => switch (status) {
-    'completed' => AppColors.darkPine,
-    'scheduled' => AppColors.darkFoam,
+    'completed' => AppColors.darkSuccess,
+    'scheduled' => AppColors.darkGold,
     'delayed' => AppColors.darkGold,
     'skipped' => AppColors.darkLove,
+    'missed' => AppColors.darkLove,
     'blacklisted' => AppColors.darkMuted,
     _ => AppColors.darkSubtle,
   };
+
+  /// Convenience: pick the right variant based on brightness.
+  static Color getStatusColor(String status, {required bool isDark}) =>
+      isDark ? getStatusColorDark(status) : getStatusColorLight(status);
 }

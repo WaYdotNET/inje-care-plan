@@ -47,21 +47,20 @@ class _ZonePointsEditorScreenState
       return;
     }
 
-    // Vista naturale: i gluteo partono sul retro, tutto il resto sul fronte.
-    _currentView = defaultBodyViewForZoneType(zone.type);
-
     final configs = await db.getPointConfigsForZone(widget.zoneId);
+    // Vista preferenziale di seed per i punti mancanti: il default per tipo.
+    final seedView = defaultBodyViewForZoneType(zone.type);
 
     if (configs.isEmpty) {
       _points = generateDefaultPointPositions(
         zone.numberOfPoints,
         zone.type,
         zone.side,
-      ).map((p) => p.copyWith(bodyView: _currentView)).toList();
+      ).map((p) => p.copyWith(bodyView: seedView)).toList();
     } else {
       _points = configs.map((c) => c.toPositionedPoint()).toList();
 
-      // Riempi eventuali pointNumber mancanti con default sulla view naturale.
+      // Riempi eventuali pointNumber mancanti con default sulla view di seed.
       final existingNumbers = _points.map((p) => p.pointNumber).toSet();
       for (var i = 1; i <= zone.numberOfPoints; i++) {
         if (existingNumbers.contains(i)) continue;
@@ -74,9 +73,13 @@ class _ZonePointsEditorScreenState
           (p) => p.pointNumber == i,
           orElse: () => PositionedPoint(pointNumber: i, x: 0.5, y: 0.5),
         );
-        _points.add(defaultPoint.copyWith(bodyView: _currentView));
+        _points.add(defaultPoint.copyWith(bodyView: seedView));
       }
     }
+
+    // View iniziale dipende da dove sono effettivamente i punti: se tutti
+    // sul retro (anche per zone non-buttock) parte dal retro, e viceversa.
+    _currentView = pickInitialBodyView(_points, zone.type);
 
     setState(() => _isLoading = false);
   }
@@ -147,6 +150,16 @@ class _ZonePointsEditorScreenState
       final index = _points.indexWhere((p) => p.pointNumber == pointNumber);
       if (index != -1) {
         _points[index] = _points[index].copyWith(customName: name);
+        _hasChanges = true;
+      }
+    });
+  }
+
+  void _onPointViewChanged(int pointNumber, BodyView view) {
+    setState(() {
+      final index = _points.indexWhere((p) => p.pointNumber == pointNumber);
+      if (index != -1) {
+        _points[index] = _points[index].copyWith(bodyView: view);
         _hasChanges = true;
       }
     });
@@ -411,7 +424,15 @@ class _ZonePointsEditorScreenState
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheetState) {
+          BodyView localView = _points
+              .firstWhere(
+                (p) => p.pointNumber == pointNumber,
+                orElse: () => point,
+              )
+              .bodyView;
+          return Container(
         margin: const EdgeInsets.all(16),
         padding: EdgeInsets.only(
           bottom: MediaQuery.of(ctx).viewInsets.bottom + 16,
@@ -520,6 +541,38 @@ class _ZonePointsEditorScreenState
             ),
             const SizedBox(height: 16),
 
+            // View toggle (fronte/retro per singolo punto)
+            Text(
+              'Vista corpo',
+              style: Theme.of(ctx).textTheme.labelMedium?.copyWith(
+                    color: isDark
+                        ? AppColors.darkMuted
+                        : AppColors.dawnMuted,
+                  ),
+            ),
+            const SizedBox(height: 6),
+            SegmentedButton<BodyView>(
+              segments: const [
+                ButtonSegment(
+                  value: BodyView.front,
+                  label: Text('Fronte'),
+                  icon: Icon(Icons.person),
+                ),
+                ButtonSegment(
+                  value: BodyView.back,
+                  label: Text('Retro'),
+                  icon: Icon(Icons.person_outline),
+                ),
+              ],
+              selected: {localView},
+              onSelectionChanged: (selection) {
+                final next = selection.first;
+                setSheetState(() => localView = next);
+                _onPointViewChanged(pointNumber, next);
+              },
+            ),
+            const SizedBox(height: 16),
+
             // Actions
             Row(
               children: [
@@ -544,6 +597,8 @@ class _ZonePointsEditorScreenState
             ),
           ],
         ),
+      );
+        },
       ),
     );
   }

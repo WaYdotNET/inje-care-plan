@@ -26,16 +26,16 @@ class BodyZonePoints {
       BodyPoint(0.47, 0.73), // 6
     ],
     'BD': [
-      BodyPoint(0.61, 0.21), // 1
-      BodyPoint(0.75, 0.21), // 2
-      BodyPoint(0.61, 0.29), // 3
-      BodyPoint(0.75, 0.29), // 4
+      BodyPoint(0.61, 0.28), // 1 — bicipite alto
+      BodyPoint(0.75, 0.28), // 2
+      BodyPoint(0.61, 0.36), // 3 — bicipite basso
+      BodyPoint(0.75, 0.36), // 4
     ],
     'BS': [
-      BodyPoint(0.25, 0.21), // 1
-      BodyPoint(0.39, 0.21), // 2
-      BodyPoint(0.25, 0.29), // 3
-      BodyPoint(0.39, 0.29), // 4
+      BodyPoint(0.25, 0.28), // 1 — bicipite alto
+      BodyPoint(0.39, 0.28), // 2
+      BodyPoint(0.25, 0.36), // 3 — bicipite basso
+      BodyPoint(0.39, 0.36), // 4
     ],
     'AD': [
       BodyPoint(0.50, 0.34), // 1

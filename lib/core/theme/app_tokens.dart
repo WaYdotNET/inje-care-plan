@@ -44,6 +44,12 @@ sealed class AppTokens {
   static const darkHighlightLow = Color(0xFF181226);
   static const darkHighlightHigh = Color(0xFF3A2F58);
 
+  // Stati "Accent-led" (pallini settimana / legenda)
+  static const accentSoft = Color(0xFFC3B2F2); // "Da fare" (programmata)
+  static const skipBg = Color(0xFFFBE4EC); // sfondo "Saltata/Persa"
+  static const skipFg = Color(0xFFC2638A); // segno ✕ "Saltata/Persa"
+  static const dotEmpty = Color(0xFFDDD6EA); // "Nessuna"
+
   /// Gradiente accento (azioni primarie, "oggi", punto selezionato).
   static const accentGradient = LinearGradient(
     begin: Alignment.topLeft,

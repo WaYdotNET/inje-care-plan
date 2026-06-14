@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:injecare_plan/core/theme/app_theme.dart';
 import 'package:injecare_plan/core/theme/app_tokens.dart';
@@ -45,7 +44,9 @@ void main() {
       theme: AppTheme.light,
       home: Scaffold(body: AppCard(onTap: () {}, child: const Text('tap'))),
     ));
-    final semantics = tester.getSemantics(find.byType(AppCard));
-    expect(semantics.hasFlag(SemanticsFlag.isButton), isTrue);
+    expect(
+      tester.getSemantics(find.byType(AppCard)),
+      isSemantics(isButton: true),
+    );
   });
 }

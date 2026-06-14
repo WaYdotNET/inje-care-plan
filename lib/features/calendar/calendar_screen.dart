@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 
@@ -192,7 +193,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
             extra: {'scheduledDate': dateToUse},
           );
         },
-        child: const Icon(Icons.add),
+        child: const Icon(PhosphorIconsDuotone.plus),
       ),
     );
   }
@@ -357,7 +358,7 @@ class _EmptyState extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
-            Icons.calendar_today_outlined,
+            PhosphorIconsDuotone.calendarDot,
             size: 48,
             color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
           ),
@@ -394,7 +395,7 @@ class _DayInjectionsList extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              Icons.check_circle_outline,
+              PhosphorIconsDuotone.checkCircle,
               size: 48,
               color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
             ),
@@ -461,27 +462,27 @@ class _InjectionCard extends ConsumerWidget {
     switch (injection.status) {
       case 'completed':
         statusColor = isDark ? AppTokens.accent : AppTokens.accent;
-        statusIcon = Icons.check_circle;
+        statusIcon = PhosphorIconsDuotone.checkCircle;
         statusLabel = 'Completata';
         break;
       case 'skipped':
         statusColor = isDark ? AppTokens.dangerDark : AppTokens.dangerLight;
-        statusIcon = Icons.cancel;
+        statusIcon = PhosphorIconsDuotone.prohibit;
         statusLabel = 'Saltata';
         break;
       case 'missed':
         statusColor = isDark ? AppTokens.dangerDark : AppTokens.dangerLight;
-        statusIcon = Icons.warning_amber;
+        statusIcon = PhosphorIconsDuotone.warning;
         statusLabel = 'Mancata';
         break;
       case 'delayed':
         statusColor = isDark ? AppTokens.warnDark : AppTokens.warnLight;
-        statusIcon = Icons.schedule;
+        statusIcon = PhosphorIconsDuotone.clock;
         statusLabel = 'In ritardo';
         break;
       default:
         statusColor = isDark ? AppTokens.accentEnd : AppTokens.accentEnd;
-        statusIcon = Icons.pending;
+        statusIcon = PhosphorIconsDuotone.clock;
         statusLabel = 'Programmata';
     }
 
@@ -530,7 +531,7 @@ class _InjectionCard extends ConsumerWidget {
               ),
               const SizedBox(width: 8),
               Icon(
-                Icons.chevron_right,
+                PhosphorIconsDuotone.caretRight,
                 color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
               ),
             ],
@@ -755,7 +756,7 @@ class _InjectionEditSheet extends StatelessWidget {
               ListTile(
                 enabled: canComplete,
                 leading: Icon(
-                  Icons.check_circle,
+                  PhosphorIconsDuotone.checkCircle,
                   color: !canComplete
                       ? (isDark ? AppTokens.darkMuted : AppTokens.lightMuted)
                       : (isDark ? AppTokens.accent : AppTokens.accent),
@@ -776,7 +777,7 @@ class _InjectionEditSheet extends StatelessWidget {
             if (!isSkipped)
               ListTile(
                 leading: Icon(
-                  Icons.cancel,
+                  PhosphorIconsDuotone.prohibit,
                   color: isDark ? AppTokens.warnDark : AppTokens.warnLight,
                 ),
                 title: const Text('Segna come saltata'),
@@ -785,7 +786,7 @@ class _InjectionEditSheet extends StatelessWidget {
             if (isCompleted || isSkipped)
               ListTile(
                 leading: Icon(
-                  Icons.restore,
+                  PhosphorIconsDuotone.arrowCounterClockwise,
                   color: isDark ? AppTokens.accentEnd : AppTokens.accentEnd,
                 ),
                 title: const Text('Ripristina come pianificata'),
@@ -793,7 +794,7 @@ class _InjectionEditSheet extends StatelessWidget {
               ),
             ListTile(
               leading: Icon(
-                Icons.edit_note,
+                PhosphorIconsDuotone.pencilSimple,
                 color: isDark ? AppTokens.darkIris : AppTokens.accent,
               ),
               title: const Text('Apri dettaglio (note + effetti)'),
@@ -801,7 +802,7 @@ class _InjectionEditSheet extends StatelessWidget {
             ),
             ListTile(
               leading: Icon(
-                Icons.edit,
+                PhosphorIconsDuotone.pencilSimple,
                 color: isDark ? AppTokens.accentEnd : AppTokens.accentEnd,
               ),
               title: const Text('Cambia punto'),
@@ -809,7 +810,7 @@ class _InjectionEditSheet extends StatelessWidget {
             ),
             const Divider(),
             ListTile(
-              leading: const Icon(Icons.delete, color: Colors.red),
+              leading: const Icon(PhosphorIconsDuotone.trash, color: Colors.red),
               title: const Text(
                 'Elimina',
                 style: TextStyle(color: Colors.red),

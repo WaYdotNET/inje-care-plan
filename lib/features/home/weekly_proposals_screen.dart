@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../core/theme/app_tokens.dart';
 import '../../app/router.dart';
@@ -36,7 +37,7 @@ class _WeeklyProposalsScreenState
       appBar: AppBar(
         title: const Text('Proposte Settimanali'),
         leading: IconButton(
-          icon: const Icon(Icons.close),
+          icon: const Icon(PhosphorIconsDuotone.x),
           onPressed: () => context.pop(),
         ),
       ),
@@ -78,7 +79,7 @@ class _WeeklyProposalsScreenState
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              Icons.check_circle_outline,
+              PhosphorIconsDuotone.checkCircle,
               size: 64,
               color: isDark ? AppTokens.accent : AppTokens.accent,
             ),
@@ -154,7 +155,7 @@ class _WeeklyProposalsScreenState
                               height: 16,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
-                          : const Icon(Icons.check_circle),
+                          : const Icon(PhosphorIconsDuotone.checkCircle),
                       label: Text(_isLoading
                           ? 'Approvazione...'
                           : 'Approva tutte (${proposals.length})'),
@@ -190,7 +191,7 @@ class _WeeklyProposalsScreenState
                       Row(
                         children: [
                           Icon(
-                            Icons.calendar_today,
+                            PhosphorIconsDuotone.calendarDot,
                             size: 18,
                             color: isDark ? AppTokens.accentEnd : AppTokens.accentEnd,
                           ),
@@ -216,7 +217,7 @@ class _WeeklyProposalsScreenState
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Icon(
-                                    Icons.check,
+                                    PhosphorIconsDuotone.check,
                                     size: 14,
                                     color: isDark
                                         ? AppTokens.accent
@@ -365,7 +366,7 @@ class _WeeklyProposalsScreenState
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            Icons.auto_awesome,
+            PhosphorIconsDuotone.sparkle,
             size: 14,
             color: Colors.white,
           ),

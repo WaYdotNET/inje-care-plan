@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../core/theme/app_tokens.dart';
 import '../../core/widgets/app_card.dart';
@@ -125,7 +126,7 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
       return AppCard(
         child: Row(
           children: [
-            Icon(Icons.event_available_outlined, size: 18, color: muted),
+            Icon(PhosphorIconsDuotone.calendarCheck, size: 18, color: muted),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
@@ -613,7 +614,7 @@ class _MainCardState extends State<_MainCard> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
-                  Icons.medical_services_outlined,
+                  PhosphorIconsDuotone.syringe,
                   size: 64,
                   color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
                 ),
@@ -651,7 +652,7 @@ class _MainCardState extends State<_MainCard> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             _HomeViewToggle(
-              icon: Icons.person,
+              icon: PhosphorIconsDuotone.user,
               label: 'Fronte',
               isSelected: isFront,
               activeColor: frontColor,
@@ -660,7 +661,7 @@ class _MainCardState extends State<_MainCard> {
             ),
             const SizedBox(width: 16),
             _HomeViewToggle(
-              icon: Icons.person_outline,
+              icon: PhosphorIconsDuotone.user,
               label: 'Retro',
               isSelected: !isFront,
               activeColor: backColor,
@@ -740,7 +741,7 @@ class _MainCardState extends State<_MainCard> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
-                              Icons.access_time,
+                              PhosphorIconsDuotone.clock,
                               size: 18,
                               color: activeColor,
                             ),
@@ -856,7 +857,7 @@ class _ErrorView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline, size: 48),
+            const Icon(PhosphorIconsDuotone.warningCircle, size: 48),
             const SizedBox(height: 16),
             Text(
               'Errore nel caricamento',
@@ -987,7 +988,7 @@ class _NotificationPermissionBanner extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           child: Row(
             children: [
-              Icon(Icons.notifications_off, color: fg, size: 20),
+              Icon(PhosphorIconsDuotone.bellSlash, color: fg, size: 20),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
@@ -995,7 +996,7 @@ class _NotificationPermissionBanner extends ConsumerWidget {
                   style: theme.textTheme.bodySmall?.copyWith(color: fg),
                 ),
               ),
-              Icon(Icons.chevron_right, color: fg, size: 20),
+              Icon(PhosphorIconsDuotone.caretRight, color: fg, size: 20),
             ],
           ),
         ),

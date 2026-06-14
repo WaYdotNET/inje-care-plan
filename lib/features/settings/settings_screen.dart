@@ -19,6 +19,7 @@ import '../../app/router.dart';
 import '../../models/rotation_pattern.dart';
 import '../../models/therapy_plan.dart';
 import '../auth/auth_provider.dart';
+import '../home/home_layout_provider.dart';
 import '../injection/injection_provider.dart';
 
 /// Settings screen
@@ -231,6 +232,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: const Text('Tema'),
             subtitle: Text(_themeModeLabel),
             onTap: () => _showThemeSelector(context),
+          ),
+          Consumer(
+            builder: (context, ref, _) {
+              final layout = ref.watch(homeLayoutProvider);
+              final label =
+                  layout == HomeLayout.silhouette ? 'Silhouette' : 'Settimana';
+              return ListTile(
+                title: const Text('Layout Home'),
+                subtitle: Text(label),
+                onTap: () => _showHomeLayoutSelector(context),
+              );
+            },
           ),
 
           const _SectionHeader(title: 'DATI'),
@@ -731,6 +744,37 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             RadioListTile<ThemeMode>(
               title: Text('Automatico (sistema)'),
               value: ThemeMode.system,
+            ),
+            SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showHomeLayoutSelector(BuildContext context) {
+    final currentLayout = ref.read(homeLayoutProvider);
+
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (ctx) => RadioGroup<HomeLayout>(
+        groupValue: currentLayout,
+        onChanged: (value) {
+          ref.read(homeLayoutProvider.notifier).setLayout(value!);
+          Navigator.pop(ctx);
+        },
+        child: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            RadioListTile<HomeLayout>(
+              title: Text('Settimana'),
+              subtitle: Text('Prossima iniezione + pallini della settimana'),
+              value: HomeLayout.week,
+            ),
+            RadioListTile<HomeLayout>(
+              title: Text('Silhouette'),
+              subtitle: Text('Mappa del corpo con il punto'),
+              value: HomeLayout.silhouette,
             ),
             SizedBox(height: 16),
           ],

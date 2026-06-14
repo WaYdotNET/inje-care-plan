@@ -17,4 +17,9 @@ void main() {
     expect(t.colorScheme.surface, AppTokens.darkSurface);
     expect(t.textTheme.bodyMedium!.fontFamily, 'Plus Jakarta Sans');
   });
+
+  test('scaffold trasparente (lo sfondo gradiente è dipinto a livello app)', () {
+    expect(AppTheme.light.scaffoldBackgroundColor, const Color(0x00000000));
+    expect(AppTheme.dark.scaffoldBackgroundColor, const Color(0x00000000));
+  });
 }

@@ -12,7 +12,6 @@ sealed class AppTheme {
     muted: AppTokens.lightMuted,
     subtle: AppTokens.lightSubtle,
     border: AppTokens.lightBorder,
-    bg: AppTokens.lightBgTop,
   );
 
   static ThemeData get dark => _build(
@@ -22,7 +21,6 @@ sealed class AppTheme {
     muted: AppTokens.darkMuted,
     subtle: AppTokens.darkMuted,
     border: AppTokens.darkBorder,
-    bg: AppTokens.darkBg,
   );
 
   static ThemeData _build({
@@ -32,7 +30,6 @@ sealed class AppTheme {
     required Color muted,
     required Color subtle,
     required Color border,
-    required Color bg,
   }) {
     final isDark = brightness == Brightness.dark;
     final scheme = ColorScheme(
@@ -55,7 +52,7 @@ sealed class AppTheme {
       brightness: brightness,
       fontFamily: _font,
       colorScheme: scheme,
-      scaffoldBackgroundColor: bg,
+      scaffoldBackgroundColor: Colors.transparent,
       cardColor: surface,
       dividerColor: border,
       appBarTheme: AppBarTheme(

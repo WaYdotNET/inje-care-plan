@@ -40,6 +40,26 @@ void main() {
     expect(days, [DateTime(2026, 6, 5)]);
   });
 
+  test('finestra mobile da oggi trova giorni anche a fine mese', () {
+    // Bug 4.10.2: ancorando al mese di calendario, a fine mese non creava
+    // nulla. Con la finestra mobile (oggi .. oggi+30) deve sempre trovare i
+    // prossimi giorni del piano, anche se oggi è l'ultimo giorno del mese.
+    final now = DateTime(2026, 6, 30, 21); // martedì, ultimo del mese, sera
+    final startOfToday = DateTime(now.year, now.month, now.day);
+    final end30 =
+        startOfToday.add(const Duration(days: 30, hours: 23, minutes: 59));
+    final days = ScheduleUtils.daysToPlan(
+      plan: plan,
+      start: startOfToday,
+      end: end30,
+      now: now,
+      alreadyPlanned: const {},
+    );
+    expect(days, isNotEmpty);
+    expect(days.first, DateTime(2026, 7, 1)); // mer 1 lug
+    expect(days.every((d) => [1, 3, 5].contains(d.weekday)), isTrue);
+  });
+
   test('copre l\'intero mese', () {
     final now = DateTime(2026, 6, 2, 10);
     final start = DateTime(2026, 6, 1);

@@ -92,7 +92,7 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
       _weekFillPromptShown = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
-        _showFillWeekDialog(context, plan, startOfWeek);
+        _showFillWeekDialog(context, plan);
       });
     }
 
@@ -119,7 +119,7 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
     );
   }
 
-  Widget _buildHero(BuildContext context) {
+  Widget _buildHero(BuildContext context, {bool fill = false}) {
     final next = ref.watch(nextScheduledInjectionProvider);
     final allInjections =
         ref.watch(injectionsProvider).asData?.value ?? const <db.Injection>[];
@@ -143,15 +143,22 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
 
     switch (state) {
       case HeroState.allDone:
-        return const _HeroMessageCard(
+        return _HeroMessageCard(
           gradient: AppTokens.successGradient,
           icon: PhosphorIconsDuotone.checkCircle,
           text: 'Per oggi è tutto',
+          fill: fill,
         );
       case HeroState.none:
-        return const _HeroMessageCard.neutral(
+        return _HeroMessageCard.neutral(
           icon: PhosphorIconsDuotone.calendarBlank,
-          text: 'Nessuna iniezione programmata',
+          text: 'Nessuna iniezione programmata · tocca per pianificare',
+          fill: fill,
+          onTap: () {
+            final plan = ref.read(therapyPlanProvider).asData?.value ??
+                TherapyPlan.defaults;
+            _showFillWeekDialog(context, plan);
+          },
         );
       case HeroState.upcoming:
       case HeroState.overdue:
@@ -323,44 +330,38 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
       error: (e, st) => _ErrorView(message: e.toString()),
       data: (injections) {
         final wd = _weekData(injections, startOfWeek);
-        return LayoutBuilder(
-          builder: (context, constraints) {
-            return SingleChildScrollView(
+        // L'hero riempie l'altezza disponibile (Expanded); i pallini settimana
+        // e la legenda restano ancorati in basso. Su viewport larghe (web)
+        // il contenuto è centrato e vincolato a una larghezza massima.
+        return Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 480),
+            child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight - 28),
-                // Su viewport larghe (web/desktop) vincola la larghezza e centra
-                // orizzontalmente, così l'hero non si allarga a tutta la pagina.
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 480),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        _buildHero(context),
-                        const SizedBox(height: 20),
-                        Text('QUESTA SETTIMANA', style: Theme.of(context).textTheme.labelMedium),
-                        const SizedBox(height: 8),
-                        AppCard(
-                          child: WeekDots(
-                            weekStart: startOfWeek,
-                            statuses: wd.statuses,
-                            onTapDay: (i) {
-                              final id = wd.ids[i];
-                              if (id != null) context.push('/injection/$id');
-                            },
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        const StatusLegend(),
-                      ],
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(child: _buildHero(context, fill: true)),
+                  const SizedBox(height: 16),
+                  Text('QUESTA SETTIMANA',
+                      style: Theme.of(context).textTheme.labelMedium),
+                  const SizedBox(height: 8),
+                  AppCard(
+                    child: WeekDots(
+                      weekStart: startOfWeek,
+                      statuses: wd.statuses,
+                      onTapDay: (i) {
+                        final id = wd.ids[i];
+                        if (id != null) context.push('/injection/$id');
+                      },
                     ),
                   ),
-                ),
+                  const SizedBox(height: 12),
+                  const StatusLegend(),
+                ],
               ),
-            );
-          },
+            ),
+          ),
         );
       },
     );
@@ -445,20 +446,23 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
   Future<void> _showFillWeekDialog(
     BuildContext context,
     TherapyPlan plan,
-    DateTime startOfWeek,
   ) async {
     final now = DateTime.now();
-    final endOfWeek =
-        startOfWeek.add(const Duration(days: 6, hours: 23, minutes: 59));
-    final endOfMonth = DateTime(now.year, now.month + 1, 0, 23, 59);
+    final startOfToday = DateTime(now.year, now.month, now.day);
+    // Finestra mobile ancorata a OGGI (non al mese di calendario): così la
+    // pianificazione crea sempre le prossime iniezioni, indipendentemente da
+    // quanto si è avanti nella settimana/mese.
+    final end7 = startOfToday.add(const Duration(days: 7, hours: 23, minutes: 59));
+    final end30 =
+        startOfToday.add(const Duration(days: 30, hours: 23, minutes: 59));
 
     final choice = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Pianificare le iniezioni?'),
         content: const Text(
-          'Vuoi creare automaticamente le iniezioni programmate secondo il tuo '
-          'piano e il pattern di rotazione?',
+          'Vuoi creare automaticamente le prossime iniezioni programmate, a '
+          'partire da oggi, secondo il tuo piano e il pattern di rotazione?',
         ),
         actions: [
           TextButton(
@@ -467,11 +471,11 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, 'week'),
-            child: const Text('Questa settimana'),
+            child: const Text('Prossimi 7 giorni'),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, 'month'),
-            child: const Text('Questo mese'),
+            child: const Text('Prossimi 30 giorni'),
           ),
         ],
       ),
@@ -479,9 +483,9 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
 
     if (!mounted) return;
     if (choice == 'week') {
-      await _fillRangeFromPlan(plan, startOfWeek, endOfWeek);
+      await _fillRangeFromPlan(plan, startOfToday, end7);
     } else if (choice == 'month') {
-      await _fillRangeFromPlan(plan, startOfWeek, endOfMonth);
+      await _fillRangeFromPlan(plan, startOfToday, end30);
     }
   }
 
@@ -598,11 +602,15 @@ class _HeroMessageCard extends StatelessWidget {
     required this.gradient,
     required this.icon,
     required this.text,
-  }) : _neutral = false;
+    this.fill = false,
+  })  : _neutral = false,
+        onTap = null;
 
   const _HeroMessageCard.neutral({
     required this.icon,
     required this.text,
+    this.fill = false,
+    this.onTap,
   })  : gradient = null,
         _neutral = true;
 
@@ -611,51 +619,68 @@ class _HeroMessageCard extends StatelessWidget {
   final String text;
   final bool _neutral;
 
+  /// Quando true la card riempie l'altezza disponibile e centra il contenuto
+  /// (vista Settimana). Quando false resta dimensionata sul contenuto (banner).
+  final bool fill;
+  final VoidCallback? onTap;
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+
     if (_neutral) {
       final muted = isDark ? AppTokens.darkMuted : AppTokens.lightMuted;
-      return AppCard(
-        child: Row(
-          children: [
-            Icon(icon, size: 18, color: muted),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                text,
-                style:
-                    Theme.of(context).textTheme.bodyMedium?.copyWith(color: muted),
-              ),
+      final row = Row(
+        mainAxisSize: fill ? MainAxisSize.min : MainAxisSize.max,
+        children: [
+          Icon(icon, size: 18, color: muted),
+          const SizedBox(width: 10),
+          Flexible(
+            child: Text(
+              text,
+              style:
+                  Theme.of(context).textTheme.bodyMedium?.copyWith(color: muted),
             ),
-          ],
-        ),
+          ),
+        ],
+      );
+      return AppCard(
+        onTap: onTap,
+        child: fill ? Center(child: row) : row,
       );
     }
-    return Container(
+
+    final row = Row(
+      mainAxisSize: fill ? MainAxisSize.min : MainAxisSize.max,
+      children: [
+        Icon(icon, color: Colors.white, size: 22),
+        const SizedBox(width: 10),
+        Flexible(
+          child: Text(
+            text,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w800,
+              fontSize: 15,
+            ),
+          ),
+        ),
+      ],
+    );
+
+    final card = Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: gradient,
         borderRadius: BorderRadius.circular(AppRadius.card),
         boxShadow: AppTokens.softShadow(),
       ),
-      child: Row(
-        children: [
-          Icon(icon, color: Colors.white, size: 22),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              text,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w800,
-                fontSize: 15,
-              ),
-            ),
-          ),
-        ],
-      ),
+      child: fill ? Center(child: row) : row,
     );
+
+    if (onTap == null) return card;
+    return GestureDetector(onTap: onTap, child: card);
   }
 }
 

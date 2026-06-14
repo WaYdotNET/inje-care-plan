@@ -1,5 +1,14 @@
 # Changelog
 
+## 4.10.3 - 2026-06-14
+
+### Corretto
+- **Pianificazione iniezioni**: ora la creazione automatica usa una finestra mobile **a partire da oggi** (*Prossimi 7 giorni* / *Prossimi 30 giorni*) invece del mese di calendario. Prima, se si era a fine settimana/mese, non creava nulla ("Nessuna nuova iniezione da pianificare"). Lo storico esistente non viene mai toccato.
+- **Hero "Prossima iniezione" (vista Settimana)**: ora riempie l'altezza disponibile con il contenuto centrato, invece di restare una striscia sottile.
+
+### Aggiunto
+- **Pianificazione manuale**: quando non c'è alcuna iniezione programmata, l'hero "Nessuna iniezione programmata" è toccabile per riaprire la pianificazione (prima il dialog compariva solo in automatico, una volta per sessione).
+
 ## 4.10.2 - 2026-06-14
 
 ### Corretto

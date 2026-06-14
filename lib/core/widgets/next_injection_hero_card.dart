@@ -92,6 +92,9 @@ class NextInjectionHeroCard extends StatelessWidget {
         boxShadow: AppTokens.softShadow(dark: isDark),
       ),
       child: Column(
+        // Centra verticalmente quando la card viene allungata (vista Settimana,
+        // hero in Expanded); resta in alto quando è dimensionata sul contenuto.
+        mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(

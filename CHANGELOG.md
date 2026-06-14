@@ -1,5 +1,12 @@
 # Changelog
 
+## 4.10.1 - 2026-06-14
+
+### Cambiato
+- **Card "Prossima iniezione" a stati**: cambia colore e icona in base alla situazione — *prossima* (viola), *in ritardo* (ambra, se l'orario di oggi è passato), *giorno seguente*, oppure **"Per oggi è tutto"** (verde) quando hai già fatto. L'iniezione di oggi resta visibile anche dopo l'orario previsto.
+- **Home adattata all'altezza schermo**: il contenuto non resta più schiacciato in alto (soprattutto sul web).
+- **Nuove emoji per le zone**: 🍗 Coscia · 💪 Braccio · 🐢 Addome · 🍑 Gluteo. Palette più ricca (corpo/medicale/marker) per le zone personalizzate.
+
 ## 4.10.0 - 2026-06-14
 
 ### Cambiato

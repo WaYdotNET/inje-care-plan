@@ -7,6 +7,9 @@
 
 ### Aggiunto
 - **Pre-compilazione mensile delle iniezioni**: quando pianifichi automaticamente le iniezioni puoi scegliere **"Questa settimana"** o **"Questo mese"**; la pianificazione mensile salta i giorni già programmati (nessun doppione).
+- **Layout Home selezionabile**: dalla Home puoi scegliere tra la vista **silhouette** e la nuova **agenda settimanale** (i 7 giorni della settimana con punto, ora e stato di ciascuna iniezione). La scelta viene ricordata; il default è l'agenda settimanale.
+- **Orario reale al completamento**: quando segni un'iniezione come fatta, viene registrata l'ora di quel momento (modificabile prima di confermare).
+- **Backup più completo**: l'esportazione/importazione include ora anche le preferenze dell'app (layout Home, tema).
 
 ## 4.8.3 - 2026-06-14
 

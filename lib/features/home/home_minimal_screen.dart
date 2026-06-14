@@ -362,7 +362,7 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
       if (notifSettings.enabled && notifSettings.permissionsGranted) {
         await NotificationService.instance.scheduleSideEffectsReminder(
           id: injectionId,
-          completedAt: DateTime.now(),
+          completedAt: at,
           pointLabel: resolvedLabel,
           hoursAfter: notifSettings.sideEffectsReminderHours,
         );

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 /// Mostra un dialog di conferma completamento iniezione con scelta dell'ora
 /// effettiva (default: adesso, l'ora del momento). Ritorna il DateTime scelto,
@@ -55,7 +56,7 @@ class _CompletionTimeDialogState extends State<_CompletionTimeDialog> {
           const SizedBox(height: 16),
           Row(
             children: [
-              const Icon(Icons.access_time, size: 18),
+              const Icon(PhosphorIconsDuotone.clock, size: 18),
               const SizedBox(width: 8),
               Text('Ora: ${DateFormat('HH:mm').format(_when)}'),
               const Spacer(),

@@ -390,19 +390,31 @@ class RotationPatternService {
       return;
     }
 
-    int newIndex = currentPlan.patternCurrentIndex + 1;
-
-    int sequenceLength = switch (patternType) {
-      RotationPatternType.clockwise => DefaultZoneSequence.clockwise.length,
+    // Sequenza lineare effettiva per il pattern corrente.
+    final List<int> sequence = switch (patternType) {
+      RotationPatternType.clockwise => DefaultZoneSequence.clockwise,
       RotationPatternType.counterClockwise =>
-        DefaultZoneSequence.counterClockwise.length,
-      RotationPatternType.custom when currentPlan.customPatternSequence.isNotEmpty =>
-        currentPlan.customPatternSequence.split(',').where((s) => s.trim().isNotEmpty).length,
-      _ => DefaultZoneSequence.standard.length,
+        DefaultZoneSequence.counterClockwise,
+      RotationPatternType.custom
+          when currentPlan.customPatternSequence.isNotEmpty =>
+        currentPlan.customPatternSequence
+            .split(',')
+            .where((s) => s.trim().isNotEmpty)
+            .map((s) => int.parse(s.trim()))
+            .toList(),
+      _ => DefaultZoneSequence.standard,
     };
 
-    if (sequenceLength <= 0) sequenceLength = DefaultZoneSequence.standard.length;
-    if (newIndex >= sequenceLength) newIndex = 0;
+    final effectiveSequence =
+        sequence.isEmpty ? DefaultZoneSequence.standard : sequence;
+
+    // Self-healing: l'indice segue la posizione della zona EFFETTIVAMENTE
+    // usata; se non è in sequenza, avanza linearmente da quello corrente.
+    final usedPos = effectiveSequence.indexOf(usedZoneId);
+    final base = usedPos >= 0
+        ? usedPos + 1
+        : currentPlan.patternCurrentIndex + 1;
+    final newIndex = base % effectiveSequence.length;
 
     await (db.update(db.therapyPlans)..where((t) => t.id.equals(currentPlan.id)))
         .write(TherapyPlansCompanion(

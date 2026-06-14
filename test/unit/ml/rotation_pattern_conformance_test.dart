@@ -160,6 +160,35 @@ void main() {
     });
   });
 
+  group('advancePattern self-healing (FIX B6)', () {
+    test('happy path: usare la zona suggerita avanza di 1', () async {
+      final service = RotationPatternService(db);
+      await service.activatePlanByType(RotationPatternType.sequential);
+      // index 0 -> suggerisce standard[0]=1; l'utente usa la zona 1
+      await service.advancePattern(1, 'right');
+      final plan = await db.getCurrentTherapyPlan();
+      expect(plan!.patternCurrentIndex, 1);
+    });
+
+    test('deviazione: l\'indice segue la posizione della zona usata', () async {
+      final service = RotationPatternService(db);
+      await service.activatePlanByType(RotationPatternType.clockwise);
+      // clockwise=[4,3,5,7,1,2,8,6], index 0 suggerisce 4.
+      // L'utente usa invece la zona 7 (posizione 3) -> nuovo indice atteso 4.
+      await service.advancePattern(7, 'right');
+      final plan = await db.getCurrentTherapyPlan();
+      expect(plan!.patternCurrentIndex, 4);
+    });
+
+    test('zona fuori sequenza: fallback a currentIndex+1', () async {
+      final service = RotationPatternService(db);
+      await service.activatePlanByType(RotationPatternType.clockwise);
+      await service.advancePattern(999, 'right'); // id inesistente in sequenza
+      final plan = await db.getCurrentTherapyPlan();
+      expect(plan!.patternCurrentIndex, 1);
+    });
+  });
+
   group('smart (FIX B5): zona meno usata di recente', () {
     Future<int> seedUse(int zoneId, int point, DateTime date) {
       return db.insertInjection(InjectionsCompanion.insert(

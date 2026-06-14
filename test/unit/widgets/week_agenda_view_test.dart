@@ -96,6 +96,29 @@ void main() {
     expect(tapped!.status, 'completed');
   });
 
+  testWidgets("injection with status 'delayed' renders chip labelled 'In ritardo'",
+      (tester) async {
+    final delayedInjection = AgendaInjection(
+      id: 99,
+      scheduledAt: DateTime(2026, 6, 3, 20, 30),
+      pointLabel: 'Addome · 1',
+      status: 'delayed',
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: Scaffold(
+          body: WeekAgendaView(
+            startOfWeek: startOfWeek,
+            injections: [delayedInjection],
+            onTapInjection: (_) {},
+          ),
+        ),
+      ),
+    );
+    expect(find.text('In ritardo'), findsOneWidget);
+  });
+
   testWidgets('empty injection days are NOT tappable (no callback)', (tester) async {
     AgendaInjection? tapped;
     await tester.pumpWidget(

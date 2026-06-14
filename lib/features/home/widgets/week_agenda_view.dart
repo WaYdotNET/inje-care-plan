@@ -18,7 +18,7 @@ class AgendaInjection {
   final DateTime scheduledAt;
   final String pointLabel;
 
-  /// One of: 'scheduled' | 'completed' | 'skipped' | 'missed'
+  /// One of: 'scheduled' | 'completed' | 'skipped' | 'missed' | 'delayed'
   final String status;
 }
 
@@ -147,6 +147,7 @@ class _InjectionInfo extends StatelessWidget {
       'completed' => InjectionVisualStatus.completed,
       'skipped' => InjectionVisualStatus.skipped,
       'missed' => InjectionVisualStatus.missed,
+      'delayed' => InjectionVisualStatus.scheduled,
       _ => InjectionVisualStatus.scheduled,
     };
   }
@@ -157,6 +158,7 @@ class _InjectionInfo extends StatelessWidget {
       'completed' => 'Fatta',
       'skipped' => 'Saltata',
       'missed' => 'Persa',
+      'delayed' => 'In ritardo',
       _ => 'Programmata',
     };
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:injecare_plan/core/theme/app_theme.dart';
 import 'package:injecare_plan/core/widgets/status_legend.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 void main() {
   testWidgets('mostra le voci della legenda', (tester) async {
@@ -20,7 +21,7 @@ void main() {
       theme: AppTheme.light,
       home: const Scaffold(body: StatusLegend()),
     ));
-    expect(find.byIcon(Icons.check), findsOneWidget);
-    expect(find.byIcon(Icons.close), findsOneWidget);
+    expect(find.byIcon(PhosphorIconsDuotone.check), findsOneWidget);
+    expect(find.byIcon(PhosphorIconsDuotone.x), findsOneWidget);
   });
 }

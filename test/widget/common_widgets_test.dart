@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:injecare_plan/core/widgets/common_widgets.dart';
 
@@ -34,7 +35,7 @@ void main() {
       );
 
       expect(find.text('Error occurred'), findsOneWidget);
-      expect(find.byIcon(Icons.error_outline), findsOneWidget);
+      expect(find.byIcon(PhosphorIconsDuotone.warningCircle), findsOneWidget);
     });
 
     testWidgets('shows retry button when onRetry provided', (tester) async {

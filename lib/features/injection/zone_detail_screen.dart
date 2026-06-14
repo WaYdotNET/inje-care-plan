@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../core/theme/app_tokens.dart';
 import '../../core/database/app_database.dart' as db;
@@ -39,7 +40,7 @@ class ZoneDetailScreen extends ConsumerWidget {
           appBar: AppBar(
             title: Text(zone.displayName),
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back),
+              icon: const Icon(PhosphorIconsDuotone.arrowLeft),
               onPressed: () => context.pop(),
             ),
           ),
@@ -203,7 +204,7 @@ class ZoneDetailScreen extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           ListTile(
-            leading: const Icon(Icons.check_circle_outline),
+            leading: const Icon(PhosphorIconsDuotone.checkCircle),
             title: const Text('Usa questo punto'),
             onTap: () {
               Navigator.pop(context);
@@ -211,12 +212,12 @@ class ZoneDetailScreen extends ConsumerWidget {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.history),
+            leading: const Icon(PhosphorIconsDuotone.clockCounterClockwise),
             title: const Text('Vedi storico'),
             onTap: () => Navigator.pop(context),
           ),
           ListTile(
-            leading: Icon(Icons.block, color: Theme.of(context).colorScheme.error),
+            leading: Icon(PhosphorIconsDuotone.prohibit, color: Theme.of(context).colorScheme.error),
             title: const Text('Escludi punto'),
             onTap: () {
               Navigator.pop(context);
@@ -377,7 +378,7 @@ class _SuggestedCard extends StatelessWidget {
           child: Row(
             children: [
               Icon(
-                Icons.lightbulb_outline,
+                PhosphorIconsDuotone.lightbulb,
                 color: isDark ? AppTokens.accent : AppTokens.accent,
               ),
               const SizedBox(width: 12),
@@ -490,7 +491,7 @@ class _PointCard extends StatelessWidget {
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.more_vert),
+                icon: const Icon(PhosphorIconsDuotone.dotsThreeVertical),
                 onPressed: onMenu,
               ),
               TextButton(
@@ -537,7 +538,7 @@ class _BlacklistedPointCard extends StatelessWidget {
         child: Row(
           children: [
             Icon(
-              Icons.block,
+              PhosphorIconsDuotone.prohibit,
               color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
             ),
             const SizedBox(width: 12),

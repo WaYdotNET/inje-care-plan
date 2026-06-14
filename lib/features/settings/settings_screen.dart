@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:file_picker/file_picker.dart';
 
@@ -83,7 +84,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
           const _SectionHeader(title: 'ZONE E PUNTI'),
           _SettingsTile(
-            icon: Icons.edit_location_alt,
+            icon: PhosphorIconsDuotone.mapPinLine,
             title: 'Gestisci zone',
             onTap: () => context.push(AppRoutes.zoneManagement),
           ),
@@ -91,7 +92,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             loading: () => const SizedBox(),
             error: (e, st) => const SizedBox(),
             data: (blacklist) => _SettingsTile(
-              icon: Icons.block,
+              icon: PhosphorIconsDuotone.prohibit,
               iconColor: isDark ? AppTokens.dangerDark : AppTokens.dangerLight,
               title: 'Punti esclusi',
               trailing: Text('${blacklist.length}'),
@@ -110,7 +111,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   child: Row(
                     children: [
                       Icon(
-                        Icons.notifications_off,
+                        PhosphorIconsDuotone.bellSlash,
                         color: isDark ? AppTokens.warnDark : AppTokens.warnLight,
                       ),
                       const SizedBox(width: 12),
@@ -195,7 +196,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ListTile(
             title: const Text('Testa notifica'),
             subtitle: const Text('Visualizza un esempio di promemoria'),
-            trailing: const Icon(Icons.notifications_active_outlined),
+            trailing: const Icon(PhosphorIconsDuotone.bellRinging),
             enabled: notificationSettings.permissionsGranted,
             onTap: notificationSettings.permissionsGranted
                 ? () => _showTestNotification(context)
@@ -204,7 +205,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ListTile(
             title: const Text('Testa promemoria (10s)'),
             subtitle: const Text('Verifica notifica programmata anche con app chiusa'),
-            trailing: const Icon(Icons.alarm),
+            trailing: const Icon(PhosphorIconsDuotone.alarm),
             enabled: notificationSettings.permissionsGranted,
             onTap: notificationSettings.permissionsGranted
                 ? () async {
@@ -294,17 +295,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
           ),
           _SettingsTile(
-            icon: Icons.upload_file,
+            icon: PhosphorIconsDuotone.uploadSimple,
             title: 'Importa da CSV',
             onTap: () => _importFromCsv(context),
           ),
           _SettingsTile(
-            icon: Icons.backup,
+            icon: PhosphorIconsDuotone.cloudArrowUp,
             title: 'Backup completo (JSON)',
             onTap: () => _exportJsonBackup(context),
           ),
           _SettingsTile(
-            icon: Icons.restore,
+            icon: PhosphorIconsDuotone.arrowCounterClockwise,
             title: 'Ripristina da backup',
             onTap: () => _importJsonBackup(context),
           ),
@@ -317,17 +318,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           const _SectionHeader(title: 'AIUTO'),
           _SettingsTile(
             title: 'Guida all\'uso',
-            icon: Icons.help_outline,
+            icon: PhosphorIconsDuotone.question,
             onTap: () => context.push(AppRoutes.help),
           ),
           _SettingsTile(
             title: 'Informazioni sull\'app',
-            icon: Icons.info_outline,
+            icon: PhosphorIconsDuotone.info,
             onTap: () => context.push(AppRoutes.info),
           ),
           _SettingsTile(
             title: 'Rivedi introduzione',
-            icon: Icons.replay,
+            icon: PhosphorIconsDuotone.arrowCounterClockwise,
             onTap: () => _showOnboardingConfirmation(context),
           ),
 
@@ -703,7 +704,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             content: Row(
               children: [
                 Icon(
-                  Icons.check_circle,
+                  PhosphorIconsDuotone.checkCircle,
                   color: isDark ? Colors.white : Colors.white,
                 ),
                 const SizedBox(width: 12),
@@ -1147,10 +1148,10 @@ class _SettingsTile extends StatelessWidget {
               children: [
                 trailing!,
                 const SizedBox(width: 8),
-                const Icon(Icons.chevron_right),
+                const Icon(PhosphorIconsDuotone.caretRight),
               ],
             )
-          : const Icon(Icons.chevron_right),
+          : const Icon(PhosphorIconsDuotone.caretRight),
       onTap: onTap,
     );
   }
@@ -1177,7 +1178,7 @@ class _AppInfoHeader extends StatelessWidget {
                 ? AppTokens.darkOverlay
                 : AppTokens.lightOverlay,
             child: Icon(
-              Icons.favorite,
+              PhosphorIconsDuotone.heart,
               size: 30,
               color: isDark ? AppTokens.accent : AppTokens.accent,
             ),
@@ -1191,7 +1192,7 @@ class _AppInfoHeader extends StatelessWidget {
                 Row(
                   children: [
                     Icon(
-                      Icons.phone_android,
+                      PhosphorIconsDuotone.deviceMobile,
                       size: 14,
                       color: isDark ? AppTokens.accent : AppTokens.accent,
                     ),
@@ -1208,7 +1209,7 @@ class _AppInfoHeader extends StatelessWidget {
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.restart_alt),
+            icon: const Icon(PhosphorIconsDuotone.arrowClockwise),
             tooltip: 'Reset app',
             onPressed: onReset,
           ),
@@ -1235,13 +1236,13 @@ class _RotationPatternSection extends ConsumerWidget {
         title: Text('Caricamento...'),
       ),
       error: (e, _) => ListTile(
-        leading: const Icon(Icons.error),
+        leading: const Icon(PhosphorIconsDuotone.warningCircle),
         title: Text('Errore: $e'),
       ),
       data: (plans) {
         if (plans.isEmpty) {
           return const ListTile(
-            leading: Icon(Icons.warning),
+            leading: Icon(PhosphorIconsDuotone.warning),
             title: Text('Nessun piano disponibile'),
           );
         }
@@ -1269,7 +1270,7 @@ class _RotationPatternSection extends ConsumerWidget {
                 overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.bodySmall,
               ),
-              trailing: const Icon(Icons.chevron_right),
+              trailing: const Icon(PhosphorIconsDuotone.caretRight),
               onTap: () => _showPlanSelector(context, ref, plans, activePlan),
             ),
 
@@ -1290,7 +1291,7 @@ class _RotationPatternSection extends ConsumerWidget {
                       child: Row(
                         children: [
                           Icon(
-                            Icons.info_outline,
+                            PhosphorIconsDuotone.info,
                             size: 20,
                             color: isDark ? AppTokens.accentEnd : AppTokens.accentEnd,
                           ),
@@ -1315,7 +1316,7 @@ class _RotationPatternSection extends ConsumerWidget {
                 loading: () => const SizedBox.shrink(),
                 error: (_, __) => const SizedBox.shrink(),
                 data: (pattern) => _SettingsTile(
-                  icon: Icons.reorder,
+                  icon: PhosphorIconsDuotone.rows,
                   title: 'Modifica sequenza',
                   trailing: Text(
                     pattern.customSequence != null

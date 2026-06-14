@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/theme/app_tokens.dart';
@@ -511,7 +512,7 @@ class _TooltipBubble extends StatelessWidget {
             ),
             child: Row(
               children: [
-                const Icon(Icons.lightbulb, color: Colors.yellow, size: 20),
+                const Icon(PhosphorIconsDuotone.lightbulb, color: Colors.yellow, size: 20),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
@@ -519,7 +520,7 @@ class _TooltipBubble extends StatelessWidget {
                     style: const TextStyle(color: Colors.white, fontSize: 14),
                   ),
                 ),
-                const Icon(Icons.close, color: Colors.white54, size: 18),
+                const Icon(PhosphorIconsDuotone.x, color: Colors.white54, size: 18),
               ],
             ),
           ),

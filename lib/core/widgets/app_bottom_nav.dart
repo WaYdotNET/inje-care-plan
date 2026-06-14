@@ -142,7 +142,7 @@ class _AddButton extends StatelessWidget {
               boxShadow: AppTokens.softShadow(dark: isDark),
             ),
             child: const Icon(
-              Icons.add,
+              PhosphorIconsDuotone.plus,
               color: Colors.white,
               size: 26,
             ),

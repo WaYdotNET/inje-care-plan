@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../core/theme/app_tokens.dart';
 import '../../core/database/app_database.dart' as db;
@@ -136,8 +137,8 @@ class _PointSelectionScreenState extends ConsumerState<PointSelectionScreen> {
   };
 
   IconData get _actionIcon => switch (widget.mode) {
-    PointSelectionMode.injection => Icons.add_circle_outline,
-    PointSelectionMode.blacklist => Icons.block,
+    PointSelectionMode.injection => PhosphorIconsDuotone.plusCircle,
+    PointSelectionMode.blacklist => PhosphorIconsDuotone.prohibit,
   };
 
   @override
@@ -169,7 +170,7 @@ class _PointSelectionScreenState extends ConsumerState<PointSelectionScreen> {
       appBar: AppBar(
         title: Text(_title),
         leading: IconButton(
-          icon: const Icon(Icons.close),
+          icon: const Icon(PhosphorIconsDuotone.x),
           onPressed: () => context.pop(),
         ),
         actions: [
@@ -178,7 +179,7 @@ class _PointSelectionScreenState extends ConsumerState<PointSelectionScreen> {
               padding: const EdgeInsets.only(right: 8),
               child: ActionChip(
                 avatar: Icon(
-                  Icons.access_time,
+                  PhosphorIconsDuotone.clock,
                   size: 18,
                   color: isDark ? AppTokens.accentEnd : AppTokens.accentEnd,
                 ),
@@ -209,7 +210,7 @@ class _PointSelectionScreenState extends ConsumerState<PointSelectionScreen> {
                   child: Row(
                     children: [
                       Icon(
-                        Icons.info_outline,
+                        PhosphorIconsDuotone.info,
                         color: isDark ? AppTokens.accentEnd : AppTokens.accentEnd,
                       ),
                       const SizedBox(width: 12),
@@ -435,7 +436,7 @@ class _SuggestedPointCard extends StatelessWidget {
           child: Row(
             children: [
               Icon(
-                Icons.lightbulb_outline,
+                PhosphorIconsDuotone.lightbulb,
                 color: isDark ? AppTokens.accent : AppTokens.accent,
                 size: 32,
               ),
@@ -462,7 +463,7 @@ class _SuggestedPointCard extends StatelessWidget {
                 ),
               ),
               Icon(
-                Icons.touch_app,
+                PhosphorIconsDuotone.handTap,
                 color: isDark ? AppTokens.accent : AppTokens.accent,
               ),
             ],
@@ -887,7 +888,7 @@ class _ZoneDetailCardState extends ConsumerState<_ZoneDetailCard> {
                 child: Row(
                   children: [
                     Icon(
-                      Icons.check_circle,
+                      PhosphorIconsDuotone.checkCircle,
                       color: isDark ? AppTokens.accent : AppTokens.accent,
                     ),
                     const SizedBox(width: 8),
@@ -911,7 +912,7 @@ class _ZoneDetailCardState extends ConsumerState<_ZoneDetailCard> {
             Row(
               children: [
                 Icon(
-                  Icons.history,
+                  PhosphorIconsDuotone.clockCounterClockwise,
                   color: isDark ? AppTokens.accentEnd : AppTokens.accentEnd,
                   size: 20,
                 ),
@@ -1020,7 +1021,7 @@ class _PointSelectionSilhouetteState extends State<_PointSelectionSilhouette> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             _ViewToggleButton(
-              icon: Icons.person,
+              icon: PhosphorIconsDuotone.user,
               label: 'Fronte',
               isSelected: _currentView == BodyView.front,
               isDark: isDark,
@@ -1028,7 +1029,7 @@ class _PointSelectionSilhouetteState extends State<_PointSelectionSilhouette> {
             ),
             const SizedBox(height: 8),
             _ViewToggleButton(
-              icon: Icons.person_outline,
+              icon: PhosphorIconsDuotone.userCircle,
               label: 'Retro',
               isSelected: _currentView == BodyView.back,
               isDark: isDark,
@@ -1145,11 +1146,11 @@ extension PointUsageLevelExtension on PointUsageLevel {
   };
 
   IconData get icon => switch (this) {
-    PointUsageLevel.neverUsed => Icons.star,
-    PointUsageLevel.safe => Icons.check_circle,
-    PointUsageLevel.caution => Icons.info,
-    PointUsageLevel.warning => Icons.warning,
-    PointUsageLevel.avoid => Icons.block,
+    PointUsageLevel.neverUsed => PhosphorIconsDuotone.star,
+    PointUsageLevel.safe => PhosphorIconsDuotone.checkCircle,
+    PointUsageLevel.caution => PhosphorIconsDuotone.info,
+    PointUsageLevel.warning => PhosphorIconsDuotone.warning,
+    PointUsageLevel.avoid => PhosphorIconsDuotone.prohibit,
   };
 
   static PointUsageLevel fromDaysSinceLastUse(int? days) {
@@ -1287,7 +1288,7 @@ class _PointHistoryCard extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
-                  item.isBlacklisted ? Icons.block : item.usageLevel.icon,
+                  item.isBlacklisted ? PhosphorIconsDuotone.prohibit : item.usageLevel.icon,
                   color: item.isBlacklisted ? Colors.grey : usageColor,
                   size: 20,
                 ),
@@ -1355,7 +1356,7 @@ class _PointHistoryCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Icon(
-                  Icons.chevron_right,
+                  PhosphorIconsDuotone.caretRight,
                   color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
                 ),
               ],

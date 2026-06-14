@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../core/theme/app_tokens.dart';
 import 'statistics_provider.dart';
@@ -23,7 +24,7 @@ class StatisticsScreen extends ConsumerWidget {
         actions: [
           // Filtro periodo
           PopupMenuButton<StatsPeriod>(
-            icon: const Icon(Icons.filter_list),
+            icon: const Icon(PhosphorIconsDuotone.funnelSimple),
             tooltip: 'Periodo',
             onSelected: (period) {
               ref.read(statsPeriodProvider.notifier).setPeriod(period);
@@ -56,7 +57,7 @@ class StatisticsScreen extends ConsumerWidget {
       child: Row(
         children: [
           if (period == selected)
-            const Icon(Icons.check, size: 18)
+            const Icon(PhosphorIconsDuotone.check, size: 18)
           else
             const SizedBox(width: 18),
           const SizedBox(width: 8),
@@ -89,7 +90,7 @@ class StatisticsScreen extends ConsumerWidget {
           const SizedBox(height: 24),
 
           // Grafico aderenza mensile
-          const _SectionTitle(title: 'Aderenza Mensile', icon: Icons.bar_chart),
+          const _SectionTitle(title: 'Aderenza Mensile', icon: PhosphorIconsDuotone.chartBar),
           const SizedBox(height: 12),
           Card(
             child: Padding(
@@ -104,7 +105,7 @@ class StatisticsScreen extends ConsumerWidget {
           const SizedBox(height: 24),
 
           // Trend settimanale
-          const _SectionTitle(title: 'Trend Settimanale', icon: Icons.show_chart),
+          const _SectionTitle(title: 'Trend Settimanale', icon: PhosphorIconsDuotone.chartLine),
           const SizedBox(height: 12),
           Card(
             child: Padding(
@@ -119,7 +120,7 @@ class StatisticsScreen extends ConsumerWidget {
           const SizedBox(height: 24),
 
           // Heatmap zone
-          const _SectionTitle(title: 'Utilizzo Zone', icon: Icons.pie_chart),
+          const _SectionTitle(title: 'Utilizzo Zone', icon: PhosphorIconsDuotone.chartPie),
           const SizedBox(height: 12),
           Card(
             child: Padding(
@@ -131,7 +132,7 @@ class StatisticsScreen extends ConsumerWidget {
           const SizedBox(height: 24),
 
           // Dettaglio zone
-          const _SectionTitle(title: 'Dettaglio Zone', icon: Icons.location_on),
+          const _SectionTitle(title: 'Dettaglio Zone', icon: PhosphorIconsDuotone.mapPin),
           const SizedBox(height: 12),
           ...stats.zoneUsage.take(5).map((zone) => Padding(
             padding: const EdgeInsets.only(bottom: 8),
@@ -203,19 +204,19 @@ class _StatsOverview extends StatelessWidget {
                   value: '${stats.completedCount}',
                   label: 'Completate',
                   color: isDark ? AppTokens.accent : AppTokens.accent,
-                  icon: Icons.check_circle,
+                  icon: PhosphorIconsDuotone.checkCircle,
                 ),
                 _StatItem(
                   value: '${stats.skippedCount}',
                   label: 'Saltate',
                   color: isDark ? AppTokens.dangerDark : AppTokens.dangerLight,
-                  icon: Icons.cancel,
+                  icon: PhosphorIconsDuotone.prohibit,
                 ),
                 _StatItem(
                   value: '${stats.scheduledCount}',
                   label: 'Programmate',
                   color: isDark ? AppTokens.accentEnd : AppTokens.accentEnd,
-                  icon: Icons.schedule,
+                  icon: PhosphorIconsDuotone.clock,
                 ),
               ],
             ),
@@ -326,7 +327,7 @@ class _StreakCard extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
               child: const Icon(
-                Icons.local_fire_department,
+                PhosphorIconsDuotone.fire,
                 color: Colors.white,
                 size: 28,
               ),

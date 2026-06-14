@@ -1,130 +1,139 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:injecare_plan/core/theme/app_colors.dart';
+import 'package:injecare_plan/core/theme/app_tokens.dart';
 
 void main() {
   group('AppColors', () {
-    group('Rosé Pine Dawn (Light Mode)', () {
-      test('dawnBase is correct color', () {
-        expect(AppColors.dawnBase, const Color(0xFFfaf4ed));
+    group('Pop Gradient light aliases (ex Rosé Pine Dawn)', () {
+      test('dawnBase → AppTokens.lightBgTop', () {
+        expect(AppColors.dawnBase, AppTokens.lightBgTop);
       });
 
-      test('dawnSurface is correct color', () {
-        expect(AppColors.dawnSurface, const Color(0xFFfffaf3));
+      test('dawnSurface → AppTokens.lightSurface', () {
+        expect(AppColors.dawnSurface, AppTokens.lightSurface);
       });
 
-      test('dawnOverlay is correct color', () {
-        expect(AppColors.dawnOverlay, const Color(0xFFf2e9e1));
+      test('dawnOverlay → AppTokens.lightBgBottom', () {
+        expect(AppColors.dawnOverlay, AppTokens.lightBgBottom);
       });
 
-      test('dawnMuted is correct color', () {
-        expect(AppColors.dawnMuted, const Color(0xFF9893a5));
+      test('dawnMuted → AppTokens.lightMuted', () {
+        expect(AppColors.dawnMuted, AppTokens.lightMuted);
       });
 
-      test('dawnSubtle is correct color', () {
-        expect(AppColors.dawnSubtle, const Color(0xFF797593));
+      test('dawnSubtle → AppTokens.lightSubtle', () {
+        expect(AppColors.dawnSubtle, AppTokens.lightSubtle);
       });
 
-      test('dawnText is correct color', () {
-        expect(AppColors.dawnText, const Color(0xFF575279));
+      test('dawnText → AppTokens.lightInk', () {
+        expect(AppColors.dawnText, AppTokens.lightInk);
       });
 
-      test('dawnLove is correct color', () {
-        expect(AppColors.dawnLove, const Color(0xFFb4637a));
+      test('dawnLove → AppTokens.dangerLight', () {
+        expect(AppColors.dawnLove, AppTokens.dangerLight);
       });
 
-      test('dawnGold is correct color', () {
-        expect(AppColors.dawnGold, const Color(0xFFea9d34));
+      test('dawnGold → AppTokens.warnLight', () {
+        expect(AppColors.dawnGold, AppTokens.warnLight);
       });
 
-      test('dawnRose is correct color', () {
-        expect(AppColors.dawnRose, const Color(0xFFd7827e));
+      test('dawnRose → AppTokens.pink', () {
+        expect(AppColors.dawnRose, AppTokens.pink);
       });
 
-      test('dawnPine is correct color', () {
-        expect(AppColors.dawnPine, const Color(0xFF286983));
+      test('dawnPine → AppTokens.accent', () {
+        expect(AppColors.dawnPine, AppTokens.accent);
       });
 
-      test('dawnFoam is correct color', () {
-        expect(AppColors.dawnFoam, const Color(0xFF56949f));
+      test('dawnFoam → AppTokens.accentEnd', () {
+        expect(AppColors.dawnFoam, AppTokens.accentEnd);
       });
 
-      test('dawnIris is correct color', () {
-        expect(AppColors.dawnIris, const Color(0xFF907aa9));
+      test('dawnIris → AppTokens.accent', () {
+        expect(AppColors.dawnIris, AppTokens.accent);
       });
 
-      test('dawnHighlightLow is correct color', () {
-        expect(AppColors.dawnHighlightLow, const Color(0xFFf4ede8));
+      test('dawnHighlightLow is correct Pop Gradient value', () {
+        expect(AppColors.dawnHighlightLow, const Color(0xFFF3EEFB));
       });
 
-      test('dawnHighlightMed is correct color', () {
-        expect(AppColors.dawnHighlightMed, const Color(0xFFdfdad9));
+      test('dawnHighlightMed → AppTokens.lightBorder', () {
+        expect(AppColors.dawnHighlightMed, AppTokens.lightBorder);
       });
 
-      test('dawnHighlightHigh is correct color', () {
-        expect(AppColors.dawnHighlightHigh, const Color(0xFFcecacd));
+      test('dawnHighlightHigh is correct Pop Gradient value', () {
+        expect(AppColors.dawnHighlightHigh, const Color(0xFFD9CFEC));
+      });
+
+      test('dawnSuccess → AppTokens.successLight', () {
+        expect(AppColors.dawnSuccess, AppTokens.successLight);
       });
     });
 
-    group('Rosé Pine (Dark Mode)', () {
-      test('darkBase is correct color', () {
-        expect(AppColors.darkBase, const Color(0xFF191724));
+    group('Pop Gradient dark aliases (ex Rosé Pine Dark Mode)', () {
+      test('darkBase → AppTokens.darkBg', () {
+        expect(AppColors.darkBase, AppTokens.darkBg);
       });
 
-      test('darkSurface is correct color', () {
-        expect(AppColors.darkSurface, const Color(0xFF1f1d2e));
+      test('darkSurface → AppTokens.darkSurface', () {
+        expect(AppColors.darkSurface, AppTokens.darkSurface);
       });
 
-      test('darkOverlay is correct color', () {
-        expect(AppColors.darkOverlay, const Color(0xFF26233a));
+      test('darkOverlay is correct Pop Gradient value', () {
+        expect(AppColors.darkOverlay, const Color(0xFF241B3A));
       });
 
-      test('darkMuted is correct color', () {
-        expect(AppColors.darkMuted, const Color(0xFF6e6a86));
+      test('darkMuted → AppTokens.darkMuted', () {
+        expect(AppColors.darkMuted, AppTokens.darkMuted);
       });
 
-      test('darkSubtle is correct color', () {
-        expect(AppColors.darkSubtle, const Color(0xFF908caa));
+      test('darkSubtle is correct Pop Gradient value', () {
+        expect(AppColors.darkSubtle, const Color(0xFFA79EC4));
       });
 
-      test('darkText is correct color', () {
-        expect(AppColors.darkText, const Color(0xFFe0def4));
+      test('darkText → AppTokens.darkInk', () {
+        expect(AppColors.darkText, AppTokens.darkInk);
       });
 
-      test('darkLove is correct color', () {
-        expect(AppColors.darkLove, const Color(0xFFeb6f92));
+      test('darkLove → AppTokens.dangerDark', () {
+        expect(AppColors.darkLove, AppTokens.dangerDark);
       });
 
-      test('darkGold is correct color', () {
-        expect(AppColors.darkGold, const Color(0xFFf6c177));
+      test('darkGold → AppTokens.warnDark', () {
+        expect(AppColors.darkGold, AppTokens.warnDark);
       });
 
-      test('darkRose is correct color', () {
-        expect(AppColors.darkRose, const Color(0xFFebbcba));
+      test('darkRose is correct Pop Gradient value', () {
+        expect(AppColors.darkRose, const Color(0xFFF0A7C9));
       });
 
-      test('darkPine is correct color', () {
-        expect(AppColors.darkPine, const Color(0xFF31748f));
+      test('darkPine → AppTokens.accent', () {
+        expect(AppColors.darkPine, AppTokens.accent);
       });
 
-      test('darkFoam is correct color', () {
-        expect(AppColors.darkFoam, const Color(0xFF9ccfd8));
+      test('darkFoam → AppTokens.accentEnd', () {
+        expect(AppColors.darkFoam, AppTokens.accentEnd);
       });
 
-      test('darkIris is correct color', () {
-        expect(AppColors.darkIris, const Color(0xFFc4a7e7));
+      test('darkIris is correct Pop Gradient value', () {
+        expect(AppColors.darkIris, const Color(0xFFC9B6FF));
       });
 
-      test('darkHighlightLow is correct color', () {
-        expect(AppColors.darkHighlightLow, const Color(0xFF21202e));
+      test('darkHighlightLow is correct Pop Gradient value', () {
+        expect(AppColors.darkHighlightLow, const Color(0xFF181226));
       });
 
-      test('darkHighlightMed is correct color', () {
-        expect(AppColors.darkHighlightMed, const Color(0xFF403d52));
+      test('darkHighlightMed → AppTokens.darkBorder', () {
+        expect(AppColors.darkHighlightMed, AppTokens.darkBorder);
       });
 
-      test('darkHighlightHigh is correct color', () {
-        expect(AppColors.darkHighlightHigh, const Color(0xFF524f67));
+      test('darkHighlightHigh is correct Pop Gradient value', () {
+        expect(AppColors.darkHighlightHigh, const Color(0xFF3A2F58));
+      });
+
+      test('darkSuccess → AppTokens.successDark', () {
+        expect(AppColors.darkSuccess, AppTokens.successDark);
       });
     });
   });

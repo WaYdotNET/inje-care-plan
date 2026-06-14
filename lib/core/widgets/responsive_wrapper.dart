@@ -15,32 +15,15 @@ class ResponsiveWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    // Background color for the areas outside the centered content
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final backgroundColor = isDark ? AppTokens.darkBg : AppTokens.lightBgTop;
-
-    return Container(
+    return ColoredBox(
       color: backgroundColor,
-      child: Center(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            // If the screen is wider thanmaxWidth, we constrain it
-            if (constraints.maxWidth > maxWidth) {
-              return MediaQuery(
-                data: MediaQuery.of(context).copyWith(
-                  size: Size(maxWidth, constraints.maxHeight),
-                ),
-                child: SizedBox(
-                  width: maxWidth,
-                  child: child,
-                ),
-              );
-            }
-            // Otherwise, let it be natural (mobile/tablet size)
-            return child;
-          },
+      child: Align(
+        alignment: Alignment.topCenter,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: maxWidth),
+          child: child,
         ),
       ),
     );

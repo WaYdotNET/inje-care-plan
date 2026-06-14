@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/theme/app_tokens.dart';
+import '../../core/widgets/app_card.dart';
 import '../../core/widgets/completion_time_dialog.dart';
+import '../../core/database/app_database.dart' as db;
 import '../../core/database/database_provider.dart';
 import '../../models/body_zone.dart' as model;
 import '../../models/injection_record.dart' as inj;
@@ -282,6 +284,7 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
     final weekInjectionsAsync = ref.watch(
       injectionsInRangeProvider((start: startOfWeek, end: endOfWeek)),
     );
+    final nextScheduled = ref.watch(nextScheduledInjectionProvider);
 
     return weekInjectionsAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -297,10 +300,25 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
               ),
             )
             .toList();
-        return WeekAgendaView(
-          startOfWeek: startOfWeek,
-          injections: agendaInjections,
-          onTapInjection: _onWeekInjectionTap,
+        return Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+              child: _NextUpHeader(
+                next: nextScheduled,
+                onTap: nextScheduled != null
+                    ? () => context.push('/injection/${nextScheduled.id}')
+                    : null,
+              ),
+            ),
+            Expanded(
+              child: WeekAgendaView(
+                startOfWeek: startOfWeek,
+                injections: agendaInjections,
+                onTapInjection: _onWeekInjectionTap,
+              ),
+            ),
+          ],
         );
       },
     );
@@ -933,6 +951,103 @@ class _Pill extends StatelessWidget {
             fontSize: 13,
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Compact header card shown at the top of the week view with the next
+/// scheduled injection details. If [next] is null, shows a "no injection" prompt.
+class _NextUpHeader extends StatelessWidget {
+  const _NextUpHeader({
+    required this.next,
+    this.onTap,
+  });
+
+  final db.Injection? next;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final mutedColor = isDark ? AppTokens.darkMuted : AppTokens.lightMuted;
+
+    if (next == null) {
+      return AppCard(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        child: Row(
+          children: [
+            Icon(
+              Icons.event_busy_outlined,
+              size: 18,
+              color: mutedColor,
+            ),
+            const SizedBox(width: 10),
+            Text(
+              'Nessuna iniezione programmata',
+              style: theme.textTheme.bodyMedium?.copyWith(color: mutedColor),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final dateTime = DateFormat('EEE d MMM · HH:mm', 'it_IT').format(next!.scheduledAt);
+
+    return AppCard(
+      accentBorder: true,
+      onTap: onTap,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: AppTokens.accent.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(
+              Icons.schedule,
+              size: 16,
+              color: AppTokens.accent,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'PROSSIMA INIEZIONE',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: AppTokens.accent,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.8,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  next!.pointLabel,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  dateTime,
+                  style: theme.textTheme.bodySmall?.copyWith(color: mutedColor),
+                ),
+              ],
+            ),
+          ),
+          Icon(
+            Icons.chevron_right,
+            size: 20,
+            color: mutedColor,
+          ),
+        ],
       ),
     );
   }

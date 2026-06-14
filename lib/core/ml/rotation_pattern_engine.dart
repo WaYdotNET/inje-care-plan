@@ -43,6 +43,43 @@ class RotationPatternEngine {
   static String _displayName(BodyZone zone) =>
       zone.customName?.isNotEmpty == true ? zone.customName! : zone.name;
 
+  /// Sceglie la zona partendo dalla posizione [index] della sequenza
+  /// DICHIARATA (lo stesso spazio di indici scritto da advancePattern):
+  /// cammina in avanti finché trova una zona presente e abilitata, saltando
+  /// quelle disabilitate/assenti senza disallineare l'indice memorizzato.
+  /// Niente fallback silenzioso su zone fuori sequenza.
+  ZoneSuggestion? _pickFromSequence(
+    List<int> sequence,
+    int index,
+    String reasonPrefix,
+  ) {
+    if (sequence.isEmpty) return null;
+    final byId = {for (final z in zones) z.id: z};
+
+    final start = index % sequence.length;
+    for (var i = 0; i < sequence.length; i++) {
+      final candidateId = sequence[(start + i) % sequence.length];
+      final zone = byId[candidateId];
+      if (zone != null && zone.isEnabled) {
+        return ZoneSuggestion(
+          zoneId: zone.id,
+          zoneName: _displayName(zone),
+          reason: reasonPrefix,
+        );
+      }
+    }
+
+    // Nessuna zona della sequenza è disponibile: ripiego su una qualsiasi abilitata.
+    final enabled = zones.where((z) => z.isEnabled).toList();
+    if (enabled.isEmpty) return null;
+    final zone = enabled[index % enabled.length];
+    return ZoneSuggestion(
+      zoneId: zone.id,
+      zoneName: _displayName(zone),
+      reason: '$reasonPrefix (zona di ripiego)',
+    );
+  }
+
   /// Ottiene il prossimo suggerimento in base al pattern configurato
   Future<ZoneSuggestion?> getNextSuggestion() async {
     if (zones.isEmpty) return null;
@@ -58,52 +95,53 @@ class RotationPatternEngine {
     };
   }
 
-  /// Suggerimento basato su ML (pattern originale) - usa le zone con meno utilizzo
+  /// Suggerimento "smart": tra le zone abilitate sceglie una zona mai usata,
+  /// altrimenti quella il cui uso più recente è il più vecchio (meno usata
+  /// di recente). Usa lo storico completo delle iniezioni completate.
   Future<ZoneSuggestion?> _getSmartSuggestion() async {
-    // Trova la zona meno usata di recente
-    BodyZone? bestZone;
+    final enabled = zones.where((z) => z.isEnabled).toList();
+    if (enabled.isEmpty) return null;
 
-    for (final zone in zones) {
-      final lastPoint = await db.findLeastUsedPoint(zone.id, days: 30);
-      if (lastPoint == null) {
-        // Zona mai usata - è la migliore
+    BodyZone? bestZone;
+    DateTime? bestZoneLastUse; // uso più recente della zona scelta finora
+
+    for (final zone in enabled) {
+      final usage = await db.getPointUsageHistory(zone.id);
+      final dates = usage.values.whereType<DateTime>().toList();
+
+      if (dates.isEmpty) {
+        // Zona mai usata: scelta ottimale, fermati subito.
         bestZone = zone;
+        bestZoneLastUse = null;
         break;
+      }
+
+      dates.sort();
+      final zoneLastUse = dates.last; // uso più recente della zona
+      if (bestZone == null ||
+          (bestZoneLastUse != null && zoneLastUse.isBefore(bestZoneLastUse))) {
+        bestZone = zone;
+        bestZoneLastUse = zoneLastUse;
       }
     }
 
-    if (bestZone == null && zones.isNotEmpty) {
-      bestZone = zones.first;
-    }
-
-    if (bestZone == null) return null;
+    bestZone ??= enabled.first;
 
     return ZoneSuggestion(
       zoneId: bestZone.id,
       zoneName: _displayName(bestZone),
-      reason: 'Zona consigliata dall\'AI',
+      reason: bestZoneLastUse == null
+          ? 'Zona mai usata di recente'
+          : 'Zona meno usata di recente',
     );
   }
 
   /// Suggerimento sequenziale
   Future<ZoneSuggestion?> _getSequentialSuggestion() async {
-    final sequence = DefaultZoneSequence.standard;
-
-    var currentIndex = currentPattern.currentIndex;
-    if (currentIndex >= sequence.length) {
-      currentIndex = 0;
-    }
-
-    final targetZoneId = sequence[currentIndex];
-    final zone = zones.firstWhere(
-      (z) => z.id == targetZoneId,
-      orElse: () => zones[currentIndex % zones.length],
-    );
-
-    return ZoneSuggestion(
-      zoneId: zone.id,
-      zoneName: _displayName(zone),
-      reason: 'Prossimo nella sequenza (${currentIndex + 1}/${sequence.length})',
+    return _pickFromSequence(
+      DefaultZoneSequence.standard,
+      currentPattern.currentIndex,
+      'Prossimo nella sequenza',
     );
   }
 
@@ -182,74 +220,34 @@ class RotationPatternEngine {
     );
   }
 
-  /// Suggerimento con sequenza personalizzata
-  Future<ZoneSuggestion?> _getCustomSuggestion() async {
-    final customSequence = currentPattern.customSequence;
-
-    if (customSequence == null || customSequence.isEmpty) {
-      return _getSequentialSuggestion();
-    }
-
-    var currentIndex = currentPattern.currentIndex;
-    if (currentIndex >= customSequence.length) {
-      currentIndex = 0;
-    }
-
-    final targetZoneId = customSequence[currentIndex];
-    final zone = zones.firstWhere(
-      (z) => z.id == targetZoneId,
-      orElse: () => zones.first,
-    );
-
-    return ZoneSuggestion(
-      zoneId: zone.id,
-      zoneName: _displayName(zone),
-      reason: 'Sequenza personalizzata (${currentIndex + 1}/${customSequence.length})',
-    );
-  }
-
   /// Suggerimento con rotazione oraria del corpo
-  /// Ordine: Braccio Sx → Braccio Dx → Addome Dx → Gluteo Dx → Coscia Dx → Coscia Sx → Gluteo Sx → Addome Sx
   Future<ZoneSuggestion?> _getClockwiseSuggestion() async {
-    final sequence = DefaultZoneSequence.clockwise;
-
-    var currentIndex = currentPattern.currentIndex;
-    if (currentIndex >= sequence.length) {
-      currentIndex = 0;
-    }
-
-    final targetZoneId = sequence[currentIndex];
-    final zone = zones.firstWhere(
-      (z) => z.id == targetZoneId,
-      orElse: () => zones[currentIndex % zones.length],
-    );
-
-    return ZoneSuggestion(
-      zoneId: zone.id,
-      zoneName: _displayName(zone),
-      reason: 'Rotazione oraria (${currentIndex + 1}/${sequence.length})',
+    return _pickFromSequence(
+      DefaultZoneSequence.clockwise,
+      currentPattern.currentIndex,
+      'Rotazione oraria',
     );
   }
 
   /// Suggerimento con rotazione antioraria del corpo (inverso di oraria)
   Future<ZoneSuggestion?> _getCounterClockwiseSuggestion() async {
-    final sequence = DefaultZoneSequence.counterClockwise;
-
-    var currentIndex = currentPattern.currentIndex;
-    if (currentIndex >= sequence.length) {
-      currentIndex = 0;
-    }
-
-    final targetZoneId = sequence[currentIndex];
-    final zone = zones.firstWhere(
-      (z) => z.id == targetZoneId,
-      orElse: () => zones[currentIndex % zones.length],
+    return _pickFromSequence(
+      DefaultZoneSequence.counterClockwise,
+      currentPattern.currentIndex,
+      'Rotazione antioraria',
     );
+  }
 
-    return ZoneSuggestion(
-      zoneId: zone.id,
-      zoneName: _displayName(zone),
-      reason: 'Rotazione antioraria (${currentIndex + 1}/${sequence.length})',
+  /// Suggerimento con sequenza personalizzata
+  Future<ZoneSuggestion?> _getCustomSuggestion() async {
+    final customSequence = currentPattern.customSequence;
+    if (customSequence == null || customSequence.isEmpty) {
+      return _getSequentialSuggestion();
+    }
+    return _pickFromSequence(
+      customSequence,
+      currentPattern.currentIndex,
+      'Sequenza personalizzata',
     );
   }
 
@@ -376,19 +374,31 @@ class RotationPatternService {
       return;
     }
 
-    int newIndex = currentPlan.patternCurrentIndex + 1;
-
-    int sequenceLength = switch (patternType) {
-      RotationPatternType.clockwise => DefaultZoneSequence.clockwise.length,
+    // Sequenza lineare effettiva per il pattern corrente.
+    final List<int> sequence = switch (patternType) {
+      RotationPatternType.clockwise => DefaultZoneSequence.clockwise,
       RotationPatternType.counterClockwise =>
-        DefaultZoneSequence.counterClockwise.length,
-      RotationPatternType.custom when currentPlan.customPatternSequence.isNotEmpty =>
-        currentPlan.customPatternSequence.split(',').where((s) => s.trim().isNotEmpty).length,
-      _ => DefaultZoneSequence.standard.length,
+        DefaultZoneSequence.counterClockwise,
+      RotationPatternType.custom
+          when currentPlan.customPatternSequence.isNotEmpty =>
+        currentPlan.customPatternSequence
+            .split(',')
+            .where((s) => s.trim().isNotEmpty)
+            .map((s) => int.parse(s.trim()))
+            .toList(),
+      _ => DefaultZoneSequence.standard,
     };
 
-    if (sequenceLength <= 0) sequenceLength = DefaultZoneSequence.standard.length;
-    if (newIndex >= sequenceLength) newIndex = 0;
+    final effectiveSequence =
+        sequence.isEmpty ? DefaultZoneSequence.standard : sequence;
+
+    // Self-healing: l'indice segue la posizione della zona EFFETTIVAMENTE
+    // usata; se non è in sequenza, avanza linearmente da quello corrente.
+    final usedPos = effectiveSequence.indexOf(usedZoneId);
+    final base = usedPos >= 0
+        ? usedPos + 1
+        : currentPlan.patternCurrentIndex + 1;
+    final newIndex = base % effectiveSequence.length;
 
     await (db.update(db.therapyPlans)..where((t) => t.id.equals(currentPlan.id)))
         .write(TherapyPlansCompanion(

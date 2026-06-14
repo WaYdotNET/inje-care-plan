@@ -304,6 +304,7 @@ class _PointSelectionScreenState extends ConsumerState<PointSelectionScreen> {
                       onPointTap: (point) =>
                           setState(() => _selectedPoint = point),
                       blacklistedPoints: blacklist,
+                      existingInjectionId: widget.existingInjectionId,
                     );
                   },
                 ),
@@ -693,6 +694,7 @@ class _ZoneDetailCard extends ConsumerStatefulWidget {
     required this.isDark,
     required this.onPointTap,
     required this.blacklistedPoints,
+    this.existingInjectionId,
   });
 
   final BodyZone zone;
@@ -700,6 +702,7 @@ class _ZoneDetailCard extends ConsumerStatefulWidget {
   final bool isDark;
   final void Function(int) onPointTap;
   final List<db.BlacklistedPoint> blacklistedPoints;
+  final int? existingInjectionId;
 
   @override
   ConsumerState<_ZoneDetailCard> createState() => _ZoneDetailCardState();
@@ -753,8 +756,12 @@ class _ZoneDetailCardState extends ConsumerState<_ZoneDetailCard> {
       }
     }
 
-    // Carica storico utilizzo
-    _usageHistory = await database.getPointUsageHistory(widget.zone.id);
+    // Carica storico utilizzo, escludendo l'iniezione attualmente in modifica
+    // così il punto da cui ci si sta spostando mostra la sua data precedente.
+    _usageHistory = await database.getPointUsageHistory(
+      widget.zone.id,
+      ignoreInjectionId: widget.existingInjectionId,
+    );
 
     if (mounted) setState(() => _isLoading = false);
   }

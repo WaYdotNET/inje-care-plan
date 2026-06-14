@@ -93,14 +93,15 @@ Tests in `test/` organized as `unit/`, `widget/`, `integration/`. Uses `mocktail
 
 ## Release Checklist
 
-When bumping the version and releasing, **always** update all of these:
+When bumping the version and releasing, **always** update **all** of these (changelog, version bump, web version, READMEs):
 
-1. `pubspec.yaml` — bump `version` (e.g. `4.7.0+7`). **IMPORTANT**: the version code (number after `+`) must be strictly greater than any previously uploaded to Google Play Store. Current highest: **8**.
-2. `CHANGELOG.md` — move Unreleased items under the new version heading
-3. `pages/index.html` — update the changelog section (both IT and EN) and the version in the footer
-4. `.github/workflows/build-apk.yml` and `pages.yml` — if Flutter SDK was upgraded, update `flutter-version` to match (currently `3.41.6`)
-5. Commit, tag (`v<version>`), push with `--tags` to trigger GitHub Actions release
-6. Verify all 3 pipelines: Deploy Pages, Build APK (main), Build APK + Release (tag)
+1. `pubspec.yaml` — bump `version` (e.g. `4.8.3+12`). **IMPORTANT**: the version code (number after `+`) must be strictly greater than any previously uploaded to Google Play Store. Current highest: **12**.
+2. `CHANGELOG.md` — add a new `## <version> - <YYYY-MM-DD>` heading at the top with the changes (`### Corretto` / `### Aggiunto`).
+3. `pages/index.html` (web version) — add the changelog block in **both** IT (`<h3>Versione X (..)</h3>`) and EN (`<h3>Version X (..)</h3>`) sections, **and** bump the footer version `InjeCare Plan vX` (two lines: IT + EN, currently ~398 and ~408).
+4. `README.md` (and any other README) — keep in sync: it has **no** version number/changelog today (feature docs only), so usually no change is needed — but verify and update the relevant section if a feature/behavior described there changed.
+5. `.github/workflows/build-apk.yml` and `pages.yml` — if Flutter SDK was upgraded, update `flutter-version` to match (currently `3.41.6`).
+6. Commit, tag (`v<version>`), push with `--tags` to trigger GitHub Actions release.
+7. Verify all 3 pipelines: Deploy Pages, Build APK (main), Build APK + Release (tag).
 
 ### Two BodyZone types
 

@@ -1,5 +1,13 @@
 # Changelog
 
+## 4.8.3 - 2026-06-14
+
+### Corretto
+- **"Cambia punto" segnava il punto come "Evitare"**: lo Storico d'uso ora esclude l'iniezione che si sta modificando, così il punto di origine mostra la sua data d'uso reale precedente invece di "0 gg fa".
+- **Rotazione — suggerimento smart degenere**: il pattern "Suggerimento AI" ora propone davvero la zona meno usata di recente (o una mai usata) invece di ricadere sempre sulla prima zona.
+- **Rotazione — avanzamento indice**: l'indice di sequenza ora segue la zona effettivamente usata (self-healing), evitando il disallineamento quando si devia dalla zona suggerita.
+- **Rotazione — zone disabilitate/fuori sequenza**: i pattern lineari e custom non propongono più zone disabilitate o inesistenti, saltandole nell'ordine dichiarato.
+
 ## 4.8.2 - 2026-05-12
 
 ### Corretto

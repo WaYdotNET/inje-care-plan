@@ -55,7 +55,7 @@ class WeekAgendaView extends StatelessWidget {
         vertical: AppSpacing.m,
       ),
       itemCount: 7,
-      separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.s),
+      separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.s),
       itemBuilder: (context, i) {
         final day = startOfWeek.add(Duration(days: i));
         final dayDate = DateTime(day.year, day.month, day.day);

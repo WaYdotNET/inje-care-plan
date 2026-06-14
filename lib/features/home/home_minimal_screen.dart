@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_tokens.dart';
 import '../../core/database/database_provider.dart';
 import '../../models/body_zone.dart' as model;
 import '../../models/injection_record.dart' as inj;
@@ -18,6 +19,8 @@ import '../injection/injection_provider.dart' hide bodyZonesProvider;
 import '../injection/injection_repository.dart';
 import '../injection/zone_provider.dart';
 import '../injection/widgets/body_silhouette_editor.dart';
+import 'home_layout_provider.dart';
+import 'widgets/week_agenda_view.dart';
 
 /// Home minimalista con focus sulla prossima iniezione
 class HomeMinimalScreen extends ConsumerStatefulWidget {
@@ -59,9 +62,11 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final zonesAsync = ref.watch(zonesProvider);
+    // zonesAsync and nextScheduled are watched in _silhouetteBody; watch here
+    // only the providers needed by the fill-week prompt (always active).
     final therapyPlanAsync = ref.watch(therapyPlanProvider);
-    final nextScheduled = ref.watch(nextScheduledInjectionProvider);
+    ref.watch(zonesProvider); // keep subscription alive for cache warming
+    ref.watch(nextScheduledInjectionProvider); // same
 
     // Controlla iniezioni mancate all'avvio (una volta per sessione container)
     ref.watch(checkMissedInjectionsProvider);
@@ -73,6 +78,18 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
     final weekInjectionsAsync = ref.watch(
       injectionsInRangeProvider((start: startOfWeek, end: endOfWeek)),
     );
+    final homeLayout = ref.watch(homeLayoutProvider);
+
+    // Fill-week prompt: triggered regardless of active layout (once per session).
+    final plan = therapyPlanAsync.asData?.value;
+    final weekEmpty = weekInjectionsAsync.asData?.value.isEmpty ?? false;
+    if (!_weekFillPromptShown && plan != null && weekEmpty) {
+      _weekFillPromptShown = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _showFillWeekDialog(context, plan, startOfWeek);
+      });
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -128,120 +145,169 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
         child: Column(
           children: [
             const _NotificationPermissionBanner(),
+            _LayoutToggle(
+              current: homeLayout,
+              onSelect: (l) => ref.read(homeLayoutProvider.notifier).setLayout(l),
+            ),
             Expanded(
-              child: zonesAsync.when(
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, st) => _ErrorView(message: e.toString()),
-                data: (zones) {
-            final plan = therapyPlanAsync.asData?.value;
-            final weekEmpty = weekInjectionsAsync.asData?.value.isEmpty ?? false;
-            if (!_weekFillPromptShown && plan != null && weekEmpty) {
-              _weekFillPromptShown = true;
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (!mounted) return;
-                _showFillWeekDialog(context, plan, startOfWeek);
-              });
-            }
-
-            final resolvedPlan = plan ?? TherapyPlan.defaults;
-            final displayDate = nextScheduled?.scheduledAt ??
-                ScheduleUtils.nextTherapySlot(from: DateTime.now(), plan: resolvedPlan);
-
-            // Suggerimento coerente con rotazione e data (solo se non c'è già una scheduled valida)
-            final suggestedForDateAsync = ref.watch(
-              suggestedPointForDateProvider((scheduledAt: displayDate, ignoreInjectionId: null)),
-            );
-
-            return suggestedForDateAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, st) => _ErrorView(message: e.toString()),
-              data: (suggestedForDate) {
-                // Se c'è un'iniezione schedulata valida (coerente con giorni piano), mostra quella
-                model.BodyZone? zone;
-                int? pointNumber;
-                int? scheduledInjectionId;
-
-                if (nextScheduled != null) {
-                  scheduledInjectionId = nextScheduled.id;
-                  pointNumber = nextScheduled.pointNumber;
-                  zone = zones.firstWhere(
-                    (z) => z.id == nextScheduled.zoneId,
-                    orElse: () => zones.first,
-                  );
-                } else if (suggestedForDate != null) {
-                  zone = zones.firstWhere(
-                    (z) => z.id == suggestedForDate.zoneId,
-                    orElse: () => zones.first,
-                  );
-                  pointNumber = suggestedForDate.pointNumber;
-                }
-
-                final isScheduled = nextScheduled != null;
-                final canComplete = canCompleteNow(displayDate);
-                final view = _getViewForZone(zone?.type);
-
-                final displayTime = DateFormat('HH:mm').format(displayDate);
-
-                return GestureDetector(
-                  onTap: zone != null
-                      ? () {
-                          if (isScheduled && scheduledInjectionId != null) {
-                            if (!canComplete) {
-                              context.push('/injection/$scheduledInjectionId');
-                              return;
-                            }
-                            _showCompleteDialog(
-                              context,
-                              scheduledInjectionId,
-                              zone!,
-                              pointNumber ?? 1,
-                              scheduledAt: displayDate,
-                            );
-                          } else {
-                            _navigateToRecord(context, zone!.id, displayDate);
-                          }
-                        }
-                      : null,
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      children: [
-                        Expanded(
-                          child: _MainCard(
-                            zone: zone,
-                            displayDate: displayDate,
-                            displayTime: displayTime,
-                            view: view,
-                            isDark: isDark,
-                            isScheduled: isScheduled,
-                            pointNumber: pointNumber,
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        if (zone != null)
-                          Text(
-                            isScheduled
-                                ? (canComplete
-                                    ? 'Tocca per completare'
-                                    : 'Tocca per vedere il dettaglio')
-                                : 'Tocca per registrare',
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            );
-          },
-              ),
+              child: homeLayout == HomeLayout.week
+                  ? _weekBody(context)
+                  : _silhouetteBody(context, isDark),
             ),
           ],
         ),
       ),
     );
+  }
+
+  /// Renders the original silhouette view (next/suggested injection body map).
+  Widget _silhouetteBody(BuildContext context, bool isDark) {
+    final theme = Theme.of(context);
+    final zonesAsync = ref.watch(zonesProvider);
+    final therapyPlanAsync = ref.watch(therapyPlanProvider);
+    final nextScheduled = ref.watch(nextScheduledInjectionProvider);
+
+    return zonesAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, st) => _ErrorView(message: e.toString()),
+      data: (zones) {
+        final plan = therapyPlanAsync.asData?.value;
+        final resolvedPlan = plan ?? TherapyPlan.defaults;
+        final displayDate = nextScheduled?.scheduledAt ??
+            ScheduleUtils.nextTherapySlot(
+              from: DateTime.now(),
+              plan: resolvedPlan,
+            );
+
+        // Suggerimento coerente con rotazione e data
+        final suggestedForDateAsync = ref.watch(
+          suggestedPointForDateProvider(
+            (scheduledAt: displayDate, ignoreInjectionId: null),
+          ),
+        );
+
+        return suggestedForDateAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, st) => _ErrorView(message: e.toString()),
+          data: (suggestedForDate) {
+            model.BodyZone? zone;
+            int? pointNumber;
+            int? scheduledInjectionId;
+
+            if (nextScheduled != null) {
+              scheduledInjectionId = nextScheduled.id;
+              pointNumber = nextScheduled.pointNumber;
+              zone = zones.firstWhere(
+                (z) => z.id == nextScheduled.zoneId,
+                orElse: () => zones.first,
+              );
+            } else if (suggestedForDate != null) {
+              zone = zones.firstWhere(
+                (z) => z.id == suggestedForDate.zoneId,
+                orElse: () => zones.first,
+              );
+              pointNumber = suggestedForDate.pointNumber;
+            }
+
+            final isScheduled = nextScheduled != null;
+            final canComplete = canCompleteNow(displayDate);
+            final view = _getViewForZone(zone?.type);
+            final displayTime = DateFormat('HH:mm').format(displayDate);
+
+            return GestureDetector(
+              onTap: zone != null
+                  ? () {
+                      if (isScheduled && scheduledInjectionId != null) {
+                        if (!canComplete) {
+                          context.push('/injection/$scheduledInjectionId');
+                          return;
+                        }
+                        _showCompleteDialog(
+                          context,
+                          scheduledInjectionId,
+                          zone!,
+                          pointNumber ?? 1,
+                          scheduledAt: displayDate,
+                        );
+                      } else {
+                        _navigateToRecord(context, zone!.id, displayDate);
+                      }
+                    }
+                  : null,
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: _MainCard(
+                        zone: zone,
+                        displayDate: displayDate,
+                        displayTime: displayTime,
+                        view: view,
+                        isDark: isDark,
+                        isScheduled: isScheduled,
+                        pointNumber: pointNumber,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    if (zone != null)
+                      Text(
+                        isScheduled
+                            ? (canComplete
+                                ? 'Tocca per completare'
+                                : 'Tocca per vedere il dettaglio')
+                            : 'Tocca per registrare',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  /// Renders the week agenda view.
+  Widget _weekBody(BuildContext context) {
+    final now = DateTime.now();
+    final weekStart = now.subtract(Duration(days: now.weekday - 1));
+    final startOfWeek =
+        DateTime(weekStart.year, weekStart.month, weekStart.day);
+    final endOfWeek =
+        startOfWeek.add(const Duration(days: 6, hours: 23, minutes: 59));
+    final weekInjectionsAsync = ref.watch(
+      injectionsInRangeProvider((start: startOfWeek, end: endOfWeek)),
+    );
+
+    return weekInjectionsAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, st) => _ErrorView(message: e.toString()),
+      data: (injections) {
+        final agendaInjections = injections
+            .map(
+              (i) => AgendaInjection(
+                id: i.id,
+                scheduledAt: i.scheduledAt,
+                pointLabel: i.pointLabel,
+                status: i.status,
+              ),
+            )
+            .toList();
+        return WeekAgendaView(
+          startOfWeek: startOfWeek,
+          injections: agendaInjections,
+          onTapInjection: _onWeekInjectionTap,
+        );
+      },
+    );
+  }
+
+  void _onWeekInjectionTap(AgendaInjection a) {
+    context.push('/injection/${a.id}');
   }
 
   BodyView _getViewForZone(String? zoneType) =>
@@ -800,6 +866,90 @@ class _ErrorView extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Compact pill toggle for switching between Home layouts.
+class _LayoutToggle extends StatelessWidget {
+  const _LayoutToggle({
+    required this.current,
+    required this.onSelect,
+  });
+
+  final HomeLayout current;
+  final void Function(HomeLayout) onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final mutedColor = isDark ? AppTokens.darkMuted : AppTokens.lightMuted;
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        vertical: AppSpacing.s,
+        horizontal: AppSpacing.l,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          _Pill(
+            label: 'Settimana',
+            selected: current == HomeLayout.week,
+            mutedColor: mutedColor,
+            onTap: () => onSelect(HomeLayout.week),
+          ),
+          const SizedBox(width: AppSpacing.s),
+          _Pill(
+            label: 'Silhouette',
+            selected: current == HomeLayout.silhouette,
+            mutedColor: mutedColor,
+            onTap: () => onSelect(HomeLayout.silhouette),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Pill extends StatelessWidget {
+  const _Pill({
+    required this.label,
+    required this.selected,
+    required this.mutedColor,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final Color mutedColor;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.xl,
+          vertical: AppSpacing.xs + 2,
+        ),
+        decoration: BoxDecoration(
+          color: selected ? AppTokens.accent : Colors.transparent,
+          borderRadius: BorderRadius.circular(AppRadius.pill),
+          border: Border.all(
+            color: selected ? AppTokens.accent : mutedColor,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: selected ? Colors.white : mutedColor,
+            fontWeight: FontWeight.w600,
+            fontSize: 13,
+          ),
         ),
       ),
     );

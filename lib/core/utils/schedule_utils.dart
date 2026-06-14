@@ -12,6 +12,37 @@ class ScheduleUtils {
     return DateTime(day.year, day.month, day.day, hour, minute);
   }
 
+  /// Restituisce i giorni (normalizzati a mezzanotte) in [start]..[end] che
+  /// vanno pianificati: weekday nel piano, orario futuro rispetto a [now],
+  /// e non già presenti in [alreadyPlanned] (date normalizzate a mezzanotte).
+  static List<DateTime> daysToPlan({
+    required TherapyPlan plan,
+    required DateTime start,
+    required DateTime end,
+    required DateTime now,
+    required Set<DateTime> alreadyPlanned,
+  }) {
+    final parts = plan.preferredTime.split(':');
+    final hour = parts.length >= 2 ? int.tryParse(parts[0]) ?? 20 : 20;
+    final minute = parts.length >= 2 ? int.tryParse(parts[1]) ?? 0 : 0;
+
+    final result = <DateTime>[];
+    final startDay = DateTime(start.year, start.month, start.day);
+    final totalDays =
+        DateTime(end.year, end.month, end.day).difference(startDay).inDays;
+    for (var i = 0; i <= totalDays; i++) {
+      final day = startDay.add(Duration(days: i));
+      if (!plan.weekDays.contains(day.weekday)) continue;
+      final scheduledAt =
+          DateTime(day.year, day.month, day.day, hour, minute);
+      if (scheduledAt.isBefore(now)) continue;
+      final key = DateTime(day.year, day.month, day.day);
+      if (alreadyPlanned.contains(key)) continue;
+      result.add(key);
+    }
+    return result;
+  }
+
   /// Returns the next date/time that matches the plan weekday list and preferred
   /// time, starting from [from] (inclusive if the slot is >= from).
   ///

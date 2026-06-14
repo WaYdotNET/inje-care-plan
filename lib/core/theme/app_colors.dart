@@ -1,53 +1,50 @@
 import 'package:flutter/material.dart';
+import 'app_tokens.dart';
 
-/// Rosé Pine color palette
-/// Design system: https://rosepinetheme.com/palette/
+/// LEGACY: i nomi Rosé Pine sono mantenuti come ALIAS di compatibilità,
+/// rimappati ai token "Pop Gradient" (vedi [AppTokens]). Molte schermate li
+/// referenziano ancora; il rename completo verso AppTokens è un follow-up.
+/// NON aggiungere nuovi usi: preferire direttamente AppTokens.
 sealed class AppColors {
   // ==========================================================================
-  // ROSÉ PINE DAWN (Light Mode - Default)
+  // LIGHT (alias → Pop Gradient light)
   // ==========================================================================
-
-  static const dawnBase = Color(0xFFfaf4ed);
-  static const dawnSurface = Color(0xFFfffaf3);
-  static const dawnOverlay = Color(0xFFf2e9e1);
-  static const dawnMuted = Color(0xFF9893a5);
-  static const dawnSubtle = Color(0xFF797593);
-  static const dawnText = Color(0xFF575279);
-  static const dawnLove = Color(0xFFb4637a);
-  static const dawnGold = Color(0xFFea9d34);
-  static const dawnRose = Color(0xFFd7827e);
-  static const dawnPine = Color(0xFF286983);
-  static const dawnFoam = Color(0xFF56949f);
-  static const dawnIris = Color(0xFF907aa9);
-  static const dawnHighlightLow = Color(0xFFf4ede8);
-  static const dawnHighlightMed = Color(0xFFdfdad9);
-  static const dawnHighlightHigh = Color(0xFFcecacd);
-
-  // Semaforo (light) — verde puro per completed, riusa Gold/Love per warn/danger
-  static const dawnSuccess = Color(0xFF618c4f);
+  static const dawnBase = AppTokens.lightBgTop;
+  static const dawnSurface = AppTokens.lightSurface;
+  static const dawnOverlay = AppTokens.lightBgBottom;
+  static const dawnMuted = AppTokens.lightMuted;
+  static const dawnSubtle = AppTokens.lightSubtle;
+  static const dawnText = AppTokens.lightInk;
+  static const dawnLove = AppTokens.dangerLight;
+  static const dawnGold = AppTokens.warnLight;
+  static const dawnRose = AppTokens.pink;
+  static const dawnPine = AppTokens.accent;
+  static const dawnFoam = AppTokens.accentEnd;
+  static const dawnIris = AppTokens.accent;
+  static const dawnHighlightLow = Color(0xFFF3EEFB);
+  static const dawnHighlightMed = AppTokens.lightBorder;
+  static const dawnHighlightHigh = Color(0xFFD9CFEC);
+  static const dawnSuccess = AppTokens.successLight;
 
   // ==========================================================================
-  // ROSÉ PINE (Dark Mode)
+  // DARK (alias → Pop Gradient dark)
   // ==========================================================================
-
-  static const darkBase = Color(0xFF191724);
-  static const darkSurface = Color(0xFF1f1d2e);
-  static const darkOverlay = Color(0xFF26233a);
-  static const darkMuted = Color(0xFF6e6a86);
-  static const darkSubtle = Color(0xFF908caa);
-  static const darkText = Color(0xFFe0def4);
-  static const darkLove = Color(0xFFeb6f92);
-  static const darkGold = Color(0xFFf6c177);
-  static const darkRose = Color(0xFFebbcba);
-  static const darkPine = Color(0xFF31748f);
-  static const darkFoam = Color(0xFF9ccfd8);
-  static const darkIris = Color(0xFFc4a7e7);
-  static const darkHighlightLow = Color(0xFF21202e);
-  static const darkHighlightMed = Color(0xFF403d52);
-  static const darkHighlightHigh = Color(0xFF524f67);
-
-  // Semaforo (dark)
-  static const darkSuccess = Color(0xFF8bc474);
+  static const darkBase = AppTokens.darkBg;
+  static const darkSurface = AppTokens.darkSurface;
+  static const darkOverlay = Color(0xFF241B3A);
+  static const darkMuted = AppTokens.darkMuted;
+  static const darkSubtle = Color(0xFFA79EC4);
+  static const darkText = AppTokens.darkInk;
+  static const darkLove = AppTokens.dangerDark;
+  static const darkGold = AppTokens.warnDark;
+  static const darkRose = Color(0xFFF0A7C9);
+  static const darkPine = AppTokens.accent;
+  static const darkFoam = AppTokens.accentEnd;
+  static const darkIris = Color(0xFFC9B6FF);
+  static const darkHighlightLow = Color(0xFF181226);
+  static const darkHighlightMed = AppTokens.darkBorder;
+  static const darkHighlightHigh = Color(0xFF3A2F58);
+  static const darkSuccess = AppTokens.successDark;
 }
 
 /// Semantic colors for injection status (schema "semaforo": verde/giallo/rosso)

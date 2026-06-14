@@ -6,6 +6,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import '../core/services/notification_service.dart';
 import '../core/theme/app_theme.dart';
+import '../core/theme/app_tokens.dart';
 import '../core/theme/theme_provider.dart';
 import '../core/widgets/responsive_wrapper.dart';
 import 'router.dart';
@@ -82,7 +83,13 @@ class _InjeCareAppState extends ConsumerState<InjeCareApp> {
       // Responsive wrapper for all screens
       builder: (context, child) {
         if (child == null) return const SizedBox.shrink();
-        return ResponsiveWrapper(child: child);
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        return DecoratedBox(
+          decoration: isDark
+              ? const BoxDecoration(color: AppTokens.darkBg)
+              : const BoxDecoration(gradient: AppTokens.lightBgGradient),
+          child: ResponsiveWrapper(child: child),
+        );
       },
 
       // Localization

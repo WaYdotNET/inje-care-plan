@@ -699,9 +699,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
               ],
             ),
-            backgroundColor: isDark
-                ? const Color(0xFF31748F)
-                : const Color(0xFF56949F),
+            backgroundColor: isDark ? AppColors.darkPine : AppColors.dawnPine,
             duration: const Duration(seconds: 3),
           ),
         );

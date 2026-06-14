@@ -1,5 +1,15 @@
 # Changelog
 
+## 4.10.0 - 2026-06-14
+
+### Cambiato
+- **Nuova navigazione**: barra a 5 voci con pulsante centrale **"＋"** per registrare un'iniezione; le **Statistiche** ora hanno una scheda dedicata; lo **Storico** è confluito nel **Calendario** (vista *Lista*, oltre alla vista *Mese*).
+- **Home rinnovata**: card **"Prossima iniezione"** in evidenza (comune a entrambe le viste); la vista *Settimana* mostra i **pallini** dei 7 giorni con **legenda dei colori**; il layout Home (silhouette/settimana) è selezionabile anche dalle Impostazioni.
+- **Nuove icone**: set **Phosphor Duotone** coerente con lo stile Pop Gradient in tutta l'app.
+
+### Corretto
+- **Prossima iniezione in Home**: l'iniezione programmata di oggi resta sempre visibile nella card in evidenza anche dopo che è passato l'orario previsto.
+
 ## 4.9.0 - 2026-06-14
 
 ### Cambiato

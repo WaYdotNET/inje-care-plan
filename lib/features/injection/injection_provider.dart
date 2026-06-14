@@ -216,19 +216,27 @@ class WeeklyEventData {
   }
 }
 
+/// Restituisce la prossima iniezione "schedulata" (o in ritardo) NON completata
+/// da mostrare: la più imminente con data >= inizio di oggi (così l'iniezione di
+/// oggi resta visibile anche se l'orario è già passato). null se nessuna.
+db.Injection? pickNextScheduled(List<db.Injection> injections, DateTime now) {
+  final startOfToday = DateTime(now.year, now.month, now.day);
+  final scheduled = injections
+      .where(
+        (i) =>
+            (i.status == 'scheduled' || i.status == 'delayed') &&
+            !i.scheduledAt.isBefore(startOfToday),
+      )
+      .toList()
+    ..sort((a, b) => a.scheduledAt.compareTo(b.scheduledAt));
+  return scheduled.isNotEmpty ? scheduled.first : null;
+}
+
 /// Provider per la prossima iniezione programmata (scheduled) oggi o in futuro
 final nextScheduledInjectionProvider = Provider<db.Injection?>((ref) {
   final injections =
       ref.watch(injectionsProvider).asData?.value ?? const <db.Injection>[];
-  final now = DateTime.now();
-
-  final scheduled = injections
-      .where((db.Injection i) =>
-          i.status == 'scheduled' && !i.scheduledAt.isBefore(now))
-      .toList()
-    ..sort((db.Injection a, db.Injection b) => a.scheduledAt.compareTo(b.scheduledAt));
-
-  return scheduled.isNotEmpty ? scheduled.first : null;
+  return pickNextScheduled(injections, DateTime.now());
 });
 
 typedef SuggestedForDateParams = ({DateTime scheduledAt, int? ignoreInjectionId});

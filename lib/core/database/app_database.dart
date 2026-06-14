@@ -715,7 +715,10 @@ class AppDatabase extends _$AppDatabase {
 
   // --- Point Usage History ---
   /// Restituisce la mappa pointNumber -> ultima data di utilizzo per una zona
-  Future<Map<int, DateTime?>> getPointUsageHistory(int zoneId) async {
+  Future<Map<int, DateTime?>> getPointUsageHistory(
+    int zoneId, {
+    int? ignoreInjectionId,
+  }) async {
     final zone = await getZoneById(zoneId);
     if (zone == null) return {};
 
@@ -728,12 +731,18 @@ class AppDatabase extends _$AppDatabase {
 
     // Query per l'ultima iniezione completata per ogni punto
     // Usa scheduledAt come data di riferimento (quando l'iniezione è stata fatta)
-    // invece di completedAt (quando è stata registrata nell'app)
+    // invece di completedAt (quando è stata registrata nell'app).
+    // Esclude l'iniezione attualmente in modifica (ignoreInjectionId), così
+    // il punto da cui ci si sta spostando mostra la sua data d'uso precedente.
     final allInjections =
         await (select(injections)
-              ..where(
-                (i) => i.zoneId.equals(zoneId) & i.status.equals('completed'),
-              )
+              ..where((i) {
+                final base =
+                    i.zoneId.equals(zoneId) & i.status.equals('completed');
+                return ignoreInjectionId == null
+                    ? base
+                    : base & i.id.equals(ignoreInjectionId).not();
+              })
               ..orderBy([(i) => OrderingTerm.desc(i.scheduledAt)]))
             .get();
 
@@ -741,7 +750,6 @@ class AppDatabase extends _$AppDatabase {
     for (final inj in allInjections) {
       if (result.containsKey(inj.pointNumber) &&
           result[inj.pointNumber] == null) {
-        // Usa sempre scheduledAt come data dell'iniezione effettiva
         result[inj.pointNumber] = inj.scheduledAt;
       }
     }

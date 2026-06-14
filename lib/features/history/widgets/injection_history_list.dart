@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../../app/router.dart';
 import '../../../core/theme/app_tokens.dart';
@@ -34,7 +35,7 @@ class InjectionHistoryList extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              Icons.history,
+              PhosphorIconsDuotone.clockCounterClockwise,
               size: 64,
               color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
             ),
@@ -246,7 +247,7 @@ class _HistoryCard extends StatelessWidget {
                         if (injection.sideEffects.isNotEmpty) ...[
                           const SizedBox(width: 12),
                           Icon(
-                            Icons.warning_amber_rounded,
+                            PhosphorIconsDuotone.warning,
                             size: 14,
                             color: isDark
                                 ? AppTokens.warnDark

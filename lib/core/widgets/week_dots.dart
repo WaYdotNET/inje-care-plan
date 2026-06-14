@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../theme/app_tokens.dart';
 
@@ -81,12 +82,12 @@ class _StatusDot extends StatelessWidget {
           decoration: const BoxDecoration(color: AppTokens.dotEmpty, shape: BoxShape.circle),
         );
       case DayStatus.done:
-        return _circle(AppTokens.accent, const Icon(Icons.check, size: 13, color: Colors.white));
+        return _circle(AppTokens.accent, const Icon(PhosphorIconsDuotone.check, size: 13, color: Colors.white));
       case DayStatus.scheduled:
         return _circle(AppTokens.accentSoft, null);
       case DayStatus.skipped:
       case DayStatus.missed:
-        return _circle(AppTokens.skipBg, const Icon(Icons.close, size: 12, color: AppTokens.skipFg));
+        return _circle(AppTokens.skipBg, const Icon(PhosphorIconsDuotone.x, size: 12, color: AppTokens.skipFg));
     }
   }
 

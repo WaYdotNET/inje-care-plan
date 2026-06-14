@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../core/theme/app_tokens.dart';
 import '../../core/database/database_provider.dart';
@@ -61,7 +62,7 @@ class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
       appBar: AppBar(
         title: const Text('Registra iniezione'),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(PhosphorIconsDuotone.arrowLeft),
           onPressed: () => context.pop(),
         ),
       ),
@@ -97,7 +98,7 @@ class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
           Row(
             children: [
               Icon(
-                Icons.calendar_today,
+                PhosphorIconsDuotone.calendarBlank,
                 color: isDark ? AppTokens.darkSubtle : AppTokens.lightSubtle,
               ),
               const SizedBox(width: 8),
@@ -174,7 +175,7 @@ class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
                           color: Colors.white,
                         ),
                       )
-                    : const Icon(Icons.check),
+                    : const Icon(PhosphorIconsDuotone.check),
                 label: Text(_isLoading ? 'Salvataggio...' : 'Conferma iniezione'),
               ),
             ),

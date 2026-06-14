@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/database/app_database.dart' as db;
@@ -216,12 +217,12 @@ class _BodySilhouetteEditorState extends State<BodySilhouetteEditor>
                   ButtonSegment(
                     value: BodyView.front,
                     label: Text('Fronte'),
-                    icon: Icon(Icons.person),
+                    icon: Icon(PhosphorIconsDuotone.user),
                   ),
                   ButtonSegment(
                     value: BodyView.back,
                     label: Text('Retro'),
-                    icon: Icon(Icons.person_outline),
+                    icon: Icon(PhosphorIconsDuotone.userCircle),
                   ),
                 ],
                 selected: {_currentView},
@@ -679,7 +680,7 @@ class _PointNameEditorState extends State<PointNameEditor> {
         border: const OutlineInputBorder(),
         isDense: true,
         counterText: '',
-        prefixIcon: const Icon(Icons.label_outline),
+        prefixIcon: const Icon(PhosphorIconsDuotone.tag),
       ),
       onChanged: _validateAndUpdate,
     );

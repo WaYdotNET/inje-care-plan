@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -141,7 +142,7 @@ class _InjectionDetailScreenState extends ConsumerState<InjectionDetailScreen> {
       appBar: AppBar(
         title: const Text('Dettaglio iniezione'),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(PhosphorIconsDuotone.arrowLeft),
           onPressed: () {
             if (context.canPop()) {
               context.pop();
@@ -230,7 +231,7 @@ class _InjectionDetailScreenState extends ConsumerState<InjectionDetailScreen> {
         if (!isCompleted && !isSkipped) ...[
           FilledButton.icon(
             onPressed: canComplete ? () => _complete(injection) : null,
-            icon: const Icon(Icons.check_circle),
+            icon: const Icon(PhosphorIconsDuotone.checkCircle),
             label: Text(
               canComplete
                   ? 'Segna come completata'
@@ -240,14 +241,14 @@ class _InjectionDetailScreenState extends ConsumerState<InjectionDetailScreen> {
           const SizedBox(height: 8),
           OutlinedButton.icon(
             onPressed: () => _skip(injection),
-            icon: const Icon(Icons.cancel),
+            icon: const Icon(PhosphorIconsDuotone.prohibit),
             label: const Text('Segna come saltata'),
           ),
         ],
         if (isCompleted || isSkipped)
           OutlinedButton.icon(
             onPressed: () => _restore(injection),
-            icon: const Icon(Icons.restore),
+            icon: const Icon(PhosphorIconsDuotone.arrowCounterClockwise),
             label: const Text('Ripristina come pianificata'),
           ),
       ],

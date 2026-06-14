@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../theme/app_tokens.dart';
 
@@ -16,9 +17,9 @@ class StatusLegend extends StatelessWidget {
       runSpacing: 8,
       alignment: WrapAlignment.center,
       children: [
-        _LegendItem(color: AppTokens.accent, label: 'Fatta', icon: Icons.check, textColor: textColor),
+        _LegendItem(color: AppTokens.accent, label: 'Fatta', icon: PhosphorIconsDuotone.check, textColor: textColor),
         _LegendItem(color: AppTokens.accentSoft, label: 'Da fare', textColor: textColor),
-        _LegendItem(color: AppTokens.skipBg, label: 'Saltata/Persa', icon: Icons.close, iconColor: AppTokens.skipFg, textColor: textColor),
+        _LegendItem(color: AppTokens.skipBg, label: 'Saltata/Persa', icon: PhosphorIconsDuotone.x, iconColor: AppTokens.skipFg, textColor: textColor),
         _LegendItem(color: AppTokens.dotEmpty, label: 'Nessuna', small: true, textColor: textColor),
       ],
     );

@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:injecare_plan/core/theme/app_theme.dart';
 import 'package:injecare_plan/core/widgets/week_dots.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 void main() {
   setUpAll(() async { await initializeDateFormatting('it'); });
@@ -23,8 +24,8 @@ void main() {
       weekStart: monday,
       statuses: const [DayStatus.done, DayStatus.skipped, DayStatus.none, DayStatus.none, DayStatus.none, DayStatus.none, DayStatus.none],
     )));
-    expect(find.byIcon(Icons.check), findsOneWidget);
-    expect(find.byIcon(Icons.close), findsOneWidget);
+    expect(find.byIcon(PhosphorIconsDuotone.check), findsOneWidget);
+    expect(find.byIcon(PhosphorIconsDuotone.x), findsOneWidget);
   });
 
   testWidgets('onTapDay riceve l\'indice', (tester) async {

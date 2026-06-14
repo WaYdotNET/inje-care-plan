@@ -119,32 +119,52 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
     );
   }
 
-  Widget _buildHero(BuildContext context, db.Injection? next) {
-    if (next == null) {
-      final isDark = Theme.of(context).brightness == Brightness.dark;
-      final muted = isDark ? AppTokens.darkMuted : AppTokens.lightMuted;
-      return AppCard(
-        child: Row(
-          children: [
-            Icon(PhosphorIconsDuotone.calendarCheck, size: 18, color: muted),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                'Nessuna iniezione programmata',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: muted),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-    final completable = canCompleteNow(next.scheduledAt);
-    return NextInjectionHeroCard(
-      pointLabel: next.pointLabel,
-      scheduledAt: next.scheduledAt,
-      ctaLabel: completable ? 'Completa' : 'Dettagli',
-      onCta: () => context.push('/injection/${next.id}'),
+  Widget _buildHero(BuildContext context) {
+    final next = ref.watch(nextScheduledInjectionProvider);
+    final allInjections =
+        ref.watch(injectionsProvider).asData?.value ?? const <db.Injection>[];
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final hasCompletedToday = allInjections.any(
+      (i) =>
+          i.status == 'completed' &&
+          DateTime(
+                i.scheduledAt.year,
+                i.scheduledAt.month,
+                i.scheduledAt.day,
+              ) ==
+              today,
     );
+    final state = heroStateFor(
+      nextScheduledAt: next?.scheduledAt,
+      now: now,
+      hasCompletedToday: hasCompletedToday,
+    );
+
+    switch (state) {
+      case HeroState.allDone:
+        return const _HeroMessageCard(
+          gradient: AppTokens.successGradient,
+          icon: PhosphorIconsDuotone.checkCircle,
+          text: 'Per oggi è tutto',
+        );
+      case HeroState.none:
+        return const _HeroMessageCard.neutral(
+          icon: PhosphorIconsDuotone.calendarBlank,
+          text: 'Nessuna iniezione programmata',
+        );
+      case HeroState.upcoming:
+      case HeroState.overdue:
+      case HeroState.future:
+        final completable = canCompleteNow(next!.scheduledAt);
+        return NextInjectionHeroCard(
+          state: state,
+          pointLabel: next.pointLabel,
+          scheduledAt: next.scheduledAt,
+          ctaLabel: completable ? 'Completa' : 'Dettagli',
+          onCta: () => context.push('/injection/${next.id}'),
+        );
+    }
   }
 
   ({List<DayStatus> statuses, List<int?> ids}) _weekData(
@@ -223,7 +243,7 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
               children: [
                 Padding(
                   padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
-                  child: _buildHero(context, nextScheduled),
+                  child: _buildHero(context),
                 ),
                 Expanded(
                   child: GestureDetector(
@@ -297,36 +317,43 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
     final weekInjectionsAsync = ref.watch(
       injectionsInRangeProvider((start: startOfWeek, end: endOfWeek)),
     );
-    final nextScheduled = ref.watch(nextScheduledInjectionProvider);
 
     return weekInjectionsAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, st) => _ErrorView(message: e.toString()),
       data: (injections) {
         final wd = _weekData(injections, startOfWeek);
-        return SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildHero(context, nextScheduled),
-              const SizedBox(height: 16),
-              Text('QUESTA SETTIMANA', style: Theme.of(context).textTheme.labelMedium),
-              const SizedBox(height: 8),
-              AppCard(
-                child: WeekDots(
-                  weekStart: startOfWeek,
-                  statuses: wd.statuses,
-                  onTapDay: (i) {
-                    final id = wd.ids[i];
-                    if (id != null) context.push('/injection/$id');
-                  },
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight - 28),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _buildHero(context),
+                    const SizedBox(height: 20),
+                    Text('QUESTA SETTIMANA', style: Theme.of(context).textTheme.labelMedium),
+                    const SizedBox(height: 8),
+                    AppCard(
+                      child: WeekDots(
+                        weekStart: startOfWeek,
+                        statuses: wd.statuses,
+                        onTapDay: (i) {
+                          final id = wd.ids[i];
+                          if (id != null) context.push('/injection/$id');
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    const StatusLegend(),
+                  ],
                 ),
               ),
-              const SizedBox(height: 12),
-              const StatusLegend(),
-            ],
-          ),
+            );
+          },
         );
       },
     );
@@ -555,6 +582,73 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
           duration: const Duration(seconds: 2),
         ));
     }
+  }
+}
+
+/// Card hero per stati allDone (gradiente) e none (neutro).
+class _HeroMessageCard extends StatelessWidget {
+  const _HeroMessageCard({
+    required this.gradient,
+    required this.icon,
+    required this.text,
+  }) : _neutral = false;
+
+  const _HeroMessageCard.neutral({
+    required this.icon,
+    required this.text,
+  })  : gradient = null,
+        _neutral = true;
+
+  final Gradient? gradient;
+  final IconData icon;
+  final String text;
+  final bool _neutral;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    if (_neutral) {
+      final muted = isDark ? AppTokens.darkMuted : AppTokens.lightMuted;
+      return AppCard(
+        child: Row(
+          children: [
+            Icon(icon, size: 18, color: muted),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                text,
+                style:
+                    Theme.of(context).textTheme.bodyMedium?.copyWith(color: muted),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: gradient,
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        boxShadow: AppTokens.softShadow(),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: Colors.white, size: 22),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              text,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w800,
+                fontSize: 15,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

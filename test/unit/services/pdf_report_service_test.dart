@@ -49,14 +49,14 @@ void main() {
         ZoneUsage(
           zoneId: 1,
           zoneName: 'Coscia Destra',
-          emoji: '🦵',
+          emoji: '🍗',
           count: 10,
           percentage: 50.0,
         ),
         ZoneUsage(
           zoneId: 2,
           zoneName: 'Coscia Sinistra',
-          emoji: '🦵',
+          emoji: '🍗',
           count: 10,
           percentage: 50.0,
         ),
@@ -117,14 +117,14 @@ void main() {
       final usage = ZoneUsage(
         zoneId: 1,
         zoneName: 'Coscia Destra',
-        emoji: '🦵',
+        emoji: '🍗',
         count: 15,
         percentage: 37.5,
       );
 
       expect(usage.zoneId, 1);
       expect(usage.zoneName, 'Coscia Destra');
-      expect(usage.emoji, '🦵');
+      expect(usage.emoji, '🍗');
       expect(usage.count, 15);
       expect(usage.percentage, 37.5);
     });
@@ -257,7 +257,7 @@ void main() {
       );
 
       expect(zone.displayName, 'Coscia Destra');
-      expect(zone.emoji, '🦵');
+      expect(zone.emoji, '🍗');
     });
 
     test('provides emoji for different zone types', () {
@@ -272,7 +272,7 @@ void main() {
         sortOrder: 2,
       );
 
-      expect(abdomen.emoji, '💧');
+      expect(abdomen.emoji, '🐢');
     });
   });
 }

@@ -1,0 +1,64 @@
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&display=swap');
+  @import url('https://unpkg.com/@phosphor-icons/web@2.1.1/src/duotone/style.css');
+  .zrow { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; padding:10px 0; font-family:'Plus Jakarta Sans',sans-serif; }
+  .zitem { text-align:center; font-size:11px; font-weight:700; color:#6b6478; width:64px; }
+  .zitem .lab { margin-top:6px; display:block; }
+  /* badge iniziali */
+  .badge { width:44px; height:44px; border-radius:14px; margin:0 auto; display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(135deg,#efe7ff,#f6ecff); color:#7c5cff; font-weight:800; font-size:15px; border:1.5px solid #e0d4fb; }
+  /* silhouette region */
+  .silh { width:44px; height:44px; border-radius:14px; margin:0 auto; background:#f3eefb; position:relative; overflow:hidden; }
+  .body { position:absolute; left:50%; top:6px; transform:translateX(-50%); width:14px; height:32px; border-radius:7px 7px 4px 4px; background:#c9bdf0; }
+  .reg { position:absolute; width:9px; height:9px; border-radius:50%; background:#7c5cff; box-shadow:0 0 0 3px rgba(124,92,255,.25); }
+  /* phosphor */
+  .ph44 { width:44px; height:44px; border-radius:14px; margin:0 auto; display:flex; align-items:center; justify-content:center;
+    background:#f3eefb; color:#7c5cff; font-size:24px; }
+</style>
+
+<h2>Icone per le zone — 3 direzioni (uniformi, stile Pop Gradient)</h2>
+<p class="subtitle">Mostrate sui 4 tipi di zona. Clicca quella che preferisci (verrà usata ovunque: gestione zone, selezione punto, ecc.).</p>
+
+<div class="cards">
+
+  <!-- A: Badge iniziali -->
+  <div class="card" data-choice="badge" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:18px 8px; background:#efe9f7;">
+      <div class="zrow">
+        <div class="zitem"><div class="badge">Co</div><span class="lab">Coscia</span></div>
+        <div class="zitem"><div class="badge">Br</div><span class="lab">Braccio</span></div>
+        <div class="zitem"><div class="badge">Ad</div><span class="lab">Addome</span></div>
+        <div class="zitem"><div class="badge">Gl</div><span class="lab">Gluteo</span></div>
+      </div>
+    </div>
+    <div class="card-body"><h3>A · Badge iniziali</h3><p>Pastiglia arrotondata con le iniziali in accento. Pulita, uniforme, inequivocabile, perfettamente coerente col tema. Dx/Sx restano nell'etichetta. <strong>Consigliata.</strong></p></div>
+  </div>
+
+  <!-- B: Silhouette con regione -->
+  <div class="card" data-choice="silhouette" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:18px 8px; background:#efe7f7;">
+      <div class="zrow">
+        <div class="zitem"><div class="silh"><div class="body"></div><div class="reg" style="left:42%; top:22px;"></div></div><span class="lab">Coscia</span></div>
+        <div class="zitem"><div class="silh"><div class="body"></div><div class="reg" style="left:24%; top:14px;"></div></div><span class="lab">Braccio</span></div>
+        <div class="zitem"><div class="silh"><div class="body"></div><div class="reg" style="left:50%; top:16px; transform:translateX(-50%);"></div></div><span class="lab">Addome</span></div>
+        <div class="zitem"><div class="silh"><div class="body"></div><div class="reg" style="left:58%; top:20px;"></div></div><span class="lab">Gluteo</span></div>
+      </div>
+    </div>
+    <div class="card-body"><h3>B · Silhouette con regione</h3><p>Mini-figura con il punto evidenziato nella zona. Molto descrittiva e on-brand (riusa il tema corpo), ma richiede piccole grafiche custom per ciascuna zona.</p></div>
+  </div>
+
+  <!-- C: Glyph Phosphor per tipo -->
+  <div class="card" data-choice="phosphor" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:18px 8px; background:#f3ecff;">
+      <div class="zrow">
+        <div class="zitem"><div class="ph44"><i class="ph-duotone ph-person-simple-walk"></i></div><span class="lab">Coscia</span></div>
+        <div class="zitem"><div class="ph44"><i class="ph-duotone ph-barbell"></i></div><span class="lab">Braccio</span></div>
+        <div class="zitem"><div class="ph44"><i class="ph-duotone ph-circle-half"></i></div><span class="lab">Addome</span></div>
+        <div class="zitem"><div class="ph44"><i class="ph-duotone ph-person"></i></div><span class="lab">Gluteo</span></div>
+      </div>
+    </div>
+    <div class="card-body"><h3>C · Glyph Phosphor per tipo</h3><p>Stessa famiglia delle altre icone (Duotone). Coerente, ma Phosphor ha poche icone "parti del corpo": alcune sono approssimazioni (es. gluteo).</p></div>
+  </div>
+
+</div>
+<p class="subtitle" style="margin-top:16px;">Nota: in tutte le direzioni i colori restano sull'accento (niente arlecchino). Quale preferisci?</p>

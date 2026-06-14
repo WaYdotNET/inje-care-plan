@@ -138,8 +138,8 @@ void main() {
 
     group('emoji getter', () {
       test('returns leg emoji for thigh zones', () {
-        expect(record.copyWith(zoneId: 1).emoji, '🦵');
-        expect(record.copyWith(zoneId: 2).emoji, '🦵');
+        expect(record.copyWith(zoneId: 1).emoji, '🍗');
+        expect(record.copyWith(zoneId: 2).emoji, '🍗');
       });
 
       test('returns arm emoji for arm zones', () {
@@ -148,8 +148,8 @@ void main() {
       });
 
       test('returns abdomen emoji for abdomen zones', () {
-        expect(record.copyWith(zoneId: 5).emoji, '🫁');
-        expect(record.copyWith(zoneId: 6).emoji, '🫁');
+        expect(record.copyWith(zoneId: 5).emoji, '🐢');
+        expect(record.copyWith(zoneId: 6).emoji, '🐢');
       });
 
       test('returns buttock emoji for buttock zones', () {

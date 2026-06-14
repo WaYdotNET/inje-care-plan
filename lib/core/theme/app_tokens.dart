@@ -64,6 +64,20 @@ sealed class AppTokens {
     colors: [lightBgTop, lightBgBottom],
   );
 
+  /// Gradiente "in ritardo" (ambra).
+  static const warnGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFFF2A93C), Color(0xFFE0871F)],
+  );
+
+  /// Gradiente "completato/per oggi è tutto" (verde).
+  static const successGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF45B98C), Color(0xFF2F8F6B)],
+  );
+
   /// Ombra morbida colorata; più intensa in dark (glow).
   static List<BoxShadow> softShadow({bool dark = false}) => [
     BoxShadow(

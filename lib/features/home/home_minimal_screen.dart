@@ -343,67 +343,97 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
     TherapyPlan plan,
     DateTime startOfWeek,
   ) async {
-    final confirm = await showDialog<bool>(
+    final now = DateTime.now();
+    final endOfWeek =
+        startOfWeek.add(const Duration(days: 6, hours: 23, minutes: 59));
+    final endOfMonth = DateTime(now.year, now.month + 1, 0, 23, 59);
+
+    final choice = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Pianificare questa settimana?'),
+        title: const Text('Pianificare le iniezioni?'),
         content: const Text(
-          'Questa settimana è vuota.\n\nVuoi creare automaticamente le iniezioni '
-          'programmate secondo il tuo piano e il pattern di rotazione?',
+          'Vuoi creare automaticamente le iniezioni programmate secondo il tuo '
+          'piano e il pattern di rotazione?',
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
+            onPressed: () => Navigator.pop(ctx, 'cancel'),
             child: const Text('No'),
           ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, 'week'),
+            child: const Text('Questa settimana'),
+          ),
           FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Sì, pianifica'),
+            onPressed: () => Navigator.pop(ctx, 'month'),
+            child: const Text('Questo mese'),
           ),
         ],
       ),
     );
 
-    if (confirm == true && mounted) {
-      await _fillWeekFromPlan(plan, startOfWeek);
+    if (!mounted) return;
+    if (choice == 'week') {
+      await _fillRangeFromPlan(plan, startOfWeek, endOfWeek);
+    } else if (choice == 'month') {
+      await _fillRangeFromPlan(plan, startOfWeek, endOfMonth);
     }
   }
 
-  Future<void> _fillWeekFromPlan(
+  Future<void> _fillRangeFromPlan(
     TherapyPlan plan,
-    DateTime startOfWeek,
+    DateTime start,
+    DateTime end,
   ) async {
     final repository = ref.read(injectionRepositoryProvider);
     final notificationSettings = ref.read(notificationSettingsProvider);
     final now = DateTime.now();
 
-    // Evita doppie pianificazioni: ricontrolla la settimana
-    final endOfWeek = startOfWeek.add(const Duration(days: 6, hours: 23, minutes: 59));
     final existing = await ref
-        .read(injectionsInRangeProvider((start: startOfWeek, end: endOfWeek)).future);
-    if (existing.isNotEmpty) return;
+        .read(injectionsInRangeProvider((start: start, end: end)).future);
+    final alreadyPlanned = existing
+        .map(
+          (i) => DateTime(
+            i.scheduledAt.year,
+            i.scheduledAt.month,
+            i.scheduledAt.day,
+          ),
+        )
+        .toSet();
+
+    final daysToPlan = ScheduleUtils.daysToPlan(
+      plan: plan,
+      start: start,
+      end: end,
+      now: now,
+      alreadyPlanned: alreadyPlanned,
+    );
+
+    if (daysToPlan.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+          ..clearSnackBars()
+          ..showSnackBar(const SnackBar(
+            content: Text('Nessuna nuova iniezione da pianificare'),
+            duration: Duration(seconds: 2),
+          ));
+      }
+      return;
+    }
 
     final parts = plan.preferredTime.split(':');
     final hour = parts.length >= 2 ? int.tryParse(parts[0]) ?? 20 : 20;
     final minute = parts.length >= 2 ? int.tryParse(parts[1]) ?? 0 : 0;
 
-    // Pianifica solo i giorni del piano che sono ancora nel futuro
-    final daysToPlan = <DateTime>[];
-    for (var i = 0; i < 7; i++) {
-      final day = startOfWeek.add(Duration(days: i));
-      if (!plan.weekDays.contains(day.weekday)) continue;
-      final scheduledAt = DateTime(day.year, day.month, day.day, hour, minute);
-      if (scheduledAt.isBefore(now)) continue;
-      daysToPlan.add(day);
-    }
-
-    if (daysToPlan.isEmpty) return;
-
-    int created = 0;
+    var created = 0;
     for (final day in daysToPlan) {
-      final scheduledAt = DateTime(day.year, day.month, day.day, hour, minute);
+      final scheduledAt =
+          DateTime(day.year, day.month, day.day, hour, minute);
       final suggested = await ref.read(
-        suggestedPointForDateProvider((scheduledAt: scheduledAt, ignoreInjectionId: null)).future,
+        suggestedPointForDateProvider(
+          (scheduledAt: scheduledAt, ignoreInjectionId: null),
+        ).future,
       );
       if (suggested == null) continue;
 
@@ -425,7 +455,6 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
       final newId = await repository.createInjection(record);
       created++;
 
-      // Avanza il pattern (persistente) per la prossima proposta
       final zones = await ref.read(bodyZonesProvider.future);
       final usedZone = zones.firstWhere((z) => z.id == suggested.zoneId);
       final dbi = ref.read(databaseProvider);
@@ -444,7 +473,6 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
       }
     }
 
-    // Refresh UI
     ref.invalidate(injectionsProvider);
     ref.invalidate(weeklyEventsProvider);
     ref.invalidate(nextScheduledInjectionProvider);
@@ -452,12 +480,10 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
     if (mounted) {
       ScaffoldMessenger.of(context)
         ..clearSnackBars()
-        ..showSnackBar(
-          SnackBar(
-            content: Text('Pianificate $created iniezioni per questa settimana'),
-            duration: const Duration(seconds: 2),
-          ),
-        );
+        ..showSnackBar(SnackBar(
+          content: Text('Pianificate $created iniezioni'),
+          duration: const Duration(seconds: 2),
+        ));
     }
   }
 }

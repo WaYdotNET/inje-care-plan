@@ -6,6 +6,9 @@ import 'package:intl/intl.dart';
 import '../../core/theme/app_tokens.dart';
 import '../../core/widgets/app_card.dart';
 import '../../core/widgets/completion_time_dialog.dart';
+import '../../core/widgets/next_injection_hero_card.dart';
+import '../../core/widgets/status_legend.dart';
+import '../../core/widgets/week_dots.dart';
 import '../../core/database/app_database.dart' as db;
 import '../../core/database/database_provider.dart';
 import '../../models/body_zone.dart' as model;
@@ -22,7 +25,6 @@ import '../injection/injection_repository.dart';
 import '../injection/zone_provider.dart';
 import '../injection/widgets/body_silhouette_editor.dart';
 import 'home_layout_provider.dart';
-import 'widgets/week_agenda_view.dart';
 
 /// Home minimalista con focus sulla prossima iniezione
 class HomeMinimalScreen extends ConsumerStatefulWidget {
@@ -162,6 +164,52 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
     );
   }
 
+  Widget _buildHero(BuildContext context, db.Injection? next) {
+    if (next == null) {
+      final isDark = Theme.of(context).brightness == Brightness.dark;
+      final muted = isDark ? AppTokens.darkMuted : AppTokens.lightMuted;
+      return AppCard(
+        child: Row(
+          children: [
+            Icon(Icons.event_available_outlined, size: 18, color: muted),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Nessuna iniezione programmata',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: muted),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    final completable = canCompleteNow(next.scheduledAt);
+    return NextInjectionHeroCard(
+      pointLabel: next.pointLabel,
+      scheduledAt: next.scheduledAt,
+      ctaLabel: completable ? 'Completa' : 'Dettagli',
+      onCta: () => context.push('/injection/${next.id}'),
+    );
+  }
+
+  ({List<DayStatus> statuses, List<int?> ids}) _weekData(
+    List<db.Injection> injections,
+    DateTime startOfWeek,
+  ) {
+    final statuses = List<DayStatus>.filled(7, DayStatus.none);
+    final ids = List<int?>.filled(7, null);
+    final start = DateTime(startOfWeek.year, startOfWeek.month, startOfWeek.day);
+    for (final inj in injections) {
+      final d = inj.scheduledAt;
+      final key = DateTime(d.year, d.month, d.day);
+      final i = key.difference(start).inDays;
+      if (i < 0 || i > 6) continue;
+      statuses[i] = dayStatusFromString(inj.status);
+      ids[i] = inj.id;
+    }
+    return (statuses: statuses, ids: ids);
+  }
+
   /// Renders the original silhouette view (next/suggested injection body map).
   Widget _silhouetteBody(BuildContext context, bool isDark) {
     final theme = Theme.of(context);
@@ -216,56 +264,66 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
             final view = _getViewForZone(zone?.type);
             final displayTime = DateFormat('HH:mm').format(displayDate);
 
-            return GestureDetector(
-              onTap: zone != null
-                  ? () {
-                      if (isScheduled && scheduledInjectionId != null) {
-                        if (!canComplete) {
-                          context.push('/injection/$scheduledInjectionId');
-                          return;
-                        }
-                        _showCompleteDialog(
-                          context,
-                          scheduledInjectionId,
-                          zone!,
-                          pointNumber ?? 1,
-                          scheduledAt: displayDate,
-                        );
-                      } else {
-                        _navigateToRecord(context, zone!.id, displayDate);
-                      }
-                    }
-                  : null,
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  children: [
-                    Expanded(
-                      child: _MainCard(
-                        zone: zone,
-                        displayDate: displayDate,
-                        displayTime: displayTime,
-                        view: view,
-                        isDark: isDark,
-                        isScheduled: isScheduled,
-                        pointNumber: pointNumber,
+            return Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
+                  child: _buildHero(context, nextScheduled),
+                ),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: zone != null
+                        ? () {
+                            if (isScheduled && scheduledInjectionId != null) {
+                              if (!canComplete) {
+                                context.push('/injection/$scheduledInjectionId');
+                                return;
+                              }
+                              _showCompleteDialog(
+                                context,
+                                scheduledInjectionId,
+                                zone!,
+                                pointNumber ?? 1,
+                                scheduledAt: displayDate,
+                              );
+                            } else {
+                              _navigateToRecord(context, zone!.id, displayDate);
+                            }
+                          }
+                        : null,
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        children: [
+                          Expanded(
+                            child: _MainCard(
+                              zone: zone,
+                              displayDate: displayDate,
+                              displayTime: displayTime,
+                              view: view,
+                              isDark: isDark,
+                              isScheduled: isScheduled,
+                              pointNumber: pointNumber,
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          if (zone != null)
+                            Text(
+                              isScheduled
+                                  ? (canComplete
+                                      ? 'Tocca per completare'
+                                      : 'Tocca per vedere il dettaglio')
+                                  : 'Tocca per registrare',
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
+                              ),
+                            ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 24),
-                    if (zone != null)
-                      Text(
-                        isScheduled
-                            ? (canComplete
-                                ? 'Tocca per completare'
-                                : 'Tocca per vedere il dettaglio')
-                            : 'Tocca per registrare',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
-                        ),
-                      ),
-                  ],
+                  ),
                 ),
-              ),
+              ],
             );
           },
         );
@@ -273,7 +331,7 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
     );
   }
 
-  /// Renders the week agenda view.
+  /// Renders the week view with WeekDots and StatusLegend.
   Widget _weekBody(BuildContext context) {
     final now = DateTime.now();
     final weekStart = now.subtract(Duration(days: now.weekday - 1));
@@ -290,42 +348,33 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, st) => _ErrorView(message: e.toString()),
       data: (injections) {
-        final agendaInjections = injections
-            .map(
-              (i) => AgendaInjection(
-                id: i.id,
-                scheduledAt: i.scheduledAt,
-                pointLabel: i.pointLabel,
-                status: i.status,
+        final wd = _weekData(injections, startOfWeek);
+        return SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildHero(context, nextScheduled),
+              const SizedBox(height: 16),
+              Text('QUESTA SETTIMANA', style: Theme.of(context).textTheme.labelMedium),
+              const SizedBox(height: 8),
+              AppCard(
+                child: WeekDots(
+                  weekStart: startOfWeek,
+                  statuses: wd.statuses,
+                  onTapDay: (i) {
+                    final id = wd.ids[i];
+                    if (id != null) context.push('/injection/$id');
+                  },
+                ),
               ),
-            )
-            .toList();
-        return Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-              child: _NextUpHeader(
-                next: nextScheduled,
-                onTap: nextScheduled != null
-                    ? () => context.push('/injection/${nextScheduled.id}')
-                    : null,
-              ),
-            ),
-            Expanded(
-              child: WeekAgendaView(
-                startOfWeek: startOfWeek,
-                injections: agendaInjections,
-                onTapInjection: _onWeekInjectionTap,
-              ),
-            ),
-          ],
+              const SizedBox(height: 12),
+              const StatusLegend(),
+            ],
+          ),
         );
       },
     );
-  }
-
-  void _onWeekInjectionTap(AgendaInjection a) {
-    context.push('/injection/${a.id}');
   }
 
   BodyView _getViewForZone(String? zoneType) =>
@@ -951,103 +1000,6 @@ class _Pill extends StatelessWidget {
             fontSize: 13,
           ),
         ),
-      ),
-    );
-  }
-}
-
-/// Compact header card shown at the top of the week view with the next
-/// scheduled injection details. If [next] is null, shows a "no injection" prompt.
-class _NextUpHeader extends StatelessWidget {
-  const _NextUpHeader({
-    required this.next,
-    this.onTap,
-  });
-
-  final db.Injection? next;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final mutedColor = isDark ? AppTokens.darkMuted : AppTokens.lightMuted;
-
-    if (next == null) {
-      return AppCard(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        child: Row(
-          children: [
-            Icon(
-              Icons.event_busy_outlined,
-              size: 18,
-              color: mutedColor,
-            ),
-            const SizedBox(width: 10),
-            Text(
-              'Nessuna iniezione programmata',
-              style: theme.textTheme.bodyMedium?.copyWith(color: mutedColor),
-            ),
-          ],
-        ),
-      );
-    }
-
-    final dateTime = DateFormat('EEE d MMM · HH:mm', 'it_IT').format(next!.scheduledAt);
-
-    return AppCard(
-      accentBorder: true,
-      onTap: onTap,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: AppTokens.accent.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(
-              Icons.schedule,
-              size: 16,
-              color: AppTokens.accent,
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'PROSSIMA INIEZIONE',
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: AppTokens.accent,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.8,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  next!.pointLabel,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                Text(
-                  dateTime,
-                  style: theme.textTheme.bodySmall?.copyWith(color: mutedColor),
-                ),
-              ],
-            ),
-          ),
-          Icon(
-            Icons.chevron_right,
-            size: 20,
-            color: mutedColor,
-          ),
-        ],
       ),
     );
   }

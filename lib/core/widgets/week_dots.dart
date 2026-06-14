@@ -6,6 +6,14 @@ import '../theme/app_tokens.dart';
 /// Stato di un giorno nella striscia settimanale.
 enum DayStatus { done, scheduled, skipped, missed, none }
 
+/// Mappa lo `status` di un'iniezione (stringa DB) nel relativo [DayStatus].
+DayStatus dayStatusFromString(String status) => switch (status) {
+      'completed' => DayStatus.done,
+      'skipped' => DayStatus.skipped,
+      'missed' => DayStatus.missed,
+      _ => DayStatus.scheduled,
+    };
+
 /// Striscia compatta dei 7 giorni (Lun→Dom) con pallino di stato "Accent-led".
 /// Oggi è evidenziato dall'iniziale del giorno in grassetto viola.
 class WeekDots extends StatelessWidget {

@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.10.2 - 2026-06-14
+
+### Corretto
+- **Home (vista Settimana) sul web**: la card "Prossima iniezione" e il riepilogo settimanale ora sono centrati orizzontalmente con una larghezza massima, invece di allargarsi a tutta la pagina su schermi larghi (desktop). Nessun impatto su mobile.
+
 ## 4.10.1 - 2026-06-14
 
 ### Cambiato

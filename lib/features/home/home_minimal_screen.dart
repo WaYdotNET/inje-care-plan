@@ -329,27 +329,34 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
               child: ConstrainedBox(
                 constraints: BoxConstraints(minHeight: constraints.maxHeight - 28),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _buildHero(context),
-                    const SizedBox(height: 20),
-                    Text('QUESTA SETTIMANA', style: Theme.of(context).textTheme.labelMedium),
-                    const SizedBox(height: 8),
-                    AppCard(
-                      child: WeekDots(
-                        weekStart: startOfWeek,
-                        statuses: wd.statuses,
-                        onTapDay: (i) {
-                          final id = wd.ids[i];
-                          if (id != null) context.push('/injection/$id');
-                        },
-                      ),
+                // Su viewport larghe (web/desktop) vincola la larghezza e centra
+                // orizzontalmente, così l'hero non si allarga a tutta la pagina.
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 480),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _buildHero(context),
+                        const SizedBox(height: 20),
+                        Text('QUESTA SETTIMANA', style: Theme.of(context).textTheme.labelMedium),
+                        const SizedBox(height: 8),
+                        AppCard(
+                          child: WeekDots(
+                            weekStart: startOfWeek,
+                            statuses: wd.statuses,
+                            onTapDay: (i) {
+                              final id = wd.ids[i];
+                              if (id != null) context.push('/injection/$id');
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        const StatusLegend(),
+                      ],
                     ),
-                    const SizedBox(height: 12),
-                    const StatusLegend(),
-                  ],
+                  ),
                 ),
               ),
             );

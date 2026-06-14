@@ -58,30 +58,44 @@ class RotationPatternEngine {
     };
   }
 
-  /// Suggerimento basato su ML (pattern originale) - usa le zone con meno utilizzo
+  /// Suggerimento "smart": tra le zone abilitate sceglie una zona mai usata,
+  /// altrimenti quella il cui uso più recente è il più vecchio (meno usata
+  /// di recente). Usa lo storico completo delle iniezioni completate.
   Future<ZoneSuggestion?> _getSmartSuggestion() async {
-    // Trova la zona meno usata di recente
-    BodyZone? bestZone;
+    final enabled = zones.where((z) => z.isEnabled).toList();
+    if (enabled.isEmpty) return null;
 
-    for (final zone in zones) {
-      final lastPoint = await db.findLeastUsedPoint(zone.id, days: 30);
-      if (lastPoint == null) {
-        // Zona mai usata - è la migliore
+    BodyZone? bestZone;
+    DateTime? bestZoneLastUse; // uso più recente della zona scelta finora
+
+    for (final zone in enabled) {
+      final usage = await db.getPointUsageHistory(zone.id);
+      final dates = usage.values.whereType<DateTime>().toList();
+
+      if (dates.isEmpty) {
+        // Zona mai usata: scelta ottimale, fermati subito.
         bestZone = zone;
+        bestZoneLastUse = null;
         break;
+      }
+
+      dates.sort();
+      final zoneLastUse = dates.last; // uso più recente della zona
+      if (bestZone == null ||
+          (bestZoneLastUse != null && zoneLastUse.isBefore(bestZoneLastUse))) {
+        bestZone = zone;
+        bestZoneLastUse = zoneLastUse;
       }
     }
 
-    if (bestZone == null && zones.isNotEmpty) {
-      bestZone = zones.first;
-    }
-
-    if (bestZone == null) return null;
+    bestZone ??= enabled.first;
 
     return ZoneSuggestion(
       zoneId: bestZone.id,
       zoneName: _displayName(bestZone),
-      reason: 'Zona consigliata dall\'AI',
+      reason: bestZoneLastUse == null
+          ? 'Zona mai usata di recente'
+          : 'Zona meno usata di recente',
     );
   }
 

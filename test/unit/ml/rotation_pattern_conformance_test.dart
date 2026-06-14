@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:injecare_plan/core/database/app_database.dart';
 import 'package:injecare_plan/core/ml/rotation_pattern_engine.dart';
@@ -156,6 +157,50 @@ void main() {
         ),
       ).getNextSuggestion();
       expect(s!.zoneId, 2);
+    });
+  });
+
+  group('smart (FIX B5): zona meno usata di recente', () {
+    Future<int> seedUse(int zoneId, int point, DateTime date) {
+      return db.insertInjection(InjectionsCompanion.insert(
+        zoneId: zoneId,
+        pointNumber: point,
+        pointCode: 'Z$zoneId-$point',
+        pointLabel: 'Zona $zoneId · $point',
+        scheduledAt: date,
+        completedAt: Value(date),
+        status: const Value('completed'),
+      ));
+    }
+
+    test('preferisce una zona mai usata rispetto a una usata di recente', () async {
+      await seedUse(1, 1, DateTime(2026, 6, 14)); // CD usata oggi
+      final s = await engineWith(
+        const RotationPattern(type: RotationPatternType.smart),
+      ).getNextSuggestion();
+      expect(s!.zoneId, 2); // prima zona mai usata in ordine = CS (id 2)
+    });
+
+    test('non suggerisce zone disabilitate', () async {
+      await seedUse(1, 1, DateTime(2026, 6, 14)); // CD usata
+      await db.toggleZoneEnabled(2, false); // CS disabilitata
+      final fresh = await db.getAllZones();
+      final s = await engineWith(
+        const RotationPattern(type: RotationPatternType.smart),
+        z: fresh,
+      ).getNextSuggestion();
+      expect(s!.zoneId, 3); // CD usata, CS disabilitata -> prima mai usata abilitata = BD (id 3)
+    });
+
+    test('se tutte le zone sono usate sceglie la meno recente', () async {
+      for (final z in [1, 2, 3, 4, 5, 6, 8]) {
+        await seedUse(z, 1, DateTime(2026, 6, 1));
+      }
+      await seedUse(7, 1, DateTime(2026, 1, 1)); // GD molto più vecchia
+      final s = await engineWith(
+        const RotationPattern(type: RotationPatternType.smart),
+      ).getNextSuggestion();
+      expect(s!.zoneId, 7);
     });
   });
 }

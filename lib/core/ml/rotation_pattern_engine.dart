@@ -43,36 +43,40 @@ class RotationPatternEngine {
   static String _displayName(BodyZone zone) =>
       zone.customName?.isNotEmpty == true ? zone.customName! : zone.name;
 
-  /// Sceglie la zona dalla posizione [index] della sequenza dichiarata,
-  /// considerando SOLO le zone presenti e abilitate (nell'ordine dichiarato).
+  /// Sceglie la zona partendo dalla posizione [index] della sequenza
+  /// DICHIARATA (lo stesso spazio di indici scritto da advancePattern):
+  /// cammina in avanti finché trova una zona presente e abilitata, saltando
+  /// quelle disabilitate/assenti senza disallineare l'indice memorizzato.
   /// Niente fallback silenzioso su zone fuori sequenza.
   ZoneSuggestion? _pickFromSequence(
     List<int> sequence,
     int index,
     String reasonPrefix,
   ) {
+    if (sequence.isEmpty) return null;
     final byId = {for (final z in zones) z.id: z};
-    final effective =
-        sequence.where((id) => byId[id]?.isEnabled == true).toList();
 
-    if (effective.isEmpty) {
-      // Nessuna zona della sequenza è disponibile: usa una qualsiasi abilitata.
-      final enabled = zones.where((z) => z.isEnabled).toList();
-      if (enabled.isEmpty) return null;
-      final zone = enabled[index % enabled.length];
-      return ZoneSuggestion(
-        zoneId: zone.id,
-        zoneName: _displayName(zone),
-        reason: '$reasonPrefix (zona di ripiego)',
-      );
+    final start = index % sequence.length;
+    for (var i = 0; i < sequence.length; i++) {
+      final candidateId = sequence[(start + i) % sequence.length];
+      final zone = byId[candidateId];
+      if (zone != null && zone.isEnabled) {
+        return ZoneSuggestion(
+          zoneId: zone.id,
+          zoneName: _displayName(zone),
+          reason: reasonPrefix,
+        );
+      }
     }
 
-    final pos = index % effective.length;
-    final zone = byId[effective[pos]]!;
+    // Nessuna zona della sequenza è disponibile: ripiego su una qualsiasi abilitata.
+    final enabled = zones.where((z) => z.isEnabled).toList();
+    if (enabled.isEmpty) return null;
+    final zone = enabled[index % enabled.length];
     return ZoneSuggestion(
       zoneId: zone.id,
       zoneName: _displayName(zone),
-      reason: '$reasonPrefix (${pos + 1}/${effective.length})',
+      reason: '$reasonPrefix (zona di ripiego)',
     );
   }
 

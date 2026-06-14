@@ -224,6 +224,31 @@ void main() {
       ).getNextSuggestion();
       expect(s!.zoneId, DefaultZoneSequence.clockwise[0]); // 4
     });
+
+    test('rotazione con zona disabilitata visita tutte le zone abilitate (no skip)', () async {
+      await db.toggleZoneEnabled(4, false); // BS disabilitata nella sequenza clockwise
+      final fresh = await db.getAllZones();
+      final service = RotationPatternService(db);
+      await service.activatePlanByType(RotationPatternType.clockwise);
+
+      final visited = <int>{};
+      for (var step = 0; step < 14; step++) {
+        final plan = await db.getCurrentTherapyPlan();
+        final s = await engineWith(
+          RotationPattern(
+            type: RotationPatternType.clockwise,
+            currentIndex: plan!.patternCurrentIndex,
+          ),
+          z: fresh,
+        ).getNextSuggestion();
+        visited.add(s!.zoneId);
+        await service.advancePattern(s.zoneId, '');
+      }
+
+      // Tutte le 7 zone abilitate (tutte tranne la 4) devono essere visitate.
+      expect(visited, containsAll(<int>[1, 2, 3, 5, 6, 7, 8]));
+      expect(visited.contains(4), isFalse);
+    });
   });
 
   group('smart (FIX B5): zona meno usata di recente', () {

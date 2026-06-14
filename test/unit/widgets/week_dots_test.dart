@@ -37,4 +37,13 @@ void main() {
     await tester.tap(find.byType(GestureDetector).first);
     expect(tapped, 0);
   });
+
+  test('dayStatusFromString mappa gli stati iniezione', () {
+    expect(dayStatusFromString('completed'), DayStatus.done);
+    expect(dayStatusFromString('skipped'), DayStatus.skipped);
+    expect(dayStatusFromString('missed'), DayStatus.missed);
+    expect(dayStatusFromString('scheduled'), DayStatus.scheduled);
+    expect(dayStatusFromString('delayed'), DayStatus.scheduled);
+    expect(dayStatusFromString('qualsiasi'), DayStatus.scheduled);
+  });
 }

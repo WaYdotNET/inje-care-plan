@@ -1,0 +1,73 @@
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&display=swap');
+  .box { width:300px; margin:0 auto; font-family:'Plus Jakarta Sans',sans-serif; background:linear-gradient(175deg,#fbf2ff,#eef1ff); border-radius:24px; padding:18px; }
+  .sect { font-size:11px; font-weight:800; opacity:.6; margin:0 2px 8px; }
+  .week { display:flex; justify-content:space-between; background:#fff; border-radius:16px; padding:12px 8px; box-shadow:0 6px 16px rgba(124,92,255,.1); }
+  .day { text-align:center; font-size:10px; font-weight:800; color:#a99cc7; flex:1; }
+  .dot { width:22px; height:22px; border-radius:50%; margin:6px auto 0; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; }
+  .empty { width:8px; height:8px; border-radius:50%; margin:13px auto 0; background:#ddd6ea; }
+  .legend { display:flex; flex-wrap:wrap; gap:8px 14px; justify-content:center; margin-top:12px; }
+  .lg { display:flex; align-items:center; gap:6px; font-size:10px; font-weight:700; color:#6b6478; }
+  .ld { width:13px; height:13px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:8px; color:#fff; font-weight:800; }
+  .ld.sm { width:8px; height:8px; }
+</style>
+
+<h2>"Da fare" ≠ "Nessuna" — distinti</h2>
+<p class="subtitle">Da fare = pallino pieno (c'è un'iniezione pianificata). Nessuna = segnaposto piccolo e tenue. Due schemi sobri. Clicca quello giusto.</p>
+
+<div class="cards">
+
+  <!-- Opzione 1: accent-led -->
+  <div class="card" data-choice="accent-led" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:18px 10px; background:#efe9f7;">
+      <div class="box">
+        <div class="sect">QUESTA SETTIMANA</div>
+        <div class="week">
+          <div class="day">L<div class="empty"></div></div>
+          <div class="day">M<div class="dot" style="background:#7c5cff;color:#fff;">✓</div></div>
+          <div class="day">M<div class="dot" style="background:#c3b2f2;"></div></div>
+          <div class="day">G<div class="empty"></div></div>
+          <div class="day">V<div class="dot" style="background:#7c5cff;color:#fff;">✓</div></div>
+          <div class="day">S<div class="dot" style="background:#fbe4ec;color:#c2638a;">✕</div></div>
+          <div class="day" style="color:#7c5cff;">D<div class="dot" style="background:#fff;border:2px solid #7c5cff;"></div></div>
+        </div>
+        <div class="legend">
+          <div class="lg"><span class="ld" style="background:#7c5cff;">✓</span>Fatta</div>
+          <div class="lg"><span class="ld" style="background:#fff;border:2px solid #7c5cff;"></span>Oggi</div>
+          <div class="lg"><span class="ld" style="background:#c3b2f2;"></span>Da fare</div>
+          <div class="lg"><span class="ld" style="background:#fbe4ec;color:#c2638a;">✕</span>Saltata/Persa</div>
+          <div class="lg"><span class="ld sm" style="background:#ddd6ea;"></span>Nessuna</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body"><h3>1 · Accent-led</h3><p>Fatta = viola ✓ · Da fare = lilla pieno · Oggi = contorno · Saltata = rosa ✕ · Nessuna = puntino piccolo tenue. Una sola tinta "calda" (rosa) per i problemi.</p></div>
+  </div>
+
+  <!-- Opzione 2: soft semaforo -->
+  <div class="card" data-choice="soft-semaforo" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:18px 10px; background:#efe7f7;">
+      <div class="box">
+        <div class="sect">QUESTA SETTIMANA</div>
+        <div class="week">
+          <div class="day">L<div class="empty"></div></div>
+          <div class="day">M<div class="dot" style="background:#2f8f6b;color:#fff;">✓</div></div>
+          <div class="day">M<div class="dot" style="background:#c3b2f2;"></div></div>
+          <div class="day">G<div class="empty"></div></div>
+          <div class="day">V<div class="dot" style="background:#2f8f6b;color:#fff;">✓</div></div>
+          <div class="day">S<div class="dot" style="background:#b4637a;color:#fff;">✕</div></div>
+          <div class="day" style="color:#7c5cff;">D<div class="dot" style="background:#fff;border:2px solid #7c5cff;"></div></div>
+        </div>
+        <div class="legend">
+          <div class="lg"><span class="ld" style="background:#2f8f6b;">✓</span>Fatta</div>
+          <div class="lg"><span class="ld" style="background:#fff;border:2px solid #7c5cff;"></span>Oggi</div>
+          <div class="lg"><span class="ld" style="background:#c3b2f2;"></span>Da fare</div>
+          <div class="lg"><span class="ld" style="background:#b4637a;">✕</span>Saltata/Persa</div>
+          <div class="lg"><span class="ld sm" style="background:#ddd6ea;"></span>Nessuna</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body"><h3>2 · Soft semaforo</h3><p>Verde = fatta · lilla pieno = da fare · viola = oggi · rosso = saltata/persa · puntino tenue = nessuna. Codice medico familiare, niente giallo.</p></div>
+  </div>
+
+</div>
+<p class="subtitle" style="margin-top:16px;">Ora "Da fare" (lilla pieno) e "Nessuna" (puntino piccolo) sono chiaramente diversi. Quale schema?</p>

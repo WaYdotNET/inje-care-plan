@@ -1,0 +1,100 @@
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&display=swap');
+  @import url('https://unpkg.com/@phosphor-icons/web@2.1.1/src/duotone/style.css');
+  .ph2 { width:252px; margin:0 auto; border-radius:30px; padding:14px 14px 0;
+    background:linear-gradient(175deg,#fbf2ff,#eef1ff); color:#231a36;
+    box-shadow:0 14px 34px rgba(124,92,255,.18); font-family:'Plus Jakarta Sans',sans-serif; overflow:hidden; }
+  .st { display:flex; justify-content:space-between; font-size:10px; font-weight:700; padding:2px 4px 8px; }
+  .greet { font-size:12px; opacity:.6; }
+  .h1 { font-size:20px; font-weight:800; letter-spacing:-.02em; margin:1px 0 12px; }
+  .hero { border-radius:18px; padding:14px; background:linear-gradient(135deg,#7c5cff,#c86bff); color:#fff;
+    box-shadow:0 10px 22px rgba(124,92,255,.4); margin-bottom:12px; }
+  .chip { font-size:9px; font-weight:800; padding:3px 9px; border-radius:999px; background:rgba(255,255,255,.22); display:inline-block; }
+  .hero .pt { font-size:18px; font-weight:800; margin:8px 0 1px; }
+  .hero .dt { font-size:11px; color:rgba(255,255,255,.85); }
+  .btn { background:#fff; color:#7c5cff; border-radius:12px; padding:10px; text-align:center; font-weight:800; font-size:12px; margin-top:11px; }
+  .sect { font-size:11px; font-weight:800; opacity:.6; margin:2px 2px 8px; }
+  /* dots */
+  .week { display:flex; justify-content:space-between; background:#fff; border-radius:16px; padding:12px 8px;
+    box-shadow:0 6px 16px rgba(124,92,255,.1); }
+  .day { text-align:center; font-size:10px; font-weight:800; color:#a99cc7; flex:1; }
+  .dot { width:20px; height:20px; border-radius:50%; margin:6px auto 0; display:flex; align-items:center; justify-content:center; font-size:9px; color:#fff; }
+  .dot.done { background:linear-gradient(135deg,#7c5cff,#c86bff); }
+  .dot.today { background:#fff; border:2px solid #7c5cff; }
+  .dot.empty { background:#ece6fb; }
+  /* agenda */
+  .wk { background:#fff; border-radius:12px; padding:8px 10px; margin-bottom:5px; display:flex; align-items:center; gap:8px; font-size:11px; box-shadow:0 3px 10px rgba(124,92,255,.06); }
+  .wk .d { font-weight:800; color:#a99cc7; width:36px; font-size:10px; }
+  .wk.today { border:2px solid #7c5cff; }
+  .scolor { font-size:9px; font-weight:800; padding:2px 7px; border-radius:999px; margin-left:auto; }
+  .nav { display:flex; align-items:flex-end; justify-content:space-around; background:#fff; border-radius:16px; padding:8px 4px; margin-top:10px; }
+  .nav i { font-size:18px; color:#a99cc7; } .nav i.on { color:#7c5cff; }
+  .fab { width:36px; height:36px; border-radius:12px; background:linear-gradient(135deg,#7c5cff,#c86bff); color:#fff; display:flex; align-items:center; justify-content:center; font-size:19px; margin-top:-16px; box-shadow:0 6px 14px rgba(124,92,255,.5); }
+</style>
+
+<h2>La settimana: pallini o agenda?</h2>
+<p class="subtitle">Stessa Home con hero a gradiente; cambia solo come mostriamo la settimana. Clicca quella che preferisci.</p>
+
+<div class="cards">
+
+  <!-- Pallini -->
+  <div class="card" data-choice="pallini" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:16px 8px; background:#efe9f7;">
+      <div class="ph2">
+        <div class="st"><span>InjeCare Plan</span><span>⋯</span></div>
+        <div class="greet">Ciao, Carlo ✨</div>
+        <div class="h1">La tua giornata</div>
+        <div class="hero">
+          <span class="chip">PROSSIMA · 20:30</span>
+          <div class="pt">Addome Dx · 4</div>
+          <div class="dt">domenica 14 giu · tra 3 ore</div>
+          <div class="btn">Completa →</div>
+        </div>
+        <div class="sect">QUESTA SETTIMANA</div>
+        <div class="week">
+          <div class="day">L<div class="dot empty"></div></div>
+          <div class="day">M<div class="dot empty"></div></div>
+          <div class="day">M<div class="dot empty"></div></div>
+          <div class="day">G<div class="dot empty"></div></div>
+          <div class="day">V<div class="dot done">✓</div></div>
+          <div class="day">S<div class="dot empty"></div></div>
+          <div class="day" style="color:#7c5cff;">D<div class="dot today"></div></div>
+        </div>
+        <div class="nav">
+          <i class="ph-duotone ph-house on"></i><i class="ph-duotone ph-calendar-blank"></i>
+          <div class="fab">＋</div>
+          <i class="ph-duotone ph-chart-bar"></i><i class="ph-duotone ph-gear"></i>
+        </div>
+      </div>
+    </div>
+    <div class="card-body"><h3>Pallini (compatto)</h3><p>Una riga: 7 puntini colorati per stato (✓ fatta · contorno = oggi · chiaro = da fare). Glanceable, minimale. Tap su un giorno → dettaglio.</p></div>
+  </div>
+
+  <!-- Agenda -->
+  <div class="card" data-choice="agenda" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:16px 8px; background:#efe7f7;">
+      <div class="ph2">
+        <div class="st"><span>InjeCare Plan</span><span>⋯</span></div>
+        <div class="greet">Ciao, Carlo ✨</div>
+        <div class="h1">La tua settimana</div>
+        <div class="hero">
+          <span class="chip">PROSSIMA · 20:30</span>
+          <div class="pt">Addome Dx · 4</div>
+          <div class="dt">domenica 14 giu · tra 3 ore</div>
+          <div class="btn">Completa →</div>
+        </div>
+        <div class="wk"><span class="d">ven 12</span>Coscia Sx · 6<span class="scolor" style="background:#dcefe7;color:#2f8f6b;">Fatta</span></div>
+        <div class="wk"><span class="d">sab 13</span><span style="opacity:.5;">Nessuna</span></div>
+        <div class="wk today"><span class="d" style="color:#7c5cff;">dom 14</span>Addome Dx · 4<span class="scolor" style="background:#ece6fb;color:#7c5cff;">Oggi</span></div>
+        <div class="nav">
+          <i class="ph-duotone ph-house on"></i><i class="ph-duotone ph-calendar-blank"></i>
+          <div class="fab">＋</div>
+          <i class="ph-duotone ph-chart-bar"></i><i class="ph-duotone ph-gear"></i>
+        </div>
+      </div>
+    </div>
+    <div class="card-body"><h3>Agenda (dettaglio)</h3><p>Una riga per giorno con punto, ora e stato a semaforo. Più informazioni, più spazio occupato.</p></div>
+  </div>
+
+</div>
+<p class="subtitle" style="margin-top:16px;">Possibile mix consigliato: <b>pallini in Home</b> (compatto sotto l'hero) + <b>agenda completa nel Calendario</b> (vista Lista). Dimmi se preferisci pallini, agenda, o il mix.</p>

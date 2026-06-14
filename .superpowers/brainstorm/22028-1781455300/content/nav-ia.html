@@ -1,0 +1,95 @@
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&display=swap');
+  .navwrap { font-family: 'Plus Jakarta Sans', sans-serif; }
+  .navbar { display:flex; align-items:flex-end; justify-content:space-around; background:#fff; border-radius:20px;
+    padding:10px 8px 12px; box-shadow:0 8px 22px rgba(124,92,255,.16); max-width:330px; margin:0 auto; }
+  .nav-it { text-align:center; font-size:10px; font-weight:700; color:#a99cc7; flex:1; }
+  .nav-it .ic { font-size:20px; display:block; margin-bottom:3px; }
+  .nav-it.sel { color:#7c5cff; }
+  .fab { width:46px; height:46px; border-radius:16px; background:linear-gradient(135deg,#7c5cff,#c86bff);
+    color:#fff; font-size:24px; display:flex; align-items:center; justify-content:center; margin:-22px auto 0;
+    box-shadow:0 8px 18px rgba(124,92,255,.5); }
+  .iamap { font-size:12.5px; color:var(--muted,#6b6b75); margin-top:12px; line-height:1.5; }
+  .iamap b { color:inherit; }
+  .tag { display:inline-block; font-size:10px; font-weight:800; padding:2px 8px; border-radius:999px;
+    background:#ece6fb; color:#7c5cff; margin-right:4px; }
+</style>
+
+<h2>Struttura di navigazione — dove vanno Statistiche e le voci di menù</h2>
+<p class="subtitle">Oggi: 4 tab (Home · Calendario · Storico · Impostazioni); le Statistiche sono nascoste nel menu ⋮ della Home; nessun "+" rapido. Tre proposte. Clicca quella che preferisci.</p>
+
+<div class="cards">
+
+  <!-- A: 5 tab con + centrale -->
+  <div class="card" data-choice="A" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:22px 10px; background:#efe9f7;">
+      <div class="navwrap">
+        <div class="navbar">
+          <div class="nav-it sel"><span class="ic">🏠</span>Home</div>
+          <div class="nav-it"><span class="ic">📅</span>Calendario</div>
+          <div style="flex:1;"><div class="fab">＋</div></div>
+          <div class="nav-it"><span class="ic">📊</span>Statistiche</div>
+          <div class="nav-it"><span class="ic">⚙️</span>Impostazioni</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A · 5 tab + "＋" centrale</h3>
+      <div class="iamap">
+        <span class="tag">＋</span> registra iniezione (azione primaria, sempre a portata)<br>
+        <b>Statistiche</b> promosse a tab dedicata<br>
+        <b>Storico</b> assorbito nel Calendario (toggle Mese/Lista)<br>
+        <b>Impostazioni</b> = hub per gestione zone, blacklist, pattern, guida, info
+      </div>
+    </div>
+  </div>
+
+  <!-- B: 4 tab + FAB -->
+  <div class="card" data-choice="B" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:22px 10px; background:#efe7f7;">
+      <div class="navwrap">
+        <div class="navbar" style="position:relative;">
+          <div class="nav-it sel"><span class="ic">🏠</span>Home</div>
+          <div class="nav-it"><span class="ic">📅</span>Calendario</div>
+          <div class="nav-it"><span class="ic">🕓</span>Storico</div>
+          <div class="nav-it"><span class="ic">⚙️</span>Impostazioni</div>
+        </div>
+        <div class="fab" style="margin:14px auto 0;">＋</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B · 4 tab attuali + FAB "＋"</h3>
+      <div class="iamap">
+        Minimo cambio: resta Home · Calendario · Storico · Impostazioni<br>
+        <span class="tag">＋</span> FAB fluttuante per registrare<br>
+        <b>Statistiche</b> spostate in un punto fisso (header Home o dentro Storico) — non più nel menu ⋮<br>
+        <b>Impostazioni</b> = hub voci secondarie
+      </div>
+    </div>
+  </div>
+
+  <!-- C: 4 tab rimodulati (Statistiche tab, Storico in Calendario) -->
+  <div class="card" data-choice="C" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:22px 10px; background:#f3ecff;">
+      <div class="navwrap">
+        <div class="navbar">
+          <div class="nav-it sel"><span class="ic">🏠</span>Home</div>
+          <div class="nav-it"><span class="ic">📅</span>Calendario</div>
+          <div class="nav-it"><span class="ic">📊</span>Statistiche</div>
+          <div class="nav-it"><span class="ic">⚙️</span>Impostazioni</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C · 4 tab, Statistiche al posto di Storico</h3>
+      <div class="iamap">
+        <b>Statistiche</b> diventano tab (sostituiscono Storico)<br>
+        <b>Storico</b> assorbito nel Calendario (vista Lista)<br>
+        <span class="tag">＋</span> registra come azione nell'header Home (no tab extra)<br>
+        <b>Impostazioni</b> = hub gestione zone/blacklist/pattern/guida/info
+      </div>
+    </div>
+  </div>
+
+</div>
+<p class="subtitle" style="margin-top:16px;">Dopo aver scelto la struttura, passiamo a (1) organizzazione delle Impostazioni come hub e (2) set di icone in stile Pop Gradient.</p>

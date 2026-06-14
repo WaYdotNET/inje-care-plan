@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/widgets/app_bottom_nav.dart';
 import '../features/auth/login_screen.dart';
 import '../features/auth/auth_provider.dart';
 import '../features/home/home_minimal_screen.dart';
@@ -9,7 +10,6 @@ import '../features/calendar/calendar_screen.dart';
 import '../features/injection/zone_detail_screen.dart';
 import '../features/injection/record_screen.dart';
 import '../features/injection/injection_detail_screen.dart';
-import '../features/history/history_screen.dart';
 import '../features/settings/settings_screen.dart';
 import '../features/info/info_screen.dart';
 import '../features/help/help_screen.dart';
@@ -28,7 +28,6 @@ sealed class AppRoutes {
   static const bodyMap = '/body-map';
   static const zoneDetail = '/zone/:zoneId';
   static const recordInjection = '/record';
-  static const history = '/history';
   static const settings = '/settings';
   static const info = '/info';
   static const help = '/help';
@@ -93,9 +92,9 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => const CalendarScreen(),
           ),
           GoRoute(
-            path: AppRoutes.history,
-            name: 'history',
-            builder: (context, state) => const HistoryScreen(),
+            path: AppRoutes.statistics,
+            name: 'statistics',
+            builder: (context, state) => const StatisticsScreen(),
           ),
           GoRoute(
             path: AppRoutes.settings,
@@ -191,11 +190,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const WeeklyProposalsScreen(),
       ),
       GoRoute(
-        path: AppRoutes.statistics,
-        name: 'statistics',
-        builder: (context, state) => const StatisticsScreen(),
-      ),
-      GoRoute(
         path: AppRoutes.customPattern,
         name: 'customPattern',
         builder: (context, state) => const CustomPatternScreen(),
@@ -222,31 +216,10 @@ class _MainShell extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: child,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _calculateSelectedIndex(context),
-        onDestinationSelected: (index) => _onItemTapped(index, context),
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home_rounded),
-            label: 'Home',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.calendar_month_outlined),
-            selectedIcon: Icon(Icons.calendar_month_rounded),
-            label: 'Calendario',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.history_outlined),
-            selectedIcon: Icon(Icons.history_rounded),
-            label: 'Storico',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.settings_outlined),
-            selectedIcon: Icon(Icons.settings_rounded),
-            label: 'Impostazioni',
-          ),
-        ],
+      bottomNavigationBar: AppBottomNav(
+        currentIndex: _calculateSelectedIndex(context),
+        onTap: (index) => _onItemTapped(index, context),
+        onAdd: () => context.push(AppRoutes.bodyMap),
       ),
     );
   }
@@ -255,7 +228,7 @@ class _MainShell extends StatelessWidget {
     final location = GoRouterState.of(context).matchedLocation;
     if (location == AppRoutes.home) return 0;
     if (location == AppRoutes.calendar) return 1;
-    if (location == AppRoutes.history) return 2;
+    if (location == AppRoutes.statistics) return 2;
     if (location == AppRoutes.settings) return 3;
     return 0;
   }
@@ -267,7 +240,7 @@ class _MainShell extends StatelessWidget {
       case 1:
         context.go(AppRoutes.calendar);
       case 2:
-        context.go(AppRoutes.history);
+        context.go(AppRoutes.statistics);
       case 3:
         context.go(AppRoutes.settings);
     }

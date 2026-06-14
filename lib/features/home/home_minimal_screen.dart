@@ -98,52 +98,6 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
     return Scaffold(
       appBar: AppBar(
         title: const Text('InjeCare Plan'),
-        actions: [
-          // Menu con link rapidi
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert),
-            tooltip: 'Menu',
-            onSelected: (value) {
-              switch (value) {
-                case 'statistics':
-                  context.push(AppRoutes.statistics);
-                case 'guide':
-                  context.push(AppRoutes.help);
-                case 'info':
-                  context.push(AppRoutes.info);
-              }
-            },
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'statistics',
-                child: ListTile(
-                  leading: Icon(Icons.bar_chart),
-                  title: Text('Statistiche'),
-                  contentPadding: EdgeInsets.zero,
-                  visualDensity: VisualDensity.compact,
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'guide',
-                child: ListTile(
-                  leading: Icon(Icons.help_outline),
-                  title: Text('Guida'),
-                  contentPadding: EdgeInsets.zero,
-                  visualDensity: VisualDensity.compact,
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'info',
-                child: ListTile(
-                  leading: Icon(Icons.info_outline),
-                  title: Text('Info'),
-                  contentPadding: EdgeInsets.zero,
-                  visualDensity: VisualDensity.compact,
-                ),
-              ),
-            ],
-          ),
-        ],
       ),
       body: SafeArea(
         child: Column(

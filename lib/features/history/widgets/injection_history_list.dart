@@ -9,8 +9,7 @@ import '../../../core/database/app_database.dart' as db;
 
 /// Reusable widget that renders the full injection history grouped by month.
 ///
-/// Used by [HistoryScreen] and by [CalendarScreen]'s Lista view so that
-/// both show identical content without duplication.
+/// Usato dalla vista "Lista" del Calendario (assorbe lo storico iniezioni).
 class InjectionHistoryList extends StatelessWidget {
   const InjectionHistoryList({
     super.key,

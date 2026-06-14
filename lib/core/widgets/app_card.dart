@@ -36,6 +36,9 @@ class AppCard extends StatelessWidget {
     );
 
     if (onTap == null) return card;
-    return GestureDetector(onTap: onTap, child: card);
+    return Semantics(
+      button: true,
+      child: GestureDetector(onTap: onTap, child: card),
+    );
   }
 }

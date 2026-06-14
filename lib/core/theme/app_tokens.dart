@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 /// Design tokens del tema "Pop Gradient".
-/// Nuovo sistema che sostituisce Rosé Pine (rimozione finale in una fase successiva).
+/// Unico sistema di token colore/forma dell'app.
 sealed class AppTokens {
   // Accento
   static const accent = Color(0xFF7C5CFF);

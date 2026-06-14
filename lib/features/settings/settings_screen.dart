@@ -366,8 +366,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   String get _themeModeLabel {
     final mode = ref.watch(themeModeProvider);
     return switch (mode) {
-      ThemeMode.light => 'Chiaro (Dawn)',
-      ThemeMode.dark => 'Scuro (Rosé Pine)',
+      ThemeMode.light => 'Chiaro',
+      ThemeMode.dark => 'Scuro',
       ThemeMode.system => 'Automatico (sistema)',
     };
   }
@@ -721,11 +721,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             RadioListTile<ThemeMode>(
-              title: Text('Chiaro (Dawn)'),
+              title: Text('Chiaro'),
               value: ThemeMode.light,
             ),
             RadioListTile<ThemeMode>(
-              title: Text('Scuro (Rosé Pine)'),
+              title: Text('Scuro'),
               value: ThemeMode.dark,
             ),
             RadioListTile<ThemeMode>(

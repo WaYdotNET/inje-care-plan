@@ -1,5 +1,5 @@
 :root {
-  /* Rosé Pine (dark) */
+  /* Palette sito (dark) */
   --rp-base: #191724;
   --rp-surface: #1f1d2e;
   --rp-overlay: #26233a;
@@ -38,7 +38,7 @@
 
 @media (prefers-color-scheme: light) {
   :root {
-    /* Rosé Pine Dawn (light) */
+    /* Palette sito (light) */
     --rp-base: #faf4ed;
     --rp-surface: #fffaf3;
     --rp-overlay: #f2e9e1;

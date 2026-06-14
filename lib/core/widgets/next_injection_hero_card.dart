@@ -85,7 +85,7 @@ class NextInjectionHeroCard extends StatelessWidget {
     final sub = DateFormat('EEEE d MMM', 'it').format(scheduledAt);
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: gradient,
         borderRadius: BorderRadius.circular(AppRadius.card),

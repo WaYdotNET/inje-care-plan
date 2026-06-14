@@ -323,29 +323,37 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
       error: (e, st) => _ErrorView(message: e.toString()),
       data: (injections) {
         final wd = _weekData(injections, startOfWeek);
-        return SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildHero(context),
-              const SizedBox(height: 16),
-              Text('QUESTA SETTIMANA', style: Theme.of(context).textTheme.labelMedium),
-              const SizedBox(height: 8),
-              AppCard(
-                child: WeekDots(
-                  weekStart: startOfWeek,
-                  statuses: wd.statuses,
-                  onTapDay: (i) {
-                    final id = wd.ids[i];
-                    if (id != null) context.push('/injection/$id');
-                  },
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight - 28),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _buildHero(context),
+                    const SizedBox(height: 20),
+                    Text('QUESTA SETTIMANA', style: Theme.of(context).textTheme.labelMedium),
+                    const SizedBox(height: 8),
+                    AppCard(
+                      child: WeekDots(
+                        weekStart: startOfWeek,
+                        statuses: wd.statuses,
+                        onTapDay: (i) {
+                          final id = wd.ids[i];
+                          if (id != null) context.push('/injection/$id');
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    const StatusLegend(),
+                  ],
                 ),
               ),
-              const SizedBox(height: 12),
-              const StatusLegend(),
-            ],
-          ),
+            );
+          },
         );
       },
     );

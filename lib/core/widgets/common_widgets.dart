@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../theme/app_tokens.dart';
 
@@ -52,7 +53,7 @@ class ErrorCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              Icons.error_outline,
+              PhosphorIconsDuotone.warningCircle,
               color: isDark ? AppTokens.dangerDark : AppTokens.dangerLight,
               size: 48,
             ),
@@ -68,7 +69,7 @@ class ErrorCard extends StatelessWidget {
               const SizedBox(height: 16),
               OutlinedButton.icon(
                 onPressed: onRetry,
-                icon: const Icon(Icons.refresh),
+                icon: const Icon(PhosphorIconsDuotone.arrowClockwise),
                 label: const Text('Riprova'),
               ),
             ],

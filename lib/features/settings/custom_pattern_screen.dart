@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_tokens.dart';
@@ -74,7 +75,7 @@ class _CustomPatternScreenState extends ConsumerState<CustomPatternScreen> {
                       child: Row(
                         children: [
                           Icon(
-                            Icons.info_outline,
+                            PhosphorIconsDuotone.info,
                             color: isDark
                                 ? AppTokens.accentEnd
                                 : AppTokens.accentEnd,
@@ -169,7 +170,7 @@ class _CustomPatternScreenState extends ConsumerState<CustomPatternScreen> {
                         padding: const EdgeInsets.all(16),
                         child: OutlinedButton.icon(
                           onPressed: () => _showAddZoneDialog(context, zones),
-                          icon: const Icon(Icons.add),
+                          icon: const Icon(PhosphorIconsDuotone.plus),
                           label: const Text('Aggiungi zona'),
                         ),
                       ),
@@ -347,14 +348,14 @@ class _ZoneReorderTile extends StatelessWidget {
           children: [
             IconButton(
               icon: Icon(
-                Icons.remove_circle_outline,
+                PhosphorIconsDuotone.minusCircle,
                 color: isDark ? AppTokens.dangerDark : AppTokens.dangerLight,
               ),
               onPressed: onRemove,
             ),
             ReorderableDragStartListener(
               index: index,
-              child: const Icon(Icons.drag_handle),
+              child: const Icon(PhosphorIconsDuotone.dotsSix),
             ),
           ],
         ),

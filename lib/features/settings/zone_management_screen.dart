@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_tokens.dart';
@@ -25,12 +26,12 @@ class _ZoneManagementScreenState extends ConsumerState<ZoneManagementScreen> {
       appBar: AppBar(
         title: const Text('Gestione Zone'),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(PhosphorIconsDuotone.arrowLeft),
           onPressed: () => context.pop(),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.add),
+            icon: const Icon(PhosphorIconsDuotone.plus),
             onPressed: () => _showAddZoneDialog(context, isDark),
             tooltip: 'Aggiungi zona',
           ),
@@ -231,7 +232,7 @@ class _ZoneTile extends StatelessWidget {
                   value: 'edit',
                   child: Row(
                     children: [
-                      Icon(Icons.edit, size: 20),
+                      Icon(PhosphorIconsDuotone.pencilSimple, size: 20),
                       SizedBox(width: 8),
                       Text('Modifica'),
                     ],
@@ -241,7 +242,7 @@ class _ZoneTile extends StatelessWidget {
                   value: 'points',
                   child: Row(
                     children: [
-                      Icon(Icons.grid_on, size: 20),
+                      Icon(PhosphorIconsDuotone.gridFour, size: 20),
                       SizedBox(width: 8),
                       Text('Posiziona punti'),
                     ],
@@ -251,7 +252,7 @@ class _ZoneTile extends StatelessWidget {
                   value: 'delete',
                   child: Row(
                     children: [
-                      Icon(Icons.delete, size: 20, color: Colors.red),
+                      Icon(PhosphorIconsDuotone.trash, size: 20, color: Colors.red),
                       SizedBox(width: 8),
                       Text('Elimina', style: TextStyle(color: Colors.red)),
                     ],
@@ -266,7 +267,7 @@ class _ZoneTile extends StatelessWidget {
                 if (value == 'delete') onDelete();
               },
             ),
-            const Icon(Icons.drag_handle),
+            const Icon(PhosphorIconsDuotone.dotsSix),
           ],
         ),
       ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_tokens.dart';
@@ -109,7 +110,7 @@ class _ZonePointsEditorScreenState
         SnackBar(
           content: const Row(
             children: [
-              Icon(Icons.check_circle, color: Colors.white),
+              Icon(PhosphorIconsDuotone.checkCircle, color: Colors.white),
               SizedBox(width: 8),
               Text('Posizioni salvate!'),
             ],
@@ -248,7 +249,7 @@ class _ZonePointsEditorScreenState
                     .withValues(alpha: 0.9),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.arrow_back),
+              child: const Icon(PhosphorIconsDuotone.arrowLeft),
             ),
             onPressed: () => context.pop(),
           ),
@@ -556,12 +557,12 @@ class _ZonePointsEditorScreenState
                 ButtonSegment(
                   value: BodyView.front,
                   label: Text('Fronte'),
-                  icon: Icon(Icons.person),
+                  icon: Icon(PhosphorIconsDuotone.user),
                 ),
                 ButtonSegment(
                   value: BodyView.back,
                   label: Text('Retro'),
-                  icon: Icon(Icons.person_outline),
+                  icon: Icon(PhosphorIconsDuotone.user),
                 ),
               ],
               selected: {localView},
@@ -589,7 +590,7 @@ class _ZonePointsEditorScreenState
                       Navigator.pop(ctx);
                       setState(() => _selectedPointNumber = pointNumber);
                     },
-                    icon: const Icon(Icons.check),
+                    icon: const Icon(PhosphorIconsDuotone.check),
                     label: const Text('Conferma'),
                   ),
                 ),
@@ -648,7 +649,7 @@ class _FloatingToolbar extends StatelessWidget {
         children: [
           // Toggle griglia
           _ToolbarButton(
-            icon: showGrid ? Icons.grid_on : Icons.grid_off,
+            icon: showGrid ? PhosphorIconsDuotone.gridFour : PhosphorIconsDuotone.gridFour,
             label: 'Griglia',
             isActive: showGrid,
             isDark: isDark,
@@ -658,8 +659,8 @@ class _FloatingToolbar extends StatelessWidget {
           // Toggle fronte/retro
           _ToolbarButton(
             icon: currentView == BodyView.front
-                ? Icons.person
-                : Icons.person_outline,
+                ? PhosphorIconsDuotone.user
+                : PhosphorIconsDuotone.user,
             label: currentView == BodyView.front ? 'Fronte' : 'Retro',
             isActive: false,
             isDark: isDark,
@@ -670,7 +671,7 @@ class _FloatingToolbar extends StatelessWidget {
 
           // Reset
           _ToolbarButton(
-            icon: Icons.refresh,
+            icon: PhosphorIconsDuotone.arrowClockwise,
             label: 'Reset',
             isActive: false,
             isDark: isDark,
@@ -768,7 +769,7 @@ class _SaveButton extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                Icons.save,
+                PhosphorIconsDuotone.floppyDisk,
                 color: hasChanges
                     ? Colors.white
                     : (isDark ? AppTokens.darkMuted : AppTokens.lightMuted),

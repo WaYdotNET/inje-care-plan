@@ -14,6 +14,7 @@ import '../../core/services/notification_settings_provider.dart';
 import '../injection/injection_provider.dart';
 import '../injection/injection_repository.dart';
 import '../../core/widgets/completion_time_dialog.dart';
+import '../history/widgets/injection_history_list.dart';
 
 /// Calendar screen with injection schedule
 class CalendarScreen extends ConsumerStatefulWidget {
@@ -25,6 +26,7 @@ class CalendarScreen extends ConsumerStatefulWidget {
 
 class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   CalendarFormat _calendarFormat = CalendarFormat.month;
+  bool _showList = false;
 
   @override
   Widget build(BuildContext context) {
@@ -46,102 +48,138 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
         error: (error, _) => Center(child: Text('Errore: $error')),
         data: (injections) => Column(
           children: [
-            TableCalendar<db.Injection>(
-              firstDay: DateTime.utc(2020, 1, 1),
-              lastDay: DateTime.utc(2030, 12, 31),
-              focusedDay: focusedDay,
-              calendarFormat: _calendarFormat,
-              startingDayOfWeek: StartingDayOfWeek.monday,
-              locale: 'it_IT',
-
-              selectedDayPredicate: (day) => isSameDay(selectedDay, day),
-
-              eventLoader: (day) => _getInjections(injections, day),
-
-              onDaySelected: (selected, focused) {
-                ref.read(selectedDayProvider.notifier).select(selected);
-                ref.read(focusedDayProvider.notifier).focus(focused);
-              },
-
-              onFormatChanged: (format) {
-                setState(() {
-                  _calendarFormat = format;
-                });
-              },
-
-              onPageChanged: (focused) {
-                ref.read(focusedDayProvider.notifier).focus(focused);
-              },
-
-              calendarBuilders: CalendarBuilders(
-                markerBuilder: (context, date, events) {
-                  if (events.isEmpty) return null;
-                  return _buildMarkers(events, isDark);
-                },
-                todayBuilder: (context, day, focusedDay) {
-                  return _buildDayCell(
-                    day,
-                    isToday: true,
-                    isSelected: false,
-                    isDark: isDark,
-                  );
-                },
-                selectedBuilder: (context, day, focusedDay) {
-                  return _buildDayCell(
-                    day,
-                    isToday: isSameDay(day, DateTime.now()),
-                    isSelected: true,
-                    isDark: isDark,
-                  );
-                },
-              ),
-
-              headerStyle: HeaderStyle(
-                formatButtonVisible: true,
-                titleCentered: true,
-                formatButtonShowsNext: false,
-                formatButtonDecoration: BoxDecoration(
-                  border: Border.all(
-                    color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
-                  ),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-
-              calendarStyle: CalendarStyle(
-                todayDecoration: BoxDecoration(
-                  color: (isDark ? AppTokens.accentEnd : AppTokens.accentEnd)
-                      .withValues(alpha: 0.3),
-                  shape: BoxShape.circle,
-                ),
-                todayTextStyle: TextStyle(
-                  color: isDark ? AppTokens.darkInk : AppTokens.lightInk,
-                ),
-                selectedDecoration: BoxDecoration(
-                  color: isDark ? AppTokens.accentEnd : AppTokens.accentEnd,
-                  shape: BoxShape.circle,
-                ),
-                selectedTextStyle: TextStyle(
-                  color: isDark ? AppTokens.darkBg : AppTokens.lightBgTop,
-                  fontWeight: FontWeight.bold,
-                ),
-                weekendTextStyle: TextStyle(
-                  color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
-                ),
-                outsideTextStyle: TextStyle(
-                  color: (isDark ? AppTokens.darkMuted : AppTokens.lightMuted)
-                      .withValues(alpha: 0.5),
-                ),
-              ),
+            _CalendarViewToggle(
+              showList: _showList,
+              isDark: isDark,
+              onChanged: (value) => setState(() => _showList = value),
             ),
-            const Divider(height: 1),
             Expanded(
-              child: selectedDay != null
-                  ? _DayInjectionsList(
-                      selectedDay: selectedDay,
-                      injections: _getInjections(injections, selectedDay),
-                    )
-                  : _EmptyState(isDark: isDark),
+              child: _showList
+                  ? InjectionHistoryList(injections: injections)
+                  : Column(
+                      children: [
+                        TableCalendar<db.Injection>(
+                          firstDay: DateTime.utc(2020, 1, 1),
+                          lastDay: DateTime.utc(2030, 12, 31),
+                          focusedDay: focusedDay,
+                          calendarFormat: _calendarFormat,
+                          startingDayOfWeek: StartingDayOfWeek.monday,
+                          locale: 'it_IT',
+
+                          selectedDayPredicate: (day) =>
+                              isSameDay(selectedDay, day),
+
+                          eventLoader: (day) =>
+                              _getInjections(injections, day),
+
+                          onDaySelected: (selected, focused) {
+                            ref
+                                .read(selectedDayProvider.notifier)
+                                .select(selected);
+                            ref
+                                .read(focusedDayProvider.notifier)
+                                .focus(focused);
+                          },
+
+                          onFormatChanged: (format) {
+                            setState(() {
+                              _calendarFormat = format;
+                            });
+                          },
+
+                          onPageChanged: (focused) {
+                            ref
+                                .read(focusedDayProvider.notifier)
+                                .focus(focused);
+                          },
+
+                          calendarBuilders: CalendarBuilders(
+                            markerBuilder: (context, date, events) {
+                              if (events.isEmpty) return null;
+                              return _buildMarkers(events, isDark);
+                            },
+                            todayBuilder: (context, day, focusedDay) {
+                              return _buildDayCell(
+                                day,
+                                isToday: true,
+                                isSelected: false,
+                                isDark: isDark,
+                              );
+                            },
+                            selectedBuilder: (context, day, focusedDay) {
+                              return _buildDayCell(
+                                day,
+                                isToday: isSameDay(day, DateTime.now()),
+                                isSelected: true,
+                                isDark: isDark,
+                              );
+                            },
+                          ),
+
+                          headerStyle: HeaderStyle(
+                            formatButtonVisible: true,
+                            titleCentered: true,
+                            formatButtonShowsNext: false,
+                            formatButtonDecoration: BoxDecoration(
+                              border: Border.all(
+                                color: isDark
+                                    ? AppTokens.darkMuted
+                                    : AppTokens.lightMuted,
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+
+                          calendarStyle: CalendarStyle(
+                            todayDecoration: BoxDecoration(
+                              color: (isDark
+                                      ? AppTokens.accentEnd
+                                      : AppTokens.accentEnd)
+                                  .withValues(alpha: 0.3),
+                              shape: BoxShape.circle,
+                            ),
+                            todayTextStyle: TextStyle(
+                              color: isDark
+                                  ? AppTokens.darkInk
+                                  : AppTokens.lightInk,
+                            ),
+                            selectedDecoration: BoxDecoration(
+                              color: isDark
+                                  ? AppTokens.accentEnd
+                                  : AppTokens.accentEnd,
+                              shape: BoxShape.circle,
+                            ),
+                            selectedTextStyle: TextStyle(
+                              color: isDark
+                                  ? AppTokens.darkBg
+                                  : AppTokens.lightBgTop,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            weekendTextStyle: TextStyle(
+                              color: isDark
+                                  ? AppTokens.darkMuted
+                                  : AppTokens.lightMuted,
+                            ),
+                            outsideTextStyle: TextStyle(
+                              color: (isDark
+                                      ? AppTokens.darkMuted
+                                      : AppTokens.lightMuted)
+                                  .withValues(alpha: 0.5),
+                            ),
+                          ),
+                        ),
+                        const Divider(height: 1),
+                        Expanded(
+                          child: selectedDay != null
+                              ? _DayInjectionsList(
+                                  selectedDay: selectedDay,
+                                  injections:
+                                      _getInjections(injections, selectedDay),
+                                )
+                              : _EmptyState(isDark: isDark),
+                        ),
+                      ],
+                    ),
             ),
           ],
         ),
@@ -214,6 +252,92 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                     ? AppTokens.darkInk
                     : AppTokens.lightInk,
             fontWeight: isSelected ? FontWeight.bold : null,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CalendarViewToggle extends StatelessWidget {
+  const _CalendarViewToggle({
+    required this.showList,
+    required this.isDark,
+    required this.onChanged,
+  });
+
+  final bool showList;
+  final bool isDark;
+  final void Function(bool) onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Container(
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          color: isDark ? AppTokens.darkHighlightLow : AppTokens.lightHighlightLow,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _TogglePill(
+              label: 'Mese',
+              selected: !showList,
+              isDark: isDark,
+              onTap: () => onChanged(false),
+            ),
+            _TogglePill(
+              label: 'Lista',
+              selected: showList,
+              isDark: isDark,
+              onTap: () => onChanged(true),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TogglePill extends StatelessWidget {
+  const _TogglePill({
+    required this.label,
+    required this.selected,
+    required this.isDark,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final bool isDark;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 7),
+        decoration: BoxDecoration(
+          color: selected
+              ? (isDark ? AppTokens.accent : AppTokens.accent)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(
+          label,
+          style: theme.textTheme.labelLarge?.copyWith(
+            color: selected
+                ? Colors.white
+                : (isDark ? AppTokens.darkSubtle : AppTokens.lightSubtle),
+            fontWeight: selected ? FontWeight.bold : FontWeight.normal,
           ),
         ),
       ),

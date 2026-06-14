@@ -44,7 +44,7 @@ class _LegendItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final size = small ? 9.0 : 13.0;
+    final size = small ? 8.0 : 13.0;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [

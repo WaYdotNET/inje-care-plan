@@ -14,4 +14,13 @@ void main() {
     expect(find.text('Saltata/Persa'), findsOneWidget);
     expect(find.text('Nessuna'), findsOneWidget);
   });
+
+  testWidgets('gli stati sono distinguibili anche per icona (✓ / ✕)', (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      theme: AppTheme.light,
+      home: const Scaffold(body: StatusLegend()),
+    ));
+    expect(find.byIcon(Icons.check), findsOneWidget);
+    expect(find.byIcon(Icons.close), findsOneWidget);
+  });
 }

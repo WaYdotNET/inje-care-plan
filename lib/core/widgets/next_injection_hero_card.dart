@@ -25,13 +25,14 @@ class NextInjectionHeroCard extends StatelessWidget {
     final time = DateFormat('HH:mm').format(scheduledAt);
     final dateLong = DateFormat('EEEE d MMM', 'it').format(scheduledAt);
     final sub = relative == null ? dateLong : '$dateLong · $relative';
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: AppTokens.accentGradient,
         borderRadius: BorderRadius.circular(AppRadius.card),
-        boxShadow: AppTokens.softShadow(),
+        boxShadow: AppTokens.softShadow(dark: isDark),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

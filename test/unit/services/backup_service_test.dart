@@ -4,13 +4,17 @@ import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:injecare_plan/core/database/app_database.dart';
 import 'package:injecare_plan/core/services/backup_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../helpers/test_database.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   late AppDatabase db;
 
   setUp(() async {
+    SharedPreferences.setMockInitialValues({});
     db = createTestDatabase();
     await db.customStatement('SELECT 1');
   });
@@ -127,7 +131,7 @@ void main() {
 
       final data = await BackupService.instance.generateBackupJson(db);
 
-      expect(data['version'], 1);
+      expect(data['version'], 2);
       expect(data['createdAt'], isNotNull);
       expect(data['bodyZones'], isA<List<Map<String, dynamic>>>());
       expect((data['bodyZones'] as List<Map<String, dynamic>>).length, 8);
@@ -145,7 +149,7 @@ void main() {
       // Verifica che il JSON è serializzabile
       final jsonStr = json.encode(data);
       final decoded = json.decode(jsonStr) as Map<String, dynamic>;
-      expect(decoded['version'], 1);
+      expect(decoded['version'], 2);
     });
 
     test('export includes isCustomPosition in pointConfigs', () async {
@@ -323,6 +327,36 @@ void main() {
 
       final settings = await db.getAllSettings();
       expect(settings.length, 2);
+    });
+  });
+
+  group('BackupService - SharedPreferences', () {
+    test('generateBackupJson include le preferenze SharedPreferences', () async {
+      TestWidgetsFlutterBinding.ensureInitialized();
+      SharedPreferences.setMockInitialValues({
+        'home_layout': 'silhouette',
+        'theme_mode': 'dark',
+      });
+      final data = await BackupService.instance.generateBackupJson(db);
+      final prefs = data['preferences'] as Map<String, dynamic>;
+      expect(prefs['home_layout'], 'silhouette');
+      expect(prefs['theme_mode'], 'dark');
+    });
+
+    test('importBackup ripristina le preferenze SharedPreferences', () async {
+      TestWidgetsFlutterBinding.ensureInitialized();
+      SharedPreferences.setMockInitialValues({}); // nessuna pref iniziale
+      final backup = {
+        'version': 2,
+        'createdAt': DateTime.now().toIso8601String(),
+        'bodyZones': <dynamic>[],
+        'therapyPlans': <dynamic>[],
+        'injections': <dynamic>[],
+        'preferences': {'home_layout': 'silhouette'},
+      };
+      await BackupService.instance.importBackup(db, jsonEncode(backup));
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString('home_layout'), 'silhouette');
     });
   });
 }

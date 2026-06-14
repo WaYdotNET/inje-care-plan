@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:drift/drift.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../database/app_database.dart';
 import '../utils/save_helper.dart'
@@ -37,7 +38,14 @@ class BackupService {
 
   static final instance = BackupService._();
 
-  static const _backupVersion = 1;
+  static const _backupVersion = 2;
+
+  static const _prefKeys = [
+    'home_layout',
+    'theme_mode',
+    'app_theme_mode',
+    'scheduled_dark_mode_config',
+  ];
 
   /// Esporta un backup completo di tutte le tabelle in formato JSON
   Future<void> exportBackup(AppDatabase db) async {
@@ -67,6 +75,13 @@ class BackupService {
     final settings = await db.getAllSettings();
     final profile = await db.getUserProfile();
 
+    final sharedPrefs = await SharedPreferences.getInstance();
+    final preferences = <String, dynamic>{};
+    for (final key in _prefKeys) {
+      final value = sharedPrefs.getString(key);
+      if (value != null) preferences[key] = value;
+    }
+
     return {
       'version': _backupVersion,
       'createdAt': DateTime.now().toIso8601String(),
@@ -77,6 +92,7 @@ class BackupService {
       'pointConfigs': configs.map(_pointConfigToJson).toList(),
       'appSettings': settings.map(_settingToJson).toList(),
       'userProfile': profile != null ? _profileToJson(profile) : null,
+      'preferences': preferences,
     };
   }
 
@@ -336,6 +352,8 @@ class BackupService {
       errors.add('Errore durante il ripristino: $e');
     }
 
+    await _restorePreferences(data);
+
     return BackupImportResult(
       tablesProcessed: tablesProcessed,
       recordsImported: recordsImported,
@@ -536,11 +554,26 @@ class BackupService {
       errors.add('Errore durante il merge: $e');
     }
 
+    await _restorePreferences(data);
+
     return BackupImportResult(
       tablesProcessed: tablesProcessed,
       recordsImported: recordsImported,
       errors: errors,
     );
+  }
+
+  Future<void> _restorePreferences(Map<String, dynamic> data) async {
+    final raw = data['preferences'];
+    if (raw is! Map) return;
+    final prefs = await SharedPreferences.getInstance();
+    for (final entry in raw.entries) {
+      final key = entry.key.toString();
+      final value = entry.value;
+      if (_prefKeys.contains(key) && value is String) {
+        await prefs.setString(key, value);
+      }
+    }
   }
 
   // --- Serializzazione ---

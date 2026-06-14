@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/theme/app_tokens.dart';
@@ -25,7 +26,7 @@ class InfoScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Informazioni'),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(PhosphorIconsDuotone.arrowLeft),
           onPressed: () => context.pop(),
         ),
       ),
@@ -88,7 +89,7 @@ class InfoScreen extends ConsumerWidget {
                     Row(
                       children: [
                         Icon(
-                          Icons.info_outline,
+                          PhosphorIconsDuotone.info,
                           color: isDark ? AppTokens.accentEnd : AppTokens.accentEnd,
                         ),
                         const SizedBox(width: 12),
@@ -116,27 +117,27 @@ class InfoScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 8),
                     _FeatureItem(
-                      icon: Icons.calendar_month,
+                      icon: PhosphorIconsDuotone.calendarBlank,
                       text: 'Calendario iniezioni programmato',
                       isDark: isDark,
                     ),
                     _FeatureItem(
-                      icon: Icons.accessibility_new,
+                      icon: PhosphorIconsDuotone.person,
                       text: 'Mappa del corpo per rotazione punti',
                       isDark: isDark,
                     ),
                     _FeatureItem(
-                      icon: Icons.notifications_active,
+                      icon: PhosphorIconsDuotone.bell,
                       text: 'Promemoria intelligenti',
                       isDark: isDark,
                     ),
                     _FeatureItem(
-                      icon: Icons.history,
+                      icon: PhosphorIconsDuotone.clockCounterClockwise,
                       text: 'Storico completo con esportazione',
                       isDark: isDark,
                     ),
                     _FeatureItem(
-                      icon: Icons.lock_outline,
+                      icon: PhosphorIconsDuotone.lock,
                       text: 'Privacy-first: dati solo sul tuo dispositivo',
                       isDark: isDark,
                     ),
@@ -156,7 +157,7 @@ class InfoScreen extends ConsumerWidget {
                     Row(
                       children: [
                         Icon(
-                          Icons.shield_outlined,
+                          PhosphorIconsDuotone.shieldCheck,
                           color: isDark ? AppTokens.accent : AppTokens.accent,
                         ),
                         const SizedBox(width: 12),
@@ -193,7 +194,7 @@ class InfoScreen extends ConsumerWidget {
                     Row(
                       children: [
                         Icon(
-                          Icons.person_outline,
+                          PhosphorIconsDuotone.user,
                           color: isDark ? AppTokens.darkIris : AppTokens.accent,
                         ),
                         const SizedBox(width: 12),
@@ -213,7 +214,7 @@ class InfoScreen extends ConsumerWidget {
                     const SizedBox(height: 8),
                     OutlinedButton.icon(
                       onPressed: () => _launchUrl('https://waydotnet.com'),
-                      icon: const Icon(Icons.language),
+                      icon: const Icon(PhosphorIconsDuotone.globe),
                       label: const Text('waydotnet.com'),
                     ),
                     const SizedBox(height: 8),
@@ -221,7 +222,7 @@ class InfoScreen extends ConsumerWidget {
                       onPressed: () => _launchUrl(
                         'https://github.com/WaYdotNET/inje-care-plan',
                       ),
-                      icon: const Icon(Icons.code),
+                      icon: const Icon(PhosphorIconsDuotone.code),
                       label: const Text('GitHub Repository'),
                     ),
                   ],
@@ -240,7 +241,7 @@ class InfoScreen extends ConsumerWidget {
                     Row(
                       children: [
                         Icon(
-                          Icons.gavel,
+                          PhosphorIconsDuotone.gavel,
                           color: isDark ? AppTokens.warnDark : AppTokens.warnLight,
                         ),
                         const SizedBox(width: 12),

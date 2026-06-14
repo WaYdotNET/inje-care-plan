@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../core/theme/app_tokens.dart';
 import '../../core/services/notification_settings_provider.dart';
@@ -96,7 +97,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   color: Colors.white,
                                 ),
                               )
-                            : const Icon(Icons.arrow_forward),
+                            : const Icon(PhosphorIconsDuotone.arrowRight),
                         label: const Text('Inizia'),
                       ),
               ),
@@ -124,7 +125,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     return switch (_currentPage) {
       0 => _OnboardingPage(
           key: const ValueKey(0),
-          icon: Icons.favorite,
+          icon: PhosphorIconsDuotone.heart,
           title: 'InjeCare Plan',
           description: 'La tua terapia, sotto controllo.\nGestisci le iniezioni con cura e semplicità.',
           isDark: isDark,
@@ -132,14 +133,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         ),
       1 => _OnboardingPage(
           key: const ValueKey(1),
-          icon: Icons.accessibility_new,
+          icon: PhosphorIconsDuotone.person,
           title: 'Alterna i siti',
           description: 'Suggerimenti automatici per la rotazione ottimale dei punti di iniezione',
           isDark: isDark,
         ),
       2 => _OnboardingPage(
           key: const ValueKey(2),
-          icon: Icons.notifications_active,
+          icon: PhosphorIconsDuotone.bell,
           title: 'Mai più una dose dimenticata',
           description: 'Ricevi notifiche personalizzate per ogni iniezione programmata',
           isDark: isDark,
@@ -322,7 +323,7 @@ class _DemoDataPage extends StatelessWidget {
             borderRadius: BorderRadius.circular(24),
           ),
           child: Icon(
-            Icons.science_outlined,
+            PhosphorIconsDuotone.flask,
             size: 64,
             color: isDark ? AppTokens.accentEnd : AppTokens.accentEnd,
           ),
@@ -352,7 +353,7 @@ class _DemoDataPage extends StatelessWidget {
         _OptionCard(
           isDark: isDark,
           isSelected: !insertDemoData,
-          icon: Icons.start,
+          icon: PhosphorIconsDuotone.play,
           title: 'Inizia da zero',
           description: 'Storico vuoto, nessun dato inserito',
           onTap: () => onChanged(false),
@@ -363,7 +364,7 @@ class _DemoDataPage extends StatelessWidget {
         _OptionCard(
           isDark: isDark,
           isSelected: insertDemoData,
-          icon: Icons.auto_awesome,
+          icon: PhosphorIconsDuotone.sparkle,
           title: 'Inserisci dati demo',
           description: '~12 iniezioni nell\'ultimo mese per testare',
           onTap: () => onChanged(true),
@@ -385,7 +386,7 @@ class _DemoDataPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Icon(
-                Icons.lightbulb_outline,
+                PhosphorIconsDuotone.lightbulb,
                 size: 20,
                 color: isDark ? AppTokens.accentEnd : AppTokens.accentEnd,
               ),
@@ -488,7 +489,7 @@ class _OptionCard extends StatelessWidget {
               ),
             ),
             if (isSelected)
-              Icon(Icons.check_circle, color: selectedColor),
+              Icon(PhosphorIconsDuotone.checkCircle, color: selectedColor),
           ],
         ),
       ),

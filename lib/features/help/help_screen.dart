@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../core/theme/app_tokens.dart';
 
@@ -17,7 +18,7 @@ class HelpScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Guida'),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(PhosphorIconsDuotone.arrowLeft),
           onPressed: () => context.pop(),
         ),
       ),
@@ -25,7 +26,7 @@ class HelpScreen extends ConsumerWidget {
         padding: const EdgeInsets.all(16),
         children: [
           _HelpSection(
-            icon: Icons.play_circle_outline,
+            icon: PhosphorIconsDuotone.playCircle,
             title: 'Come iniziare',
             isDark: isDark,
             content: Column(
@@ -61,7 +62,7 @@ class HelpScreen extends ConsumerWidget {
           const SizedBox(height: 16),
 
           _HelpSection(
-            icon: Icons.accessibility_new,
+            icon: PhosphorIconsDuotone.person,
             title: 'Mappa del corpo',
             isDark: isDark,
             content: Column(
@@ -74,7 +75,7 @@ class HelpScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 12),
                 _InfoBox(
-                  icon: Icons.lightbulb_outline,
+                  icon: PhosphorIconsDuotone.lightbulb,
                   text:
                       'L\'app suggerisce automaticamente il prossimo punto '
                       'basandosi sulla rotazione ottimale.',
@@ -95,7 +96,7 @@ class HelpScreen extends ConsumerWidget {
           const SizedBox(height: 16),
 
           _HelpSection(
-            icon: Icons.block,
+            icon: PhosphorIconsDuotone.prohibit,
             title: 'Escludere punti',
             isDark: isDark,
             content: Column(
@@ -128,7 +129,7 @@ class HelpScreen extends ConsumerWidget {
           const SizedBox(height: 16),
 
           _HelpSection(
-            icon: Icons.calendar_month,
+            icon: PhosphorIconsDuotone.calendarBlank,
             title: 'Calendario',
             isDark: isDark,
             content: Column(
@@ -142,7 +143,7 @@ class HelpScreen extends ConsumerWidget {
                 _StatusLegend(isDark: isDark),
                 const SizedBox(height: 12),
                 _InfoBox(
-                  icon: Icons.warning_amber,
+                  icon: PhosphorIconsDuotone.warning,
                   text: 'Le iniezioni programmate diventano automaticamente "Mancate" '
                       'dopo una tolleranza configurabile (Impostazioni > Notifiche).',
                   isDark: isDark,
@@ -153,7 +154,7 @@ class HelpScreen extends ConsumerWidget {
           const SizedBox(height: 16),
 
           _HelpSection(
-            icon: Icons.psychology,
+            icon: PhosphorIconsDuotone.brain,
             title: 'Pattern di rotazione',
             isDark: isDark,
             content: Column(
@@ -204,7 +205,7 @@ class HelpScreen extends ConsumerWidget {
           const SizedBox(height: 16),
 
           _HelpSection(
-            icon: Icons.home,
+            icon: PhosphorIconsDuotone.house,
             title: 'Stili Home',
             isDark: isDark,
             content: Column(
@@ -216,7 +217,7 @@ class HelpScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 12),
                 _ExportFormat(
-                  icon: Icons.dashboard,
+                  icon: PhosphorIconsDuotone.squaresFour,
                   title: 'Classica',
                   description:
                       'Vista completa con panoramica settimanale, '
@@ -225,7 +226,7 @@ class HelpScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
                 _ExportFormat(
-                  icon: Icons.center_focus_strong,
+                  icon: PhosphorIconsDuotone.target,
                   title: 'Minimalista',
                   description:
                       'Solo la prossima iniezione con silhouette. '
@@ -245,7 +246,7 @@ class HelpScreen extends ConsumerWidget {
           const SizedBox(height: 16),
 
           _HelpSection(
-            icon: Icons.sync_alt,
+            icon: PhosphorIconsDuotone.arrowsClockwise,
             title: 'Import/Export dati',
             isDark: isDark,
             content: Column(
@@ -264,7 +265,7 @@ class HelpScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
                 _ExportFormat(
-                  icon: Icons.picture_as_pdf,
+                  icon: PhosphorIconsDuotone.filePdf,
                   title: 'PDF',
                   description:
                       'Formato leggibile, ideale per condividere '
@@ -273,7 +274,7 @@ class HelpScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
                 _ExportFormat(
-                  icon: Icons.table_chart,
+                  icon: PhosphorIconsDuotone.chartBar,
                   title: 'CSV',
                   description:
                       'Formato dati per backup o trasferimento '
@@ -289,7 +290,7 @@ class HelpScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
                 _ExportFormat(
-                  icon: Icons.file_upload_outlined,
+                  icon: PhosphorIconsDuotone.uploadSimple,
                   title: 'CSV',
                   description:
                       'Ripristina dati da un backup CSV esportato '
@@ -298,7 +299,7 @@ class HelpScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 12),
                 _InfoBox(
-                  icon: Icons.security,
+                  icon: PhosphorIconsDuotone.shieldCheck,
                   text:
                       'I tuoi dati restano sempre sul dispositivo. '
                       'Nessun dato viene inviato a server esterni.',
@@ -310,7 +311,7 @@ class HelpScreen extends ConsumerWidget {
           const SizedBox(height: 16),
 
           _HelpSection(
-            icon: Icons.help_outline,
+            icon: PhosphorIconsDuotone.question,
             title: 'Domande frequenti',
             isDark: isDark,
             content: Column(

@@ -1,5 +1,13 @@
 # Changelog
 
+## 4.9.0 - 2026-06-14
+
+### Cambiato
+- **Nuovo design "Pop Gradient"**: redesign UI/UX completo per un look moderno e minimale. Nuova palette ad accento viola→magenta con gradienti, tipografia **Plus Jakarta Sans**, card arrotondate e ombre morbide, sfondo a gradiente su tutte le schermate (light e dark). Sostituito il tema Rosé Pine.
+
+### Aggiunto
+- **Pre-compilazione mensile delle iniezioni**: quando pianifichi automaticamente le iniezioni puoi scegliere **"Questa settimana"** o **"Questo mese"**; la pianificazione mensile salta i giorni già programmati (nessun doppione).
+
 ## 4.8.3 - 2026-06-14
 
 ### Corretto

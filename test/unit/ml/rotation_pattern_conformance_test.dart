@@ -189,6 +189,43 @@ void main() {
     });
   });
 
+  group('Risoluzione zone abilitate/esistenti (FIX B7)', () {
+    test('clockwise salta una zona disabilitata invece di proporla', () async {
+      await db.toggleZoneEnabled(4, false); // BS, prima zona di clockwise
+      final freshZones = await db.getAllZones();
+      final s = await engineWith(
+        const RotationPattern(
+          type: RotationPatternType.clockwise,
+          currentIndex: 0,
+        ),
+        z: freshZones,
+      ).getNextSuggestion();
+      // Sequenza effettiva = [3,5,7,1,2,8,6]; index 0 -> 3 (BD), non 4.
+      expect(s!.zoneId, 3);
+    });
+
+    test('custom ignora gli id di zona inesistenti', () async {
+      final s = await engineWith(
+        const RotationPattern(
+          type: RotationPatternType.custom,
+          customSequence: [999, 3],
+          currentIndex: 0,
+        ),
+      ).getNextSuggestion();
+      expect(s!.zoneId, 3);
+    });
+
+    test('happy path invariato: clockwise con tutte abilitate', () async {
+      final s = await engineWith(
+        const RotationPattern(
+          type: RotationPatternType.clockwise,
+          currentIndex: 0,
+        ),
+      ).getNextSuggestion();
+      expect(s!.zoneId, DefaultZoneSequence.clockwise[0]); // 4
+    });
+  });
+
   group('smart (FIX B5): zona meno usata di recente', () {
     Future<int> seedUse(int zoneId, int point, DateTime date) {
       return db.insertInjection(InjectionsCompanion.insert(

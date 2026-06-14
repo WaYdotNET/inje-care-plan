@@ -183,9 +183,9 @@ class _CustomPatternScreenState extends ConsumerState<CustomPatternScreen> {
 
   String _getZoneEmoji(String type) {
     return switch (type) {
-      'thigh' => '🦵',
+      'thigh' => '🍗',
       'arm' => '💪',
-      'abdomen' => '👤',
+      'abdomen' => '🐢',
       'buttock' => '🍑',
       _ => '📍',
     };

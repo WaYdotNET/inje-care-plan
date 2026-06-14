@@ -32,9 +32,9 @@ class BodyZone {
 
   /// Get emoji for zone (custom icon if set, otherwise based on type)
   String get emoji => icon ?? switch (type) {
-    'thigh' => '🦵',
+    'thigh' => '🍗',
     'arm' => '💪',
-    'abdomen' => '💧',
+    'abdomen' => '🐢',
     'buttock' => '🍑',
     _ => '📍',
   };

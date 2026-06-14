@@ -42,7 +42,7 @@ void main() {
       final usage = ZoneUsage(
         zoneId: 1,
         zoneName: 'Coscia Destra',
-        emoji: '🦵',
+        emoji: '🍗',
         count: 15,
         percentage: 25.0,
         lastUsed: DateTime(2024, 6, 15),
@@ -50,7 +50,7 @@ void main() {
 
       expect(usage.zoneId, 1);
       expect(usage.zoneName, 'Coscia Destra');
-      expect(usage.emoji, '🦵');
+      expect(usage.emoji, '🍗');
       expect(usage.count, 15);
       expect(usage.percentage, 25.0);
       expect(usage.lastUsed, DateTime(2024, 6, 15));
@@ -60,7 +60,7 @@ void main() {
       const usage = ZoneUsage(
         zoneId: 1,
         zoneName: 'Coscia Destra',
-        emoji: '🦵',
+        emoji: '🍗',
         count: 0,
         percentage: 0.0,
       );

@@ -16,7 +16,7 @@ void main() {
         date: DateTime(2024, 7, 15, 20, 0),
         zoneId: 1,
         zoneName: 'Coscia Destra',
-        zoneEmoji: '🦵',
+        zoneEmoji: '🍗',
         pointNumber: 3,
       );
       final lastUpdate = DateTime(2024, 7, 15, 10, 0);
@@ -40,14 +40,14 @@ void main() {
         date: DateTime(2024, 7, 15, 20, 0),
         zoneId: 1,
         zoneName: 'Coscia Destra',
-        zoneEmoji: '🦵',
+        zoneEmoji: '🍗',
         pointNumber: 3,
       );
 
       expect(data.date, DateTime(2024, 7, 15, 20, 0));
       expect(data.zoneId, 1);
       expect(data.zoneName, 'Coscia Destra');
-      expect(data.zoneEmoji, '🦵');
+      expect(data.zoneEmoji, '🍗');
       expect(data.pointNumber, 3);
     });
 

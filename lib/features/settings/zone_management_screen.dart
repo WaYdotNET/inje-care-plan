@@ -315,7 +315,14 @@ class _ZoneEditDialogState extends State<_ZoneEditDialog> {
   late int _pointCount;
   bool _saving = false;
 
-  static const _emojis = ['🦵', '💪', '💧', '🍑', '📍', '💉', '🩺', '🔵', '🟢', '🟡'];
+  static const _emojis = [
+    // Corpo
+    '🍗', '💪', '🐢', '🍑', '🦵', '🦶', '🦴', '🫀', '🧠',
+    // Medicale
+    '💉', '🩹', '🩺', '🧪', '💊',
+    // Marker
+    '📍', '🎯', '⭐', '🔵', '🟢', '🟣',
+  ];
   static const _types = ['thigh', 'arm', 'abdomen', 'buttock', 'custom'];
   static const _sides = ['left', 'right', 'none'];
 

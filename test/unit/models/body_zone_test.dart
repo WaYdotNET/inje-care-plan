@@ -135,7 +135,7 @@ void main() {
         sortOrder: 1,
       );
 
-      expect(zone.emoji, '🦵');
+      expect(zone.emoji, '🍗');
     });
 
     test('returns default emoji for arm', () {
@@ -165,7 +165,7 @@ void main() {
         sortOrder: 1,
       );
 
-      expect(zone.emoji, '💧');
+      expect(zone.emoji, '🐢');
     });
 
     test('returns default emoji for buttock', () {

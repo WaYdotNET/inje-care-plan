@@ -28,7 +28,6 @@ sealed class AppRoutes {
   static const bodyMap = '/body-map';
   static const zoneDetail = '/zone/:zoneId';
   static const recordInjection = '/record';
-  static const history = '/history';
   static const settings = '/settings';
   static const info = '/info';
   static const help = '/help';

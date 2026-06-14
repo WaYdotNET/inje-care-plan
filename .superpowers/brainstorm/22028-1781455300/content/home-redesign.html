@@ -1,0 +1,102 @@
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&display=swap');
+  @import url('https://unpkg.com/@phosphor-icons/web@2.1.1/src/duotone/style.css');
+  .ph2 { width:250px; margin:0 auto; border-radius:30px; padding:14px 14px 0;
+    background:linear-gradient(175deg,#fbf2ff,#eef1ff); color:#231a36;
+    box-shadow:0 14px 34px rgba(124,92,255,.18); font-family:'Plus Jakarta Sans',sans-serif; overflow:hidden; }
+  .st { display:flex; justify-content:space-between; font-size:10px; font-weight:700; padding:2px 4px 8px; }
+  .greet { font-size:12px; opacity:.6; }
+  .h1 { font-size:20px; font-weight:800; letter-spacing:-.02em; margin:1px 0 12px; }
+  .hero { border-radius:18px; padding:14px; background:linear-gradient(135deg,#7c5cff,#c86bff); color:#fff;
+    box-shadow:0 10px 22px rgba(124,92,255,.4); margin-bottom:10px; }
+  .chip { font-size:9px; font-weight:800; padding:3px 9px; border-radius:999px; background:rgba(255,255,255,.22); display:inline-block; }
+  .hero .pt { font-size:18px; font-weight:800; margin:8px 0 1px; }
+  .hero .dt { font-size:11px; color:rgba(255,255,255,.85); }
+  .btn { background:#fff; color:#7c5cff; border-radius:12px; padding:10px; text-align:center; font-weight:800; font-size:12px; margin-top:11px; }
+  .toggle { display:flex; gap:6px; justify-content:center; margin-bottom:10px; }
+  .pill { font-size:11px; font-weight:800; padding:6px 13px; border-radius:999px; }
+  .pill.on { background:linear-gradient(135deg,#7c5cff,#c86bff); color:#fff; }
+  .pill.off { background:#fff; color:#9a8fc0; }
+  .nav { display:flex; align-items:flex-end; justify-content:space-around; background:#fff; border-radius:16px;
+    padding:8px 4px; margin-top:6px; }
+  .nav i { font-size:19px; color:#a99cc7; }
+  .nav i.on { color:#7c5cff; }
+  .fab { width:38px; height:38px; border-radius:13px; background:linear-gradient(135deg,#7c5cff,#c86bff); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:20px; margin-top:-18px; box-shadow:0 6px 14px rgba(124,92,255,.5); }
+  .figure { position:relative; height:150px; background:#fff; border-radius:16px; box-shadow:0 6px 16px rgba(124,92,255,.1); margin-bottom:6px; }
+  .silh { position:absolute; left:50%; top:14px; transform:translateX(-50%); width:60px; height:120px; border-radius:30px 30px 18px 18px;
+    background:linear-gradient(#d9c8ff,#efe7ff); }
+  .pt-dot { position:absolute; left:138px; top:70px; width:22px; height:22px; border-radius:50%;
+    background:linear-gradient(135deg,#7c5cff,#c86bff); color:#fff; font-size:10px; font-weight:800; display:flex; align-items:center; justify-content:center; box-shadow:0 0 0 4px rgba(124,92,255,.25); }
+  .wk { background:#fff; border-radius:12px; padding:7px 10px; margin-bottom:5px; display:flex; align-items:center; gap:8px; font-size:11px; box-shadow:0 3px 10px rgba(124,92,255,.06); }
+  .wk .d { font-weight:800; color:#a99cc7; width:34px; font-size:10px; }
+  .wk.today { border:2px solid #7c5cff; }
+  .scolor { font-size:9px; font-weight:800; padding:2px 7px; border-radius:999px; margin-left:auto; }
+</style>
+
+<h2>Home ridisegnata — card hero a gradiente (come mockup C)</h2>
+<p class="subtitle">La card "Prossima iniezione" a gradiente in alto è comune a entrambe le viste; sotto cambia il corpo (silhouette o agenda settimana). Bottom nav 5 tab con "＋". Clicca la variante che conferma la direzione.</p>
+
+<div class="cards">
+
+  <!-- Silhouette -->
+  <div class="card" data-choice="silhouette" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:16px 8px; background:#efe9f7;">
+      <div class="ph2">
+        <div class="st"><span>InjeCare Plan</span><span>⋯</span></div>
+        <div class="greet">Ciao, Carlo ✨</div>
+        <div class="h1">La tua giornata</div>
+        <div class="hero">
+          <span class="chip">PROSSIMA · 20:30</span>
+          <div class="pt">Addome Dx · 4</div>
+          <div class="dt">domenica 14 giu · tra 3 ore</div>
+          <div class="btn">Completa →</div>
+        </div>
+        <div class="toggle"><span class="pill off">Settimana</span><span class="pill on">Silhouette</span></div>
+        <div class="figure">
+          <div class="silh"></div>
+          <div class="pt-dot">4</div>
+        </div>
+        <div class="nav">
+          <i class="ph-duotone ph-house on"></i>
+          <i class="ph-duotone ph-calendar-blank"></i>
+          <div class="fab">＋</div>
+          <i class="ph-duotone ph-chart-bar"></i>
+          <i class="ph-duotone ph-gear"></i>
+        </div>
+      </div>
+    </div>
+    <div class="card-body"><h3>Vista Silhouette</h3><p>Hero a gradiente + mappa corpo sotto. La silhouette resta interattiva (fronte/retro, punto evidenziato).</p></div>
+  </div>
+
+  <!-- Settimana -->
+  <div class="card" data-choice="settimana" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:16px 8px; background:#efe7f7;">
+      <div class="ph2">
+        <div class="st"><span>InjeCare Plan</span><span>⋯</span></div>
+        <div class="greet">Ciao, Carlo ✨</div>
+        <div class="h1">La tua settimana</div>
+        <div class="hero">
+          <span class="chip">PROSSIMA · 20:30</span>
+          <div class="pt">Addome Dx · 4</div>
+          <div class="dt">domenica 14 giu · tra 3 ore</div>
+          <div class="btn">Completa →</div>
+        </div>
+        <div class="toggle"><span class="pill on">Settimana</span><span class="pill off">Silhouette</span></div>
+        <div class="wk"><span class="d">ven 12</span>Coscia Sx · 6<span class="scolor" style="background:#dcefe7;color:#2f8f6b;">Fatta</span></div>
+        <div class="wk"><span class="d">sab 13</span><span style="opacity:.5;">Nessuna</span></div>
+        <div class="wk today"><span class="d" style="color:#7c5cff;">dom 14</span>Addome Dx · 4<span class="scolor" style="background:#ece6fb;color:#7c5cff;">Oggi</span></div>
+        <div class="nav">
+          <i class="ph-duotone ph-house on"></i>
+          <i class="ph-duotone ph-calendar-blank"></i>
+          <div class="fab">＋</div>
+          <i class="ph-duotone ph-chart-bar"></i>
+          <i class="ph-duotone ph-gear"></i>
+        </div>
+      </div>
+    </div>
+    <div class="card-body"><h3>Vista Settimana</h3><p>Stesso hero a gradiente + agenda 7 giorni sotto (oggi evidenziato, stato a semaforo).</p></div>
+  </div>
+
+</div>
+<p class="subtitle" style="margin-top:16px;">Confermi questa direzione per la Home (hero a gradiente comune + corpo intercambiabile + nav a 5 tab)? Poi la metto nella spec del redesign flussi.</p>

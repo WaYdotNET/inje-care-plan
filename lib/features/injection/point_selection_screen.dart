@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
-import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_tokens.dart';
 import '../../core/database/app_database.dart' as db;
 import '../../core/database/database_provider.dart';
 import '../../models/body_zone.dart';
@@ -180,13 +180,13 @@ class _PointSelectionScreenState extends ConsumerState<PointSelectionScreen> {
                 avatar: Icon(
                   Icons.access_time,
                   size: 18,
-                  color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
+                  color: isDark ? AppTokens.accentEnd : AppTokens.accentEnd,
                 ),
                 label: Text(
                   DateFormat('HH:mm', 'it_IT').format(_scheduledDateTime),
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
+                    color: isDark ? AppTokens.accentEnd : AppTokens.accentEnd,
                   ),
                 ),
                 onPressed: _showTimePickerDialog,
@@ -210,7 +210,7 @@ class _PointSelectionScreenState extends ConsumerState<PointSelectionScreen> {
                     children: [
                       Icon(
                         Icons.info_outline,
-                        color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
+                        color: isDark ? AppTokens.accentEnd : AppTokens.accentEnd,
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -267,7 +267,7 @@ class _PointSelectionScreenState extends ConsumerState<PointSelectionScreen> {
               Text(
                 'Le zone sono organizzate per lato anatomico (vista frontale: la tua sinistra è a sinistra).',
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                  color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
                 ),
               ),
               const SizedBox(height: 16),
@@ -322,8 +322,8 @@ class _PointSelectionScreenState extends ConsumerState<PointSelectionScreen> {
                     border: const OutlineInputBorder(),
                     filled: true,
                     fillColor: isDark
-                        ? AppColors.darkSurface
-                        : AppColors.dawnSurface,
+                        ? AppTokens.darkSurface
+                        : AppTokens.lightSurface,
                   ),
                   maxLines: 2,
                 ),
@@ -342,7 +342,7 @@ class _PointSelectionScreenState extends ConsumerState<PointSelectionScreen> {
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     backgroundColor: widget.mode == PointSelectionMode.blacklist
-                        ? (isDark ? AppColors.darkLove : AppColors.dawnLove)
+                        ? (isDark ? AppTokens.dangerDark : AppTokens.dangerLight)
                         : null,
                   ),
                 ),
@@ -395,8 +395,8 @@ class _PointSelectionScreenState extends ConsumerState<PointSelectionScreen> {
           SnackBar(
             content: Text('Punto $label escluso'),
             backgroundColor: Theme.of(context).brightness == Brightness.dark
-                ? AppColors.darkPine
-                : AppColors.dawnPine,
+                ? AppTokens.accent
+                : AppTokens.accent,
           ),
         );
         context.pop();
@@ -425,8 +425,8 @@ class _SuggestedPointCard extends StatelessWidget {
 
     return Card(
       color: isDark
-          ? AppColors.darkPine.withValues(alpha: 0.2)
-          : AppColors.dawnPine.withValues(alpha: 0.1),
+          ? AppTokens.accent.withValues(alpha: 0.2)
+          : AppTokens.accent.withValues(alpha: 0.1),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
@@ -436,7 +436,7 @@ class _SuggestedPointCard extends StatelessWidget {
             children: [
               Icon(
                 Icons.lightbulb_outline,
-                color: isDark ? AppColors.darkPine : AppColors.dawnPine,
+                color: isDark ? AppTokens.accent : AppTokens.accent,
                 size: 32,
               ),
               const SizedBox(width: 16),
@@ -454,8 +454,8 @@ class _SuggestedPointCard extends StatelessWidget {
                       'Tocca per selezionare automaticamente',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: isDark
-                            ? AppColors.darkSubtle
-                            : AppColors.dawnSubtle,
+                            ? AppTokens.darkSubtle
+                            : AppTokens.lightSubtle,
                       ),
                     ),
                   ],
@@ -463,7 +463,7 @@ class _SuggestedPointCard extends StatelessWidget {
               ),
               Icon(
                 Icons.touch_app,
-                color: isDark ? AppColors.darkPine : AppColors.dawnPine,
+                color: isDark ? AppTokens.accent : AppTokens.accent,
               ),
             ],
           ),
@@ -509,7 +509,7 @@ class _ZoneGrid extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
-                      color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                      color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
                     ),
                   ),
                 ),
@@ -521,7 +521,7 @@ class _ZoneGrid extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
-                      color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                      color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
                     ),
                   ),
                 ),
@@ -542,7 +542,7 @@ class _ZoneGrid extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
-                  color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                  color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
                 ),
               ),
               const SizedBox(height: 8),
@@ -638,14 +638,14 @@ class _ZoneButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bgColor = isSelected
-        ? (isDark ? AppColors.darkFoam : AppColors.dawnFoam)
-        : (isDark ? AppColors.darkSurface : AppColors.dawnSurface);
+        ? (isDark ? AppTokens.accentEnd : AppTokens.accentEnd)
+        : (isDark ? AppTokens.darkSurface : AppTokens.lightSurface);
     final textColor = isSelected
-        ? (isDark ? AppColors.darkBase : AppColors.dawnBase)
-        : (isDark ? AppColors.darkText : AppColors.dawnText);
+        ? (isDark ? AppTokens.darkBg : AppTokens.lightBgTop)
+        : (isDark ? AppTokens.darkInk : AppTokens.lightInk);
     final subtitleColor = isSelected
         ? textColor.withValues(alpha: 0.8)
-        : (isDark ? AppColors.darkMuted : AppColors.dawnMuted);
+        : (isDark ? AppTokens.darkMuted : AppTokens.lightMuted);
 
     return GestureDetector(
       onTap: onTap,
@@ -656,7 +656,7 @@ class _ZoneButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected
-                ? (isDark ? AppColors.darkPine : AppColors.dawnPine)
+                ? (isDark ? AppTokens.accent : AppTokens.accent)
                 : Colors.transparent,
             width: 2,
           ),
@@ -807,7 +807,7 @@ class _ZoneDetailCardState extends ConsumerState<_ZoneDetailCard> {
     final theme = Theme.of(context);
 
     return Card(
-      color: isDark ? AppColors.darkOverlay : AppColors.dawnOverlay,
+      color: isDark ? AppTokens.darkOverlay : AppTokens.lightOverlay,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -832,8 +832,8 @@ class _ZoneDetailCardState extends ConsumerState<_ZoneDetailCard> {
                         '${zone.numberOfPoints} punti disponibili',
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: isDark
-                              ? AppColors.darkSubtle
-                              : AppColors.dawnSubtle,
+                              ? AppTokens.darkSubtle
+                              : AppTokens.lightSubtle,
                         ),
                       ),
                     ],
@@ -848,7 +848,7 @@ class _ZoneDetailCardState extends ConsumerState<_ZoneDetailCard> {
             Text(
               _getZoneInstructions(),
               style: theme.textTheme.bodySmall?.copyWith(
-                color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
                 fontStyle: FontStyle.italic,
               ),
             ),
@@ -880,22 +880,22 @@ class _ZoneDetailCardState extends ConsumerState<_ZoneDetailCard> {
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: isDark
-                      ? AppColors.darkPine.withValues(alpha: 0.2)
-                      : AppColors.dawnPine.withValues(alpha: 0.1),
+                      ? AppTokens.accent.withValues(alpha: 0.2)
+                      : AppTokens.accent.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
                   children: [
                     Icon(
                       Icons.check_circle,
-                      color: isDark ? AppColors.darkPine : AppColors.dawnPine,
+                      color: isDark ? AppTokens.accent : AppTokens.accent,
                     ),
                     const SizedBox(width: 8),
                     Text(
                       'Selezionato: ${_getPointLabel(selectedPoint)}',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: isDark ? AppColors.darkPine : AppColors.dawnPine,
+                        color: isDark ? AppTokens.accent : AppTokens.accent,
                       ),
                     ),
                   ],
@@ -912,7 +912,7 @@ class _ZoneDetailCardState extends ConsumerState<_ZoneDetailCard> {
               children: [
                 Icon(
                   Icons.history,
-                  color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
+                  color: isDark ? AppTokens.accentEnd : AppTokens.accentEnd,
                   size: 20,
                 ),
                 const SizedBox(width: 8),
@@ -928,7 +928,7 @@ class _ZoneDetailCardState extends ConsumerState<_ZoneDetailCard> {
             Text(
               'I punti sono ordinati dal meno usato (consigliato) al più recente',
               style: theme.textTheme.bodySmall?.copyWith(
-                color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
                 fontStyle: FontStyle.italic,
               ),
             ),
@@ -1080,8 +1080,8 @@ class _ViewToggleButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = isSelected
-        ? (isDark ? AppColors.darkFoam : AppColors.dawnFoam)
-        : (isDark ? AppColors.darkMuted : AppColors.dawnMuted);
+        ? (isDark ? AppTokens.accentEnd : AppTokens.accentEnd)
+        : (isDark ? AppTokens.darkMuted : AppTokens.lightMuted);
 
     return GestureDetector(
       onTap: onTap,
@@ -1128,11 +1128,11 @@ enum PointUsageLevel {
 extension PointUsageLevelExtension on PointUsageLevel {
   Color getColor(bool isDark) {
     return switch (this) {
-      PointUsageLevel.neverUsed => isDark ? AppColors.darkPine : AppColors.dawnPine,
-      PointUsageLevel.safe => isDark ? AppColors.darkPine : AppColors.dawnPine,
-      PointUsageLevel.caution => isDark ? AppColors.darkGold : AppColors.dawnGold,
+      PointUsageLevel.neverUsed => isDark ? AppTokens.accent : AppTokens.accent,
+      PointUsageLevel.safe => isDark ? AppTokens.accent : AppTokens.accent,
+      PointUsageLevel.caution => isDark ? AppTokens.warnDark : AppTokens.warnLight,
       PointUsageLevel.warning => Colors.orange,
-      PointUsageLevel.avoid => isDark ? AppColors.darkLove : AppColors.dawnLove,
+      PointUsageLevel.avoid => isDark ? AppTokens.dangerDark : AppTokens.dangerLight,
     };
   }
 
@@ -1257,7 +1257,7 @@ class _PointHistoryCard extends StatelessWidget {
     return Material(
       color: isSelected
           ? usageColor.withValues(alpha: 0.2)
-          : (isDark ? AppColors.darkOverlay : AppColors.dawnOverlay),
+          : (isDark ? AppTokens.darkOverlay : AppTokens.lightOverlay),
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
         onTap: onTap,
@@ -1305,7 +1305,7 @@ class _PointHistoryCard extends StatelessWidget {
                         decoration:
                             item.isBlacklisted ? TextDecoration.lineThrough : null,
                         color: item.isBlacklisted
-                            ? (isDark ? AppColors.darkMuted : AppColors.dawnMuted)
+                            ? (isDark ? AppTokens.darkMuted : AppTokens.lightMuted)
                             : null,
                       ),
                     ),
@@ -1317,7 +1317,7 @@ class _PointHistoryCard extends StatelessWidget {
                               ? 'Ultima: ${DateFormat('d MMM yyyy', 'it').format(item.lastUsed!)}'
                               : 'Mai usato'),
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                        color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
                       ),
                     ),
                   ],
@@ -1356,7 +1356,7 @@ class _PointHistoryCard extends StatelessWidget {
                 const SizedBox(width: 8),
                 Icon(
                   Icons.chevron_right,
-                  color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                  color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
                 ),
               ],
             ],

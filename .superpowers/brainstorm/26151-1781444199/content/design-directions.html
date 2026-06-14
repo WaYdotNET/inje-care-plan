@@ -1,0 +1,110 @@
+<h2>Tre direzioni visive per la nuova Home</h2>
+<p class="subtitle">Tutte pulite, minimali e moderne — ma con tre personalità diverse. Quale "vibe" senti più adatta a un pubblico giovane? Clicca per scegliere.</p>
+
+<style>
+  .phone {
+    width: 230px; margin: 0 auto;
+    border-radius: 30px; padding: 14px 14px 0;
+    box-shadow: 0 12px 30px rgba(0,0,0,.12);
+    font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+    overflow: hidden;
+  }
+  .pstatus { display:flex; justify-content:space-between; font-size:10px; font-weight:600; padding:2px 6px 10px; opacity:.7; }
+  .pgreet { font-size:13px; opacity:.6; }
+  .ptitle { font-size:20px; font-weight:800; letter-spacing:-.02em; margin:2px 0 14px; }
+  .ring { width:78px; height:78px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:18px; }
+  .ringin { width:60px; height:60px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+  .pcard { border-radius:20px; padding:14px; margin-bottom:10px; }
+  .prow { display:flex; align-items:center; gap:12px; }
+  .pbtn { border-radius:14px; padding:11px; text-align:center; font-weight:700; font-size:13px; margin-top:4px; }
+  .pnav { display:flex; justify-content:space-around; padding:12px 0 14px; margin-top:6px; font-size:18px; }
+  .chip { font-size:10px; font-weight:700; padding:3px 9px; border-radius:999px; display:inline-block; }
+  .lbl { font-size:11px; opacity:.6; }
+  .big { font-size:15px; font-weight:700; }
+</style>
+
+<div class="cards">
+
+  <!-- ============ A: Soft & Calm ============ -->
+  <div class="card" data-choice="soft" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:18px 0; background:#eef1ef;">
+      <div class="phone" style="background:#f7f7f4; color:#1f2421;">
+        <div class="pstatus" style="color:#1f2421;"><span>9:41</span><span>● ● ●</span></div>
+        <div class="pgreet">Ciao, Carlo 👋</div>
+        <div class="ptitle">Oggi</div>
+        <div class="pcard" style="background:#ffffff; box-shadow:0 4px 14px rgba(0,0,0,.04);">
+          <span class="chip" style="background:#dcefe7; color:#2f8f6b;">Prossima · 20:30</span>
+          <div class="big" style="margin-top:8px;">Coscia Dx · 3</div>
+          <div class="lbl">tra 3 ore</div>
+          <div class="pbtn" style="background:#3aa981; color:#fff;">Registra iniezione</div>
+        </div>
+        <div class="pcard prow" style="background:#ffffff; box-shadow:0 4px 14px rgba(0,0,0,.04);">
+          <div class="ring" style="background:conic-gradient(#3aa981 86%, #e7ebe9 0);">
+            <div class="ringin" style="background:#fff;">86%</div>
+          </div>
+          <div><div class="big">Aderenza</div><div class="lbl">ultimi 30 giorni</div></div>
+        </div>
+        <div class="pnav" style="color:#9aa39e;">🏠 📅 ＋ 📊 ⚙️</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A · Soft &amp; Calm</h3>
+      <p>Tanta aria, card morbide arrotondate, un solo accento verde rassicurante. Tono gentile e curato.</p>
+    </div>
+  </div>
+
+  <!-- ============ B: Bold & Focused ============ -->
+  <div class="card" data-choice="bold" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:18px 0; background:#e9e9ec;">
+      <div class="phone" style="background:#ffffff; color:#0a0a0a; border:1px solid #ececef;">
+        <div class="pstatus" style="color:#0a0a0a;"><span>9:41</span><span>● ● ●</span></div>
+        <div class="pgreet" style="text-transform:uppercase; letter-spacing:.12em; font-size:10px; font-weight:700;">Oggi</div>
+        <div class="ptitle" style="font-size:26px;">Prossima<br>iniezione</div>
+        <div class="pcard" style="background:#0a0a0a; color:#fff; border-radius:18px;">
+          <div style="font-size:11px; opacity:.6; text-transform:uppercase; letter-spacing:.1em;">20:30 · tra 3h</div>
+          <div style="font-size:22px; font-weight:800; margin:6px 0 12px;">Coscia Dx · 3</div>
+          <div class="pbtn" style="background:#c2f73f; color:#0a0a0a; border-radius:12px;">Registra →</div>
+        </div>
+        <div class="prow" style="border-top:1px solid #ececef; padding-top:12px; margin-top:4px;">
+          <div style="font-size:34px; font-weight:800; letter-spacing:-.03em;">86<span style="font-size:16px;">%</span></div>
+          <div class="lbl" style="text-transform:uppercase; letter-spacing:.08em;">aderenza<br>30 giorni</div>
+        </div>
+        <div class="pnav" style="color:#bdbdbd;">🏠 📅 ＋ 📊 ⚙️</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B · Bold &amp; Focused</h3>
+      <p>Alto contrasto, nero/bianco, un accento elettrico (lime). Tipografia grande ed editoriale, zero fronzoli.</p>
+    </div>
+  </div>
+
+  <!-- ============ C: Warm Gradient ============ -->
+  <div class="card" data-choice="gradient" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:18px 0; background:#efe9f3;">
+      <div class="phone" style="background:linear-gradient(170deg,#fbf0ff,#eef3ff); color:#241b34;">
+        <div class="pstatus" style="color:#241b34;"><span>9:41</span><span>● ● ●</span></div>
+        <div class="pgreet">Ciao, Carlo ✨</div>
+        <div class="ptitle">La tua giornata</div>
+        <div class="pcard" style="background:linear-gradient(135deg,#7c5cff,#b06 bff); background:linear-gradient(135deg,#7c5cff,#c86bff); color:#fff; box-shadow:0 10px 24px rgba(124,92,255,.35);">
+          <span class="chip" style="background:rgba(255,255,255,.22); color:#fff;">Prossima · 20:30</span>
+          <div class="big" style="margin-top:8px; font-size:17px;">Coscia Dx · 3</div>
+          <div class="lbl" style="color:rgba(255,255,255,.8);">tra 3 ore</div>
+          <div class="pbtn" style="background:#fff; color:#7c5cff;">Registra iniezione</div>
+        </div>
+        <div class="pcard prow" style="background:rgba(255,255,255,.65); backdrop-filter:blur(8px);">
+          <div class="ring" style="background:conic-gradient(#7c5cff 86%, #e7e1f5 0);">
+            <div class="ringin" style="background:#fbf0ff;">86%</div>
+          </div>
+          <div><div class="big">Aderenza</div><div class="lbl">ultimi 30 giorni</div></div>
+        </div>
+        <div class="pnav" style="color:#a99cc7;">🏠 📅 ＋ 📊 ⚙️</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C · Warm Gradient</h3>
+      <p>Accenti a gradiente, card "glassy", vibrante ma morbido. Energia giovane e amichevole.</p>
+    </div>
+  </div>
+
+</div>
+<p class="subtitle" style="margin-top:18px;">Nota: sono bozze di direzione (colore, tipografia, tono) — non layout definitivi. Possiamo mescolare elementi delle tre.</p>

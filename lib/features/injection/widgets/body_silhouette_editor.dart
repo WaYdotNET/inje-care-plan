@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/database/app_database.dart' as db;
 import '../../../core/database/point_constants.dart';
 
@@ -194,7 +194,7 @@ class _BodySilhouetteEditorState extends State<BodySilhouetteEditor>
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final color = widget.silhouetteColor ??
-        (isDark ? AppColors.darkFoam : AppColors.dawnFoam);
+        (isDark ? AppTokens.accentEnd : AppTokens.accentEnd);
 
     // Se la vista è controllata esternamente, non mostrare il toggle
     final showViewToggle = widget.onViewChanged == null;
@@ -296,8 +296,8 @@ class _BodySilhouetteEditorState extends State<BodySilhouetteEditor>
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: (isDark
-                              ? AppColors.darkSurface
-                              : AppColors.dawnSurface)
+                              ? AppTokens.darkSurface
+                              : AppTokens.lightSurface)
                           .withValues(alpha: 0.9),
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -335,9 +335,9 @@ class _BodySilhouetteEditorState extends State<BodySilhouetteEditor>
     final isSelected = point.pointNumber == widget.selectedPointNumber;
     final isDragging = point.pointNumber == _draggingPoint;
 
-    final primaryColor = isDark ? AppColors.darkPine : AppColors.dawnPine;
-    final secondaryColor = isDark ? AppColors.darkFoam : AppColors.dawnFoam;
-    final textColor = isDark ? AppColors.darkBase : AppColors.dawnBase;
+    final primaryColor = isDark ? AppTokens.accent : AppTokens.accent;
+    final secondaryColor = isDark ? AppTokens.accentEnd : AppTokens.accentEnd;
+    final textColor = isDark ? AppTokens.darkBg : AppTokens.lightBgTop;
 
     // Calcola posizione: usa offset locale durante drag per fluidità
     double effectiveX = point.x;
@@ -516,7 +516,7 @@ class _BodySilhouetteEditorState extends State<BodySilhouetteEditor>
     final area = zoneAreas[widget.zoneType];
     if (area == null) return const SizedBox();
 
-    final highlightColor = isDark ? AppColors.darkPine : AppColors.dawnPine;
+    final highlightColor = isDark ? AppTokens.accent : AppTokens.accent;
 
     return Positioned(
       left: area.x * constraints.maxWidth,

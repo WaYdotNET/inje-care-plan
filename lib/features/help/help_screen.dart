@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_tokens.dart';
 
 /// Help screen with user guide
 class HelpScreen extends ConsumerWidget {
@@ -390,7 +390,7 @@ class _HelpSection extends StatelessWidget {
               children: [
                 Icon(
                   icon,
-                  color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
+                  color: isDark ? AppTokens.accentEnd : AppTokens.accentEnd,
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -436,14 +436,14 @@ class _HelpStep extends StatelessWidget {
             width: 28,
             height: 28,
             decoration: BoxDecoration(
-              color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
+              color: isDark ? AppTokens.accentEnd : AppTokens.accentEnd,
               shape: BoxShape.circle,
             ),
             child: Center(
               child: Text(
                 '$number',
                 style: TextStyle(
-                  color: isDark ? AppColors.darkBase : AppColors.dawnBase,
+                  color: isDark ? AppTokens.darkBg : AppTokens.lightBgTop,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -490,12 +490,12 @@ class _InfoBox extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: (isDark ? AppColors.darkFoam : AppColors.dawnFoam).withValues(
+        color: (isDark ? AppTokens.accentEnd : AppTokens.accentEnd).withValues(
           alpha: 0.1,
         ),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: (isDark ? AppColors.darkFoam : AppColors.dawnFoam).withValues(
+          color: (isDark ? AppTokens.accentEnd : AppTokens.accentEnd).withValues(
             alpha: 0.3,
           ),
         ),
@@ -506,7 +506,7 @@ class _InfoBox extends StatelessWidget {
           Icon(
             icon,
             size: 20,
-            color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
+            color: isDark ? AppTokens.accentEnd : AppTokens.accentEnd,
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -543,13 +543,13 @@ class _ZoneList extends StatelessWidget {
         return Chip(
           label: Text('${zone.$1} (${zone.$3} punti)'),
           avatar: CircleAvatar(
-            backgroundColor: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
+            backgroundColor: isDark ? AppTokens.accentEnd : AppTokens.accentEnd,
             child: Text(
               zone.$2,
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.bold,
-                color: isDark ? AppColors.darkBase : AppColors.dawnBase,
+                color: isDark ? AppTokens.darkBg : AppTokens.lightBgTop,
               ),
             ),
           ),
@@ -575,7 +575,7 @@ class _BulletPoint extends StatelessWidget {
           Text(
             '• ',
             style: TextStyle(
-              color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
+              color: isDark ? AppTokens.accentEnd : AppTokens.accentEnd,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -598,22 +598,22 @@ class _StatusLegend extends StatelessWidget {
     return Column(
       children: [
         _LegendItem(
-          color: isDark ? AppColors.darkPine : AppColors.dawnPine,
+          color: isDark ? AppTokens.accent : AppTokens.accent,
           label: 'Completata',
           isDark: isDark,
         ),
         _LegendItem(
-          color: isDark ? AppColors.darkGold : AppColors.dawnGold,
+          color: isDark ? AppTokens.warnDark : AppTokens.warnLight,
           label: 'Programmata',
           isDark: isDark,
         ),
         _LegendItem(
-          color: isDark ? AppColors.darkLove : AppColors.dawnLove,
+          color: isDark ? AppTokens.dangerDark : AppTokens.dangerLight,
           label: 'Mancata',
           isDark: isDark,
         ),
         _LegendItem(
-          color: isDark ? AppColors.darkLove : AppColors.dawnLove,
+          color: isDark ? AppTokens.dangerDark : AppTokens.dangerLight,
           label: 'Saltata',
           isDark: isDark,
         ),
@@ -673,7 +673,7 @@ class _ExportFormat extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, color: isDark ? AppColors.darkFoam : AppColors.dawnFoam),
+        Icon(icon, color: isDark ? AppTokens.accentEnd : AppTokens.accentEnd),
         const SizedBox(width: 12),
         Expanded(
           child: Column(

@@ -1,0 +1,599 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <title>InjeCare Plan — Feature Graphic (1024x500)</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      width: 1080px;
+      overflow-x: hidden;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      color: #e0def4;
+      background: #191724;
+    }
+
+    .canvas {
+      width: 1024px;
+      height: 500px;
+      background:
+        radial-gradient(900px 600px at 15% 40%, rgba(196, 167, 231, 0.25), transparent 60%),
+        radial-gradient(700px 500px at 80% 30%, rgba(156, 207, 216, 0.20), transparent 55%),
+        radial-gradient(500px 400px at 50% 80%, rgba(235, 188, 186, 0.12), transparent 50%),
+        linear-gradient(135deg, #191724 0%, #1f1d2e 50%, #26233a 100%);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 64px;
+      position: relative;
+    }
+
+    .canvas::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 49px,
+          rgba(110, 106, 134, 0.06) 49px,
+          rgba(110, 106, 134, 0.06) 50px
+        );
+      pointer-events: none;
+    }
+
+    .left {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      max-width: 560px;
+      z-index: 1;
+    }
+
+    .brand-row {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .icon {
+      width: 80px;
+      height: 80px;
+      border-radius: 20px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+      background: #26233a;
+    }
+
+    .app-name {
+      font-size: 48px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      line-height: 1.1;
+      background: linear-gradient(135deg, #e0def4 0%, #c4a7e7 50%, #9ccfd8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .tagline {
+      font-size: 20px;
+      color: #908caa;
+      line-height: 1.4;
+      max-width: 480px;
+    }
+
+    .pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .pill {
+      font-size: 14px;
+      font-weight: 600;
+      color: #e0def4;
+      padding: 8px 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(156, 207, 216, 0.3);
+      background: rgba(31, 29, 46, 0.7);
+      backdrop-filter: blur(4px);
+    }
+
+    .pill:nth-child(2) { border-color: rgba(196, 167, 231, 0.3); }
+    .pill:nth-child(3) { border-color: rgba(235, 188, 186, 0.3); }
+    .pill:nth-child(4) { border-color: rgba(246, 193, 119, 0.3); }
+
+    .right {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      z-index: 1;
+    }
+
+    .phone-frame {
+      width: 150px;
+      height: 326px;
+      border-radius: 20px;
+      border: 2px solid rgba(156, 207, 216, 0.25);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+      overflow: hidden;
+      background: #1f1d2e;
+    }
+
+    .phone-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: crisp-edges;
+    }
+
+    .phone-frame:nth-child(2) {
+      transform: translateY(20px);
+      border-color: rgba(196, 167, 231, 0.25);
+    }
+
+    .phone-frame:nth-child(3) {
+      transform: translateY(-20px);
+      border-color: rgba(235, 188, 186, 0.25);
+    }
+
+    /* Istruzioni (non visibili nel rendering 1024x500) */
+
+    /* ── Phone Screenshot Slides (1080x2400) ── */
+    .screenshot-slide {
+      width: 1080px;
+      height: 2400px;
+      background:
+        radial-gradient(800px 600px at 20% 15%, rgba(196, 167, 231, 0.20), transparent 60%),
+        radial-gradient(600px 500px at 80% 85%, rgba(156, 207, 216, 0.15), transparent 55%),
+        linear-gradient(160deg, #191724 0%, #1f1d2e 50%, #26233a 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 48px;
+      position: relative;
+      page-break-before: always;
+    }
+
+    .screenshot-slide::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 79px,
+          rgba(110, 106, 134, 0.04) 79px,
+          rgba(110, 106, 134, 0.04) 80px
+        );
+      pointer-events: none;
+    }
+
+    .slide-header {
+      z-index: 1;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .slide-title {
+      font-size: 64px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      background: linear-gradient(135deg, #e0def4 0%, #c4a7e7 50%, #9ccfd8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .slide-subtitle {
+      font-size: 36px;
+      color: #908caa;
+      max-width: 800px;
+      line-height: 1.3;
+    }
+
+    .slide-phone {
+      width: 540px;
+      height: 1170px;
+      border-radius: 40px;
+      border: 4px solid rgba(156, 207, 216, 0.25);
+      box-shadow: 0 40px 100px rgba(0, 0, 0, 0.5);
+      overflow: hidden;
+      background: #1f1d2e;
+      z-index: 1;
+    }
+
+    .slide-phone img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .slide-phone.accent-iris { border-color: rgba(196, 167, 231, 0.3); }
+    .slide-phone.accent-rose { border-color: rgba(235, 188, 186, 0.3); }
+    .slide-phone.accent-gold { border-color: rgba(246, 193, 119, 0.3); }
+    .slide-phone.accent-love { border-color: rgba(235, 111, 146, 0.3); }
+    .slide-phone.accent-pine { border-color: rgba(49, 116, 143, 0.4); }
+
+    .slide-pill {
+      font-size: 28px;
+      font-weight: 600;
+      color: #e0def4;
+      padding: 14px 32px;
+      border-radius: 999px;
+      border: 2px solid rgba(156, 207, 216, 0.3);
+      background: rgba(31, 29, 46, 0.7);
+      z-index: 1;
+    }
+
+    /* ── Tablet 7" (1200x1920) ── */
+    .tablet7-slide {
+      width: 1200px;
+      height: 1920px;
+      background:
+        radial-gradient(800px 600px at 20% 15%, rgba(196, 167, 231, 0.20), transparent 60%),
+        radial-gradient(600px 500px at 80% 85%, rgba(156, 207, 216, 0.15), transparent 55%),
+        linear-gradient(160deg, #191724 0%, #1f1d2e 50%, #26233a 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 40px;
+      position: relative;
+    }
+
+    .tablet7-slide::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        repeating-linear-gradient(0deg, transparent, transparent 79px,
+          rgba(110, 106, 134, 0.04) 79px, rgba(110, 106, 134, 0.04) 80px);
+      pointer-events: none;
+    }
+
+    .tablet7-slide .slide-header { z-index: 1; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+    .tablet7-slide .slide-title { font-size: 56px; }
+    .tablet7-slide .slide-subtitle { font-size: 30px; }
+
+    .tablet7-phone {
+      width: 580px;
+      height: 1258px;
+      border-radius: 40px;
+      border: 4px solid rgba(156, 207, 216, 0.25);
+      box-shadow: 0 40px 100px rgba(0, 0, 0, 0.5);
+      overflow: hidden;
+      background: #1f1d2e;
+      z-index: 1;
+    }
+
+    .tablet7-phone img { width: 100%; height: 100%; object-fit: cover; }
+    .tablet7-phone.accent-iris { border-color: rgba(196, 167, 231, 0.3); }
+    .tablet7-phone.accent-rose { border-color: rgba(235, 188, 186, 0.3); }
+    .tablet7-phone.accent-gold { border-color: rgba(246, 193, 119, 0.3); }
+    .tablet7-phone.accent-love { border-color: rgba(235, 111, 146, 0.3); }
+    .tablet7-phone.accent-pine { border-color: rgba(49, 116, 143, 0.4); }
+
+    /* ── Tablet 10" (1600x2560) ── */
+    .tablet10-slide {
+      width: 1600px;
+      height: 2560px;
+      background:
+        radial-gradient(1000px 800px at 20% 15%, rgba(196, 167, 231, 0.20), transparent 60%),
+        radial-gradient(800px 600px at 80% 85%, rgba(156, 207, 216, 0.15), transparent 55%),
+        linear-gradient(160deg, #191724 0%, #1f1d2e 50%, #26233a 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 56px;
+      position: relative;
+    }
+
+    .tablet10-slide::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        repeating-linear-gradient(0deg, transparent, transparent 79px,
+          rgba(110, 106, 134, 0.04) 79px, rgba(110, 106, 134, 0.04) 80px);
+      pointer-events: none;
+    }
+
+    .tablet10-slide .slide-header { z-index: 1; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 18px; }
+    .tablet10-slide .slide-title { font-size: 72px; }
+    .tablet10-slide .slide-subtitle { font-size: 38px; max-width: 1100px; }
+
+    .tablet10-phone {
+      width: 720px;
+      height: 1562px;
+      border-radius: 48px;
+      border: 5px solid rgba(156, 207, 216, 0.25);
+      box-shadow: 0 50px 120px rgba(0, 0, 0, 0.5);
+      overflow: hidden;
+      background: #1f1d2e;
+      z-index: 1;
+    }
+
+    .tablet10-phone img { width: 100%; height: 100%; object-fit: cover; }
+    .tablet10-phone.accent-iris { border-color: rgba(196, 167, 231, 0.3); }
+    .tablet10-phone.accent-rose { border-color: rgba(235, 188, 186, 0.3); }
+    .tablet10-phone.accent-gold { border-color: rgba(246, 193, 119, 0.3); }
+    .tablet10-phone.accent-love { border-color: rgba(235, 111, 146, 0.3); }
+    .tablet10-phone.accent-pine { border-color: rgba(49, 116, 143, 0.4); }
+
+    .tablet-pill {
+      font-size: 32px;
+      font-weight: 600;
+      color: #e0def4;
+      padding: 16px 36px;
+      border-radius: 999px;
+      border: 2px solid rgba(156, 207, 216, 0.3);
+      background: rgba(31, 29, 46, 0.7);
+      z-index: 1;
+    }
+  </style>
+</head>
+<body>
+
+<div class="canvas">
+  <div class="left">
+    <div class="brand-row">
+      <!--
+        Sostituire il tag <div class="icon"> con:
+        <img class="icon" src="../AppIcons/playstore.png" alt="InjeCare Plan" />
+      -->
+      <img class="icon" src="../AppIcons/playstore.png" alt="InjeCare Plan" />
+    </div>
+    <div class="app-name">InjeCare Plan</div>
+    <div class="tagline">La tua terapia iniettiva, sotto controllo.</div>
+    <div class="pills">
+      <span class="pill">Calendario</span>
+      <span class="pill">Rotazione zone</span>
+      <span class="pill">Privacy-first</span>
+      <span class="pill">Offline</span>
+    </div>
+  </div>
+
+  <div class="right">
+    <!--
+      Sostituire i tag <div class="phone-frame"> con immagini reali se desiderato:
+      <div class="phone-frame"><img src="../screenshots/02_home.png" alt="Home" /></div>
+    -->
+    <div class="phone-frame">
+      <img src="../screenshots/material_icons.png" alt="Home" />
+    </div>
+    <div class="phone-frame">
+      <img src="../screenshots/material_zones.png" alt="Zone" />
+    </div>
+    <div class="phone-frame">
+      <img src="../screenshots/04_settings_full.png" alt="Impostazioni" />
+    </div>
+  </div>
+</div>
+
+<!-- ── Screenshot 1: Home ── -->
+<div class="screenshot-slide" id="slide-1">
+  <div class="slide-header">
+    <div class="slide-title">Home</div>
+    <div class="slide-subtitle">La tua prossima iniezione, a colpo d'occhio</div>
+  </div>
+  <div class="slide-phone">
+    <img src="../screenshots/material_icons.png" alt="Home" />
+  </div>
+  <span class="slide-pill">Suggerimenti AI integrati</span>
+</div>
+
+<!-- ── Screenshot 2: Selezione zone ── -->
+<div class="screenshot-slide" id="slide-2">
+  <div class="slide-header">
+    <div class="slide-title">Zone e punti</div>
+    <div class="slide-subtitle">Seleziona zona e punto con guida intelligente</div>
+  </div>
+  <div class="slide-phone accent-iris">
+    <img src="../screenshots/material_zones.png" alt="Selezione zone" />
+  </div>
+  <span class="slide-pill">Rotazione automatica</span>
+</div>
+
+<!-- ── Screenshot 3: Selezione punto dettaglio ── -->
+<div class="screenshot-slide" id="slide-3">
+  <div class="slide-header">
+    <div class="slide-title">Mappa corpo</div>
+    <div class="slide-subtitle">Scegli il punto esatto sulla mappa interattiva</div>
+  </div>
+  <div class="slide-phone accent-rose">
+    <img src="../assets/screenshots/record_injection.png" alt="Selezione punto" />
+  </div>
+  <span class="slide-pill">6 punti per zona</span>
+</div>
+
+<!-- ── Screenshot 4: Calendario ── -->
+<div class="screenshot-slide" id="slide-4">
+  <div class="slide-header">
+    <div class="slide-title">Calendario</div>
+    <div class="slide-subtitle">Panoramica mensile delle iniezioni</div>
+  </div>
+  <div class="slide-phone accent-pine">
+    <img src="../screenshots/02_calendar.png" alt="Calendario" />
+  </div>
+  <span class="slide-pill">Programmate, completate, mancate</span>
+</div>
+
+<!-- ── Screenshot 5: Impostazioni ── -->
+<div class="screenshot-slide" id="slide-5">
+  <div class="slide-header">
+    <div class="slide-title">Impostazioni</div>
+    <div class="slide-subtitle">Personalizza piano, notifiche, tema e dati</div>
+  </div>
+  <div class="slide-phone accent-gold">
+    <img src="../screenshots/04_settings_full.png" alt="Impostazioni" />
+  </div>
+  <span class="slide-pill">Export PDF, CSV e import</span>
+</div>
+
+<!-- ── Screenshot 6: Statistiche ── -->
+<div class="screenshot-slide" id="slide-6">
+  <div class="slide-header">
+    <div class="slide-title">Statistiche</div>
+    <div class="slide-subtitle">Aderenza, streak e trend settimanale</div>
+  </div>
+  <div class="slide-phone accent-love">
+    <img src="../assets/screenshots/statistics.png" alt="Statistiche" />
+  </div>
+  <span class="slide-pill">Monitora i tuoi progressi</span>
+</div>
+
+<!-- ── Screenshot 7: Storico ── -->
+<div class="screenshot-slide" id="slide-7">
+  <div class="slide-header">
+    <div class="slide-title">Storico</div>
+    <div class="slide-subtitle">Tutte le iniezioni, con filtri e export</div>
+  </div>
+  <div class="slide-phone accent-iris">
+    <img src="../assets/screenshots/history.png" alt="Storico" />
+  </div>
+  <span class="slide-pill">Condividi col medico</span>
+</div>
+
+<!-- ── Screenshot 8: Selezione punto iniezione ── -->
+<div class="screenshot-slide" id="slide-8">
+  <div class="slide-header">
+    <div class="slide-title">Registra</div>
+    <div class="slide-subtitle">Scegli la zona e registra l'iniezione</div>
+  </div>
+  <div class="slide-phone accent-rose">
+    <img src="../screenshots/05_point_selection.png" alt="Registra iniezione" />
+  </div>
+  <span class="slide-pill">Privacy-first, 100% offline</span>
+</div>
+
+<!-- ══════════ TABLET 7" (1200x1920) ══════════ -->
+
+<div class="tablet7-slide" id="tab7-1">
+  <div class="slide-header"><div class="slide-title">Home</div><div class="slide-subtitle">La tua prossima iniezione, a colpo d'occhio</div></div>
+  <div class="tablet7-phone"><img src="../screenshots/material_icons.png" alt="Home" /></div>
+  <span class="tablet-pill">Suggerimenti AI integrati</span>
+</div>
+
+<div class="tablet7-slide" id="tab7-2">
+  <div class="slide-header"><div class="slide-title">Zone e punti</div><div class="slide-subtitle">Seleziona zona e punto con guida intelligente</div></div>
+  <div class="tablet7-phone accent-iris"><img src="../screenshots/material_zones.png" alt="Zone" /></div>
+  <span class="tablet-pill">Rotazione automatica</span>
+</div>
+
+<div class="tablet7-slide" id="tab7-3">
+  <div class="slide-header"><div class="slide-title">Mappa corpo</div><div class="slide-subtitle">Scegli il punto esatto sulla mappa interattiva</div></div>
+  <div class="tablet7-phone accent-rose"><img src="../assets/screenshots/record_injection.png" alt="Mappa" /></div>
+  <span class="tablet-pill">6 punti per zona</span>
+</div>
+
+<div class="tablet7-slide" id="tab7-4">
+  <div class="slide-header"><div class="slide-title">Calendario</div><div class="slide-subtitle">Panoramica mensile delle iniezioni</div></div>
+  <div class="tablet7-phone accent-pine"><img src="../screenshots/02_calendar.png" alt="Calendario" /></div>
+  <span class="tablet-pill">Programmate, completate, mancate</span>
+</div>
+
+<div class="tablet7-slide" id="tab7-5">
+  <div class="slide-header"><div class="slide-title">Impostazioni</div><div class="slide-subtitle">Personalizza piano, notifiche, tema e dati</div></div>
+  <div class="tablet7-phone accent-gold"><img src="../screenshots/04_settings_full.png" alt="Impostazioni" /></div>
+  <span class="tablet-pill">Export PDF, CSV e import</span>
+</div>
+
+<div class="tablet7-slide" id="tab7-6">
+  <div class="slide-header"><div class="slide-title">Statistiche</div><div class="slide-subtitle">Aderenza, streak e trend settimanale</div></div>
+  <div class="tablet7-phone accent-love"><img src="../assets/screenshots/statistics.png" alt="Statistiche" /></div>
+  <span class="tablet-pill">Monitora i tuoi progressi</span>
+</div>
+
+<div class="tablet7-slide" id="tab7-7">
+  <div class="slide-header"><div class="slide-title">Storico</div><div class="slide-subtitle">Tutte le iniezioni, con filtri e export</div></div>
+  <div class="tablet7-phone accent-iris"><img src="../assets/screenshots/history.png" alt="Storico" /></div>
+  <span class="tablet-pill">Condividi col medico</span>
+</div>
+
+<div class="tablet7-slide" id="tab7-8">
+  <div class="slide-header"><div class="slide-title">Registra</div><div class="slide-subtitle">Scegli la zona e registra l'iniezione</div></div>
+  <div class="tablet7-phone accent-rose"><img src="../screenshots/05_point_selection.png" alt="Registra" /></div>
+  <span class="tablet-pill">Privacy-first, 100% offline</span>
+</div>
+
+<!-- ══════════ TABLET 10" (1600x2560) ══════════ -->
+
+<div class="tablet10-slide" id="tab10-1">
+  <div class="slide-header"><div class="slide-title">Home</div><div class="slide-subtitle">La tua prossima iniezione, a colpo d'occhio</div></div>
+  <div class="tablet10-phone"><img src="../screenshots/material_icons.png" alt="Home" /></div>
+  <span class="tablet-pill">Suggerimenti AI integrati</span>
+</div>
+
+<div class="tablet10-slide" id="tab10-2">
+  <div class="slide-header"><div class="slide-title">Zone e punti</div><div class="slide-subtitle">Seleziona zona e punto con guida intelligente</div></div>
+  <div class="tablet10-phone accent-iris"><img src="../screenshots/material_zones.png" alt="Zone" /></div>
+  <span class="tablet-pill">Rotazione automatica</span>
+</div>
+
+<div class="tablet10-slide" id="tab10-3">
+  <div class="slide-header"><div class="slide-title">Mappa corpo</div><div class="slide-subtitle">Scegli il punto esatto sulla mappa interattiva</div></div>
+  <div class="tablet10-phone accent-rose"><img src="../assets/screenshots/record_injection.png" alt="Mappa" /></div>
+  <span class="tablet-pill">6 punti per zona</span>
+</div>
+
+<div class="tablet10-slide" id="tab10-4">
+  <div class="slide-header"><div class="slide-title">Calendario</div><div class="slide-subtitle">Panoramica mensile delle iniezioni</div></div>
+  <div class="tablet10-phone accent-pine"><img src="../screenshots/02_calendar.png" alt="Calendario" /></div>
+  <span class="tablet-pill">Programmate, completate, mancate</span>
+</div>
+
+<div class="tablet10-slide" id="tab10-5">
+  <div class="slide-header"><div class="slide-title">Impostazioni</div><div class="slide-subtitle">Personalizza piano, notifiche, tema e dati</div></div>
+  <div class="tablet10-phone accent-gold"><img src="../screenshots/04_settings_full.png" alt="Impostazioni" /></div>
+  <span class="tablet-pill">Export PDF, CSV e import</span>
+</div>
+
+<div class="tablet10-slide" id="tab10-6">
+  <div class="slide-header"><div class="slide-title">Statistiche</div><div class="slide-subtitle">Aderenza, streak e trend settimanale</div></div>
+  <div class="tablet10-phone accent-love"><img src="../assets/screenshots/statistics.png" alt="Statistiche" /></div>
+  <span class="tablet-pill">Monitora i tuoi progressi</span>
+</div>
+
+<div class="tablet10-slide" id="tab10-7">
+  <div class="slide-header"><div class="slide-title">Storico</div><div class="slide-subtitle">Tutte le iniezioni, con filtri e export</div></div>
+  <div class="tablet10-phone accent-iris"><img src="../assets/screenshots/history.png" alt="Storico" /></div>
+  <span class="tablet-pill">Condividi col medico</span>
+</div>
+
+<div class="tablet10-slide" id="tab10-8">
+  <div class="slide-header"><div class="slide-title">Registra</div><div class="slide-subtitle">Scegli la zona e registra l'iniezione</div></div>
+  <div class="tablet10-phone accent-rose"><img src="../screenshots/05_point_selection.png" alt="Registra" /></div>
+  <span class="tablet-pill">Privacy-first, 100% offline</span>
+</div>
+
+<!--
+  ISTRUZIONI PER ESPORTARE LA FEATURE GRAPHIC
+
+  Opzione 1 — Screenshot manuale:
+  1. Apri questo file nel browser
+  2. Ridimensiona la finestra a 1024x500px (usa DevTools > Toggle device toolbar)
+  3. Fai uno screenshot della viewport
+
+  Opzione 2 — Chrome DevTools:
+  1. Apri questo file in Chrome
+  2. Apri DevTools (F12) > Ctrl+Shift+P > "Capture full size screenshot"
+  3. Oppure usa "Capture node screenshot" sull'elemento .canvas
+
+  Opzione 3 — CLI con Puppeteer/Playwright:
+  npx playwright screenshot feature_graphic.html feature_graphic.png \-\-viewport-size=1024,500
+
+  Il risultato deve essere un file PNG di esattamente 1024x500 pixel.
+-->
+
+</body>
+</html>

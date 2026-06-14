@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_tokens.dart';
 import 'statistics_provider.dart';
 import 'widgets/adherence_chart.dart';
 import 'widgets/zone_heatmap.dart';
@@ -183,7 +183,7 @@ class _StatsOverview extends StatelessWidget {
                     Text(
                       'Aderenza',
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                        color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
                       ),
                     ),
                   ],
@@ -202,19 +202,19 @@ class _StatsOverview extends StatelessWidget {
                 _StatItem(
                   value: '${stats.completedCount}',
                   label: 'Completate',
-                  color: isDark ? AppColors.darkPine : AppColors.dawnPine,
+                  color: isDark ? AppTokens.accent : AppTokens.accent,
                   icon: Icons.check_circle,
                 ),
                 _StatItem(
                   value: '${stats.skippedCount}',
                   label: 'Saltate',
-                  color: isDark ? AppColors.darkLove : AppColors.dawnLove,
+                  color: isDark ? AppTokens.dangerDark : AppTokens.dangerLight,
                   icon: Icons.cancel,
                 ),
                 _StatItem(
                   value: '${stats.scheduledCount}',
                   label: 'Programmate',
-                  color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
+                  color: isDark ? AppTokens.accentEnd : AppTokens.accentEnd,
                   icon: Icons.schedule,
                 ),
               ],
@@ -253,11 +253,11 @@ class _StatsOverview extends StatelessWidget {
 
   Color _getAdherenceColor(double percentage, bool isDark) {
     if (percentage >= 80) {
-      return isDark ? AppColors.darkPine : AppColors.dawnPine;
+      return isDark ? AppTokens.accent : AppTokens.accent;
     } else if (percentage >= 60) {
-      return isDark ? AppColors.darkGold : AppColors.dawnGold;
+      return isDark ? AppTokens.warnDark : AppTokens.warnLight;
     } else {
-      return isDark ? AppColors.darkLove : AppColors.dawnLove;
+      return isDark ? AppTokens.dangerDark : AppTokens.dangerLight;
     }
   }
 }
@@ -314,7 +314,7 @@ class _StreakCard extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Card(
-      color: isDark ? AppColors.darkGold.withValues(alpha: 0.2) : AppColors.dawnGold.withValues(alpha: 0.2),
+      color: isDark ? AppTokens.warnDark.withValues(alpha: 0.2) : AppTokens.warnLight.withValues(alpha: 0.2),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
@@ -322,7 +322,7 @@ class _StreakCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: isDark ? AppColors.darkGold : AppColors.dawnGold,
+                color: isDark ? AppTokens.warnDark : AppTokens.warnLight,
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -345,7 +345,7 @@ class _StreakCard extends StatelessWidget {
                   Text(
                     'Record: ${stats.longestStreak} iniezioni consecutive',
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                      color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
                     ),
                   ),
                 ],
@@ -378,7 +378,7 @@ class _SectionTitle extends StatelessWidget {
         Icon(
           icon,
           size: 20,
-          color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
+          color: isDark ? AppTokens.accentEnd : AppTokens.accentEnd,
         ),
         const SizedBox(width: 8),
         Text(

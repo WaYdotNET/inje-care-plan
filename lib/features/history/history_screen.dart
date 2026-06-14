@@ -4,7 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../app/router.dart';
-import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_tokens.dart';
+import '../../core/theme/injection_status_colors.dart';
 import '../../core/services/export_service.dart';
 import '../../core/database/app_database.dart' as db;
 import '../injection/injection_provider.dart';
@@ -47,20 +48,20 @@ class HistoryScreen extends ConsumerWidget {
                   Icon(
                     Icons.history,
                     size: 64,
-                    color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                    color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
                   ),
                   const SizedBox(height: 16),
                   Text(
                     'Nessuna iniezione registrata',
                     style: theme.textTheme.titleMedium?.copyWith(
-                      color: isDark ? AppColors.darkSubtle : AppColors.dawnSubtle,
+                      color: isDark ? AppTokens.darkSubtle : AppTokens.lightSubtle,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Le tue iniezioni appariranno qui',
                     style: theme.textTheme.bodyMedium?.copyWith(
-                      color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                      color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
                     ),
                   ),
                 ],
@@ -169,7 +170,7 @@ class _MonthSection extends StatelessWidget {
             month.toUpperCase(),
             style: theme.textTheme.labelMedium?.copyWith(
               letterSpacing: 1.2,
-              color: isDark ? AppColors.darkSubtle : AppColors.dawnSubtle,
+              color: isDark ? AppTokens.darkSubtle : AppTokens.lightSubtle,
             ),
           ),
         ),
@@ -235,8 +236,8 @@ class _HistoryCard extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 decoration: BoxDecoration(
                   color: isDark
-                      ? AppColors.darkHighlightLow
-                      : AppColors.dawnHighlightLow,
+                      ? AppTokens.darkHighlightLow
+                      : AppTokens.lightHighlightLow,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Column(
@@ -293,13 +294,13 @@ class _HistoryCard extends StatelessWidget {
                           Icon(
                             Icons.warning_amber_rounded,
                             size: 14,
-                            color: isDark ? AppColors.darkGold : AppColors.dawnGold,
+                            color: isDark ? AppTokens.warnDark : AppTokens.warnLight,
                           ),
                           const SizedBox(width: 4),
                           Text(
                             '${injection.sideEffects.split(',').length}',
                             style: theme.textTheme.bodySmall?.copyWith(
-                              color: isDark ? AppColors.darkGold : AppColors.dawnGold,
+                              color: isDark ? AppTokens.warnDark : AppTokens.warnLight,
                             ),
                           ),
                         ],

@@ -1,34 +1,35 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:injecare_plan/core/theme/app_colors.dart';
+import 'package:injecare_plan/core/theme/app_tokens.dart';
+import 'package:injecare_plan/core/theme/injection_status_colors.dart';
 
 void main() {
   group('InjectionStatusColors (Bug 3 — semaforo verde/giallo/rosso)', () {
     test('completed = verde Success (sia light che dark)', () {
       expect(
         InjectionStatusColors.getStatusColorLight('completed'),
-        AppColors.dawnSuccess,
+        AppTokens.successLight,
       );
       expect(
         InjectionStatusColors.getStatusColorDark('completed'),
-        AppColors.darkSuccess,
+        AppTokens.successDark,
       );
     });
 
     test('scheduled = giallo Gold', () {
       expect(
         InjectionStatusColors.getStatusColorLight('scheduled'),
-        AppColors.dawnGold,
+        AppTokens.warnLight,
       );
     });
 
     test('skipped/missed = rosso Love', () {
       expect(
         InjectionStatusColors.getStatusColorLight('skipped'),
-        AppColors.dawnLove,
+        AppTokens.dangerLight,
       );
       expect(
         InjectionStatusColors.getStatusColorLight('missed'),
-        AppColors.dawnLove,
+        AppTokens.dangerLight,
       );
     });
 

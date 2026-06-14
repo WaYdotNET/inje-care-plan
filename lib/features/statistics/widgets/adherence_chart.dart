@@ -2,7 +2,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../statistics_provider.dart';
 
 /// Grafico a barre per l'aderenza mensile/settimanale
@@ -20,15 +20,15 @@ class AdherenceChart extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final primaryColor = isDark ? AppColors.darkPine : AppColors.dawnPine;
-    final secondaryColor = isDark ? AppColors.darkFoam : AppColors.dawnFoam;
+    final primaryColor = isDark ? AppTokens.accent : AppTokens.accent;
+    final secondaryColor = isDark ? AppTokens.accentEnd : AppTokens.accentEnd;
 
     if (monthlyData.isEmpty) {
       return Center(
         child: Text(
           'Nessun dato disponibile',
           style: theme.textTheme.bodyMedium?.copyWith(
-            color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+            color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
           ),
         ),
       );
@@ -43,8 +43,8 @@ class AdherenceChart extends StatelessWidget {
           enabled: true,
           touchTooltipData: BarTouchTooltipData(
             getTooltipColor: (group) => isDark
-                ? AppColors.darkSurface
-                : AppColors.dawnSurface,
+                ? AppTokens.darkSurface
+                : AppTokens.lightSurface,
             tooltipRoundedRadius: 8,
             getTooltipItem: (group, groupIndex, rod, rodIndex) {
               final data = monthlyData[group.x.toInt()];
@@ -65,7 +65,7 @@ class AdherenceChart extends StatelessWidget {
                   TextSpan(
                     text: '${data.injections}/${data.expected} iniezioni',
                     style: TextStyle(
-                      color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                      color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
                       fontSize: 12,
                     ),
                   ),
@@ -89,7 +89,7 @@ class AdherenceChart extends StatelessWidget {
                   child: Text(
                     DateFormat('MMM', 'it').format(data.month),
                     style: TextStyle(
-                      color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                      color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
                       fontSize: 10,
                     ),
                   ),
@@ -106,7 +106,7 @@ class AdherenceChart extends StatelessWidget {
                 return Text(
                   '${value.toInt()}%',
                   style: TextStyle(
-                    color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                    color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
                     fontSize: 10,
                   ),
                 );
@@ -167,14 +167,14 @@ class AdherenceTrendChart extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final primaryColor = isDark ? AppColors.darkPine : AppColors.dawnPine;
+    final primaryColor = isDark ? AppTokens.accent : AppTokens.accent;
 
     if (weeklyData.isEmpty) {
       return Center(
         child: Text(
           'Nessun dato disponibile',
           style: theme.textTheme.bodyMedium?.copyWith(
-            color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+            color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
           ),
         ),
       );
@@ -188,8 +188,8 @@ class AdherenceTrendChart extends StatelessWidget {
           enabled: true,
           touchTooltipData: LineTouchTooltipData(
             getTooltipColor: (spot) => isDark
-                ? AppColors.darkSurface
-                : AppColors.dawnSurface,
+                ? AppTokens.darkSurface
+                : AppTokens.lightSurface,
             tooltipRoundedRadius: 8,
             getTooltipItems: (spots) {
               return spots.map((spot) {
@@ -230,7 +230,7 @@ class AdherenceTrendChart extends StatelessWidget {
                   child: Text(
                     DateFormat('d/M', 'it').format(data.weekStart),
                     style: TextStyle(
-                      color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                      color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
                       fontSize: 10,
                     ),
                   ),
@@ -247,7 +247,7 @@ class AdherenceTrendChart extends StatelessWidget {
                 return Text(
                   '${value.toInt()}%',
                   style: TextStyle(
-                    color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                    color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
                     fontSize: 10,
                   ),
                 );

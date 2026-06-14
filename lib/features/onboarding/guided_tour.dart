@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_tokens.dart';
 
 /// Step del tour guidato
 class TourStep {
@@ -299,7 +299,7 @@ class _TourTooltip extends StatelessWidget {
           width: 300,
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: isDark ? AppColors.darkSurface : Colors.white,
+            color: isDark ? AppTokens.darkSurface : Colors.white,
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
@@ -321,14 +321,14 @@ class _TourTooltip extends StatelessWidget {
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
                         color: isDark
-                            ? AppColors.darkPine.withValues(alpha: 0.2)
-                            : AppColors.dawnPine.withValues(alpha: 0.2),
+                            ? AppTokens.accent.withValues(alpha: 0.2)
+                            : AppTokens.accent.withValues(alpha: 0.2),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
                         step.icon,
                         size: 24,
-                        color: isDark ? AppColors.darkPine : AppColors.dawnPine,
+                        color: isDark ? AppTokens.accent : AppTokens.accent,
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -350,7 +350,7 @@ class _TourTooltip extends StatelessWidget {
               Text(
                 step.description,
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                  color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
                 ),
               ),
 
@@ -366,8 +366,8 @@ class _TourTooltip extends StatelessWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: index == currentStep
-                          ? (isDark ? AppColors.darkPine : AppColors.dawnPine)
-                          : (isDark ? AppColors.darkMuted : AppColors.dawnMuted)
+                          ? (isDark ? AppTokens.accent : AppTokens.accent)
+                          : (isDark ? AppTokens.darkMuted : AppTokens.lightMuted)
                               .withValues(alpha: 0.3),
                     ),
                   );
@@ -385,7 +385,7 @@ class _TourTooltip extends StatelessWidget {
                     child: Text(
                       'Salta',
                       style: TextStyle(
-                        color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                        color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
                       ),
                     ),
                   ),

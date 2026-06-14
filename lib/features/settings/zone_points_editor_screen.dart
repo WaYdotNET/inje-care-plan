@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_tokens.dart';
 import '../../core/database/database_provider.dart';
 import '../../models/body_zone.dart';
 import '../injection/widgets/body_silhouette_editor.dart';
@@ -244,7 +244,7 @@ class _ZonePointsEditorScreenState
             icon: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: (isDark ? AppColors.darkSurface : AppColors.dawnSurface)
+                color: (isDark ? AppTokens.darkSurface : AppTokens.lightSurface)
                     .withValues(alpha: 0.9),
                 shape: BoxShape.circle,
               ),
@@ -267,7 +267,7 @@ class _ZonePointsEditorScreenState
                 ),
                 decoration: BoxDecoration(
                   color:
-                      (isDark ? AppColors.darkSurface : AppColors.dawnSurface)
+                      (isDark ? AppTokens.darkSurface : AppTokens.lightSurface)
                           .withValues(alpha: 0.9),
                   borderRadius: BorderRadius.circular(20),
                 ),
@@ -317,8 +317,8 @@ class _ZonePointsEditorScreenState
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: isDark
-                    ? [AppColors.darkBase, AppColors.darkSurface]
-                    : [AppColors.dawnBase, AppColors.dawnSurface],
+                    ? [AppTokens.darkBg, AppTokens.darkSurface]
+                    : [AppTokens.lightBgTop, AppTokens.lightSurface],
               ),
             ),
           ),
@@ -361,7 +361,7 @@ class _ZonePointsEditorScreenState
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: (isDark ? AppColors.darkPine : AppColors.dawnPine)
+                  color: (isDark ? AppTokens.accent : AppTokens.accent)
                       .withValues(alpha: 0.95),
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
@@ -441,7 +441,7 @@ class _ZonePointsEditorScreenState
           right: 16,
         ),
         decoration: BoxDecoration(
-          color: isDark ? AppColors.darkSurface : AppColors.dawnSurface,
+          color: isDark ? AppTokens.darkSurface : AppTokens.lightSurface,
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
@@ -479,8 +479,8 @@ class _ZonePointsEditorScreenState
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        isDark ? AppColors.darkPine : AppColors.dawnPine,
-                        (isDark ? AppColors.darkPine : AppColors.dawnPine)
+                        isDark ? AppTokens.accent : AppTokens.accent,
+                        (isDark ? AppTokens.accent : AppTokens.accent)
                             .withValues(alpha: 0.7),
                       ],
                     ),
@@ -519,8 +519,8 @@ class _ZonePointsEditorScreenState
                         'X: ${(point.x * 100).toStringAsFixed(0)}% · Y: ${(point.y * 100).toStringAsFixed(0)}%',
                         style: Theme.of(ctx).textTheme.bodySmall?.copyWith(
                           color: isDark
-                              ? AppColors.darkMuted
-                              : AppColors.dawnMuted,
+                              ? AppTokens.darkMuted
+                              : AppTokens.lightMuted,
                         ),
                       ),
                     ],
@@ -546,8 +546,8 @@ class _ZonePointsEditorScreenState
               'Vista corpo',
               style: Theme.of(ctx).textTheme.labelMedium?.copyWith(
                     color: isDark
-                        ? AppColors.darkMuted
-                        : AppColors.dawnMuted,
+                        ? AppTokens.darkMuted
+                        : AppTokens.lightMuted,
                   ),
             ),
             const SizedBox(height: 6),
@@ -632,8 +632,8 @@ class _FloatingToolbar extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: isDark
-            ? AppColors.darkSurface.withValues(alpha: 0.95)
-            : AppColors.dawnSurface.withValues(alpha: 0.95),
+            ? AppTokens.darkSurface.withValues(alpha: 0.95)
+            : AppTokens.lightSurface.withValues(alpha: 0.95),
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
@@ -702,8 +702,8 @@ class _ToolbarButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final activeColor = isDark ? AppColors.darkFoam : AppColors.dawnFoam;
-    final inactiveColor = isDark ? AppColors.darkMuted : AppColors.dawnMuted;
+    final activeColor = isDark ? AppTokens.accentEnd : AppTokens.accentEnd;
+    final inactiveColor = isDark ? AppTokens.darkMuted : AppTokens.lightMuted;
 
     return InkWell(
       onTap: onTap,
@@ -749,8 +749,8 @@ class _SaveButton extends StatelessWidget {
         gradient: hasChanges
             ? LinearGradient(
                 colors: [
-                  isDark ? AppColors.darkPine : AppColors.dawnPine,
-                  (isDark ? AppColors.darkPine : AppColors.dawnPine).withValues(
+                  isDark ? AppTokens.accent : AppTokens.accent,
+                  (isDark ? AppTokens.accent : AppTokens.accent).withValues(
                     alpha: 0.8,
                   ),
                 ],
@@ -771,7 +771,7 @@ class _SaveButton extends StatelessWidget {
                 Icons.save,
                 color: hasChanges
                     ? Colors.white
-                    : (isDark ? AppColors.darkMuted : AppColors.dawnMuted),
+                    : (isDark ? AppTokens.darkMuted : AppTokens.lightMuted),
                 size: 24,
               ),
               const SizedBox(height: 4),
@@ -781,7 +781,7 @@ class _SaveButton extends StatelessWidget {
                   fontSize: 11,
                   color: hasChanges
                       ? Colors.white
-                      : (isDark ? AppColors.darkMuted : AppColors.dawnMuted),
+                      : (isDark ? AppTokens.darkMuted : AppTokens.lightMuted),
                   fontWeight: hasChanges ? FontWeight.bold : FontWeight.normal,
                 ),
               ),

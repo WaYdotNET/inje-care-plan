@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
-import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_tokens.dart';
 import '../../core/database/app_database.dart' as db;
 import '../../app/router.dart';
 import '../../models/body_zone.dart';
@@ -120,7 +120,7 @@ class ZoneDetailScreen extends ConsumerWidget {
                     Text(
                       '$availablePoints punti disponibili${blacklist.isNotEmpty ? ' (${blacklist.length} escluso/i)' : ''}',
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        color: isDark ? AppColors.darkSubtle : AppColors.dawnSubtle,
+                        color: isDark ? AppTokens.darkSubtle : AppTokens.lightSubtle,
                       ),
                     ),
                   ],
@@ -367,8 +367,8 @@ class _SuggestedCard extends StatelessWidget {
 
     return Card(
       color: isDark
-          ? AppColors.darkPine.withValues(alpha: 0.2)
-          : AppColors.dawnPine.withValues(alpha: 0.1),
+          ? AppTokens.accent.withValues(alpha: 0.2)
+          : AppTokens.accent.withValues(alpha: 0.1),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
@@ -378,7 +378,7 @@ class _SuggestedCard extends StatelessWidget {
             children: [
               Icon(
                 Icons.lightbulb_outline,
-                color: isDark ? AppColors.darkPine : AppColors.dawnPine,
+                color: isDark ? AppTokens.accent : AppTokens.accent,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -429,15 +429,15 @@ class _PointCard extends StatelessWidget {
 
   Color get _color {
     if (lastInjection == null) {
-      return isDark ? AppColors.darkPine : AppColors.dawnPine;
+      return isDark ? AppTokens.accent : AppTokens.accent;
     }
     final daysAgo = DateTime.now()
         .difference(lastInjection!.completedAt ?? lastInjection!.scheduledAt)
         .inDays;
-    if (daysAgo > 14) return isDark ? AppColors.darkPine : AppColors.dawnPine;
-    if (daysAgo > 7) return isDark ? AppColors.darkGold : AppColors.dawnGold;
-    if (daysAgo > 3) return isDark ? AppColors.darkRose : AppColors.dawnRose;
-    return isDark ? AppColors.darkLove : AppColors.dawnLove;
+    if (daysAgo > 14) return isDark ? AppTokens.accent : AppTokens.accent;
+    if (daysAgo > 7) return isDark ? AppTokens.warnDark : AppTokens.warnLight;
+    if (daysAgo > 3) return isDark ? AppTokens.darkRose : AppTokens.pinkLight;
+    return isDark ? AppTokens.dangerDark : AppTokens.dangerLight;
   }
 
   @override
@@ -530,15 +530,15 @@ class _BlacklistedPointCard extends StatelessWidget {
 
     return Card(
       color: isDark
-          ? AppColors.darkMuted.withValues(alpha: 0.2)
-          : AppColors.dawnMuted.withValues(alpha: 0.1),
+          ? AppTokens.darkMuted.withValues(alpha: 0.2)
+          : AppTokens.lightMuted.withValues(alpha: 0.1),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
             Icon(
               Icons.block,
-              color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+              color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
             ),
             const SizedBox(width: 12),
             Expanded(

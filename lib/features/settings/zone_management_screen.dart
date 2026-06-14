@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_tokens.dart';
 import '../../models/body_zone.dart';
 import '../injection/zone_provider.dart';
 
@@ -135,7 +135,7 @@ class _ZoneManagementScreenState extends ConsumerState<ZoneManagementScreen> {
               if (ctx.mounted) Navigator.pop(ctx);
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: isDark ? AppColors.darkLove : AppColors.dawnLove,
+              backgroundColor: isDark ? AppTokens.dangerDark : AppTokens.dangerLight,
             ),
             child: const Text('Elimina'),
           ),
@@ -169,14 +169,14 @@ class _ZoneTile extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       color: zone.isEnabled
-          ? (isDark ? AppColors.darkSurface : AppColors.dawnSurface)
-          : (isDark ? AppColors.darkMuted : AppColors.dawnMuted).withValues(alpha: 0.2),
+          ? (isDark ? AppTokens.darkSurface : AppTokens.lightSurface)
+          : (isDark ? AppTokens.darkMuted : AppTokens.lightMuted).withValues(alpha: 0.2),
       child: ListTile(
         leading: Container(
           width: 48,
           height: 48,
           decoration: BoxDecoration(
-            color: isDark ? AppColors.darkOverlay : AppColors.dawnOverlay,
+            color: isDark ? AppTokens.darkOverlay : AppTokens.lightOverlay,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Center(
@@ -189,7 +189,7 @@ class _ZoneTile extends StatelessWidget {
             fontWeight: FontWeight.bold,
             color: zone.isEnabled
                 ? null
-                : (isDark ? AppColors.darkMuted : AppColors.dawnMuted),
+                : (isDark ? AppTokens.darkMuted : AppTokens.lightMuted),
           ),
         ),
         subtitle: Row(
@@ -198,7 +198,7 @@ class _ZoneTile extends StatelessWidget {
               zone.code,
               style: theme.textTheme.bodySmall?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
+                color: isDark ? AppTokens.accentEnd : AppTokens.accentEnd,
               ),
             ),
             const SizedBox(width: 8),
@@ -223,7 +223,7 @@ class _ZoneTile extends StatelessWidget {
             Switch(
               value: zone.isEnabled,
               onChanged: onToggle,
-              activeTrackColor: isDark ? AppColors.darkPine : AppColors.dawnPine,
+              activeTrackColor: isDark ? AppTokens.accent : AppTokens.accent,
             ),
             PopupMenuButton<String>(
               itemBuilder: (context) => [
@@ -384,12 +384,12 @@ class _ZoneEditDialogState extends State<_ZoneEditDialog> {
                   height: 40,
                   decoration: BoxDecoration(
                     color: _iconController.text == emoji
-                        ? (widget.isDark ? AppColors.darkFoam : AppColors.dawnFoam)
-                        : (widget.isDark ? AppColors.darkSurface : AppColors.dawnSurface),
+                        ? (widget.isDark ? AppTokens.accentEnd : AppTokens.accentEnd)
+                        : (widget.isDark ? AppTokens.darkSurface : AppTokens.lightSurface),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
                       color: _iconController.text == emoji
-                          ? (widget.isDark ? AppColors.darkPine : AppColors.dawnPine)
+                          ? (widget.isDark ? AppTokens.accent : AppTokens.accent)
                           : Colors.transparent,
                       width: 2,
                     ),

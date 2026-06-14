@@ -1,0 +1,122 @@
+<h2>Fusione C + D — senza aderenza in Home</h2>
+<p class="subtitle">Rimossa la card aderenza. Al suo posto una riga "Questa settimana" leggera (puntini giorni: fatti / oggi / da fare). Tre dosaggi C+D. Clicca quello giusto.</p>
+
+<style>
+  .phone {
+    width: 230px; margin: 0 auto;
+    border-radius: 30px; padding: 14px 14px 0;
+    box-shadow: 0 12px 30px rgba(0,0,0,.14);
+    font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+    overflow: hidden;
+  }
+  .pstatus { display:flex; justify-content:space-between; font-size:10px; font-weight:700; padding:2px 6px 10px; }
+  .pgreet { font-size:13px; }
+  .ptitle { font-size:22px; font-weight:900; letter-spacing:-.02em; margin:2px 0 14px; }
+  .pcard { border-radius:20px; padding:14px; margin-bottom:11px; }
+  .pbtn { border-radius:14px; padding:11px; text-align:center; font-weight:800; font-size:13px; margin-top:6px; }
+  .pnav { display:flex; justify-content:space-around; padding:14px 0; margin-top:6px; font-size:18px; }
+  .chip { font-size:10px; font-weight:800; padding:3px 9px; border-radius:999px; display:inline-block; }
+  .lbl { font-size:11px; opacity:.7; }
+  .big { font-size:16px; font-weight:800; }
+  .week { display:flex; justify-content:space-between; padding:2px 4px; }
+  .day { text-align:center; font-size:9px; font-weight:700; opacity:.6; }
+  .dot { width:18px; height:18px; border-radius:50%; margin:5px auto 0; display:flex; align-items:center; justify-content:center; font-size:9px; }
+</style>
+
+<div class="cards">
+
+  <!-- ============ F1: Pop Gradient (lean C) ============ -->
+  <div class="card" data-choice="pop-gradient" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:18px 0; background:#efe9f7;">
+      <div class="phone" style="background:linear-gradient(175deg,#fbf2ff,#eef1ff); color:#231a36;">
+        <div class="pstatus"><span>9:41</span><span>● ● ●</span></div>
+        <div class="pgreet">Ciao, Carlo ✨</div>
+        <div class="ptitle">Oggi</div>
+        <div class="pcard" style="background:linear-gradient(135deg,#7c5cff,#c86bff); color:#fff; box-shadow:0 10px 22px rgba(124,92,255,.4);">
+          <span class="chip" style="background:rgba(255,255,255,.25); color:#fff;">PROSSIMA · 20:30</span>
+          <div class="big" style="margin-top:8px; font-size:18px;">Coscia Dx · 3</div>
+          <div class="lbl" style="color:rgba(255,255,255,.85);">tra 3 ore</div>
+          <div class="pbtn" style="background:#fff; color:#7c5cff;">Registra iniezione →</div>
+        </div>
+        <div class="pcard" style="background:#fff; box-shadow:0 6px 16px rgba(124,92,255,.1);">
+          <div class="lbl" style="font-weight:700; margin-bottom:6px;">Questa settimana</div>
+          <div class="week">
+            <div class="day">L<div class="dot" style="background:#7c5cff; color:#fff;">✓</div></div>
+            <div class="day">M<div class="dot" style="background:#ece6fb;"></div></div>
+            <div class="day">M<div class="dot" style="background:#7c5cff; color:#fff;">✓</div></div>
+            <div class="day" style="opacity:1;">G<div class="dot" style="background:#fff; border:2px solid #7c5cff;"></div></div>
+            <div class="day">V<div class="dot" style="background:#ece6fb;"></div></div>
+            <div class="day">S<div class="dot" style="background:#ece6fb;"></div></div>
+            <div class="day">D<div class="dot" style="background:#ece6fb;"></div></div>
+          </div>
+        </div>
+        <div class="pnav" style="color:#a99cc7;">🏠 📅 ＋ 📊 ⚙️</div>
+      </div>
+    </div>
+    <div class="card-body"><h3>1 · Pop Gradient</h3><p>Più C: gradienti e card morbide, bottoni/chip decisi. Niente bordi neri. Amichevole + energico.</p></div>
+  </div>
+
+  <!-- ============ F2: Gradient Brutalism (50/50) ============ -->
+  <div class="card" data-choice="gradient-brutalism" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:18px 0; background:#efe7f7;">
+      <div class="phone" style="background:#f6f1ff; color:#15101f; border:3px solid #15101f; border-radius:26px; box-shadow:8px 8px 0 #15101f;">
+        <div class="pstatus"><span>9:41</span><span>● ● ●</span></div>
+        <div class="pgreet" style="font-weight:800;">CIAO CARLO ✨</div>
+        <div class="ptitle">OGGI</div>
+        <div class="pcard" style="background:linear-gradient(135deg,#7c5cff,#c86bff); color:#fff; border:3px solid #15101f; border-radius:16px; box-shadow:4px 4px 0 #15101f;">
+          <span class="chip" style="background:#15101f; color:#fff; border-radius:7px;">PROSSIMA · 20:30</span>
+          <div class="big" style="margin-top:8px; font-size:18px;">Coscia Dx · 3</div>
+          <div class="lbl" style="color:rgba(255,255,255,.9);">tra 3 ore</div>
+          <div class="pbtn" style="background:#fff; color:#15101f; border:3px solid #15101f; border-radius:11px; box-shadow:3px 3px 0 #15101f;">REGISTRA →</div>
+        </div>
+        <div class="pcard" style="background:#fff; border:3px solid #15101f; border-radius:16px; box-shadow:4px 4px 0 #15101f;">
+          <div class="lbl" style="font-weight:900; margin-bottom:6px; text-transform:uppercase; letter-spacing:.06em;">Questa settimana</div>
+          <div class="week">
+            <div class="day">L<div class="dot" style="background:#7c5cff; color:#fff; border:2px solid #15101f;">✓</div></div>
+            <div class="day">M<div class="dot" style="background:#fff; border:2px solid #15101f;"></div></div>
+            <div class="day">M<div class="dot" style="background:#7c5cff; color:#fff; border:2px solid #15101f;">✓</div></div>
+            <div class="day">G<div class="dot" style="background:#ffe14d; border:2px solid #15101f;"></div></div>
+            <div class="day">V<div class="dot" style="background:#fff; border:2px solid #15101f;"></div></div>
+            <div class="day">S<div class="dot" style="background:#fff; border:2px solid #15101f;"></div></div>
+            <div class="day">D<div class="dot" style="background:#fff; border:2px solid #15101f;"></div></div>
+          </div>
+        </div>
+        <div class="pnav" style="color:#15101f; font-weight:900;">🏠 📅 ＋ 📊 ⚙️</div>
+      </div>
+    </div>
+    <div class="card-body"><h3>2 · Gradient Brutalism</h3><p>50/50: struttura audace di D (bordi neri + ombre piene) riempita con i gradienti di C. Forte e riconoscibile.</p></div>
+  </div>
+
+  <!-- ============ F3: Soft Brutalist (lean D, warm) ============ -->
+  <div class="card" data-choice="soft-brutalist" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:18px 0; background:#f3ecff;">
+      <div class="phone" style="background:#fdfbff; color:#241b3a; border:2px solid #2b2342; border-radius:26px; box-shadow:5px 5px 0 rgba(124,92,255,.35);">
+        <div class="pstatus"><span>9:41</span><span>● ● ●</span></div>
+        <div class="pgreet" style="font-weight:700;">Ciao, Carlo ✨</div>
+        <div class="ptitle">Oggi</div>
+        <div class="pcard" style="background:#efe7ff; border:2px solid #2b2342; border-radius:16px; box-shadow:3px 3px 0 #c3a7ff;">
+          <span class="chip" style="background:#7c5cff; color:#fff; border-radius:8px;">Prossima · 20:30</span>
+          <div class="big" style="margin-top:8px;">Coscia Dx · 3</div>
+          <div class="lbl">tra 3 ore</div>
+          <div class="pbtn" style="background:linear-gradient(135deg,#7c5cff,#c86bff); color:#fff; border:2px solid #2b2342; border-radius:12px; box-shadow:3px 3px 0 #2b2342;">Registra iniezione</div>
+        </div>
+        <div class="pcard" style="background:#fff0f6; border:2px solid #2b2342; border-radius:16px; box-shadow:3px 3px 0 #f3a7d0;">
+          <div class="lbl" style="font-weight:700; margin-bottom:6px;">Questa settimana</div>
+          <div class="week">
+            <div class="day">L<div class="dot" style="background:#e8569b; color:#fff; border:2px solid #2b2342;">✓</div></div>
+            <div class="day">M<div class="dot" style="background:#fff; border:2px solid #2b2342;"></div></div>
+            <div class="day">M<div class="dot" style="background:#e8569b; color:#fff; border:2px solid #2b2342;">✓</div></div>
+            <div class="day">G<div class="dot" style="background:#fff; border:2px solid #7c5cff;"></div></div>
+            <div class="day">V<div class="dot" style="background:#fff; border:2px solid #2b2342;"></div></div>
+            <div class="day">S<div class="dot" style="background:#fff; border:2px solid #2b2342;"></div></div>
+            <div class="day">D<div class="dot" style="background:#fff; border:2px solid #2b2342;"></div></div>
+          </div>
+        </div>
+        <div class="pnav" style="color:#9a8fc0; font-weight:700;">🏠 📅 ＋ 📊 ⚙️</div>
+      </div>
+    </div>
+    <div class="card-body"><h3>3 · Soft Brutalist</h3><p>Più D ma più caldo: bordi più sottili, ombre colorate, pastelli pop + accenti gradiente. Giocoso ma gentile.</p></div>
+  </div>
+
+</div>
+<p class="subtitle" style="margin-top:18px;">Scelto il dosaggio, fisso palette + tipografia e passo a Calendario e "Registra iniezione".</p>

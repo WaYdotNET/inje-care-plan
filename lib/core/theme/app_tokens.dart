@@ -32,6 +32,18 @@ sealed class AppTokens {
   static const dangerLight = Color(0xFFB4637A);
   static const dangerDark = Color(0xFFEB6F92);
 
+  // Livelli di superficie/evidenziazione e accenti secondari
+  static const lightOverlay = lightBgBottom;
+  static const lightHighlightLow = Color(0xFFF3EEFB);
+  static const lightHighlightHigh = Color(0xFFD9CFEC);
+  static const pinkLight = pink;
+  static const darkOverlay = Color(0xFF241B3A);
+  static const darkSubtle = Color(0xFFA79EC4);
+  static const darkRose = Color(0xFFF0A7C9);
+  static const darkIris = Color(0xFFC9B6FF);
+  static const darkHighlightLow = Color(0xFF181226);
+  static const darkHighlightHigh = Color(0xFF3A2F58);
+
   /// Gradiente accento (azioni primarie, "oggi", punto selezionato).
   static const accentGradient = LinearGradient(
     begin: Alignment.topLeft,

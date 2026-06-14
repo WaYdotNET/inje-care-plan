@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_tokens.dart';
 import '../../core/services/notification_settings_provider.dart';
 import '../../core/services/demo_data_service.dart';
 import '../../core/database/database_provider.dart';
@@ -162,8 +162,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         height: 8,
         decoration: BoxDecoration(
           color: isActive
-              ? (isDark ? AppColors.darkPine : AppColors.dawnPine)
-              : (isDark ? AppColors.darkMuted : AppColors.dawnMuted),
+              ? (isDark ? AppTokens.accent : AppTokens.accent)
+              : (isDark ? AppTokens.darkMuted : AppTokens.lightMuted),
           borderRadius: BorderRadius.circular(4),
         ),
       ),
@@ -262,13 +262,13 @@ class _OnboardingPage extends StatelessWidget {
             width: 120,
             height: 120,
             decoration: BoxDecoration(
-              color: isDark ? AppColors.darkOverlay : AppColors.dawnOverlay,
+              color: isDark ? AppTokens.darkOverlay : AppTokens.lightOverlay,
               borderRadius: BorderRadius.circular(24),
             ),
             child: Icon(
               icon,
               size: 64,
-              color: isDark ? AppColors.darkPine : AppColors.dawnPine,
+              color: isDark ? AppTokens.accent : AppTokens.accent,
             ),
           ),
 
@@ -285,7 +285,7 @@ class _OnboardingPage extends StatelessWidget {
         Text(
           description,
           style: theme.textTheme.bodyLarge?.copyWith(
-            color: isDark ? AppColors.darkSubtle : AppColors.dawnSubtle,
+            color: isDark ? AppTokens.darkSubtle : AppTokens.lightSubtle,
           ),
           textAlign: TextAlign.center,
         ),
@@ -318,13 +318,13 @@ class _DemoDataPage extends StatelessWidget {
           width: 120,
           height: 120,
           decoration: BoxDecoration(
-            color: isDark ? AppColors.darkOverlay : AppColors.dawnOverlay,
+            color: isDark ? AppTokens.darkOverlay : AppTokens.lightOverlay,
             borderRadius: BorderRadius.circular(24),
           ),
           child: Icon(
             Icons.science_outlined,
             size: 64,
-            color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
+            color: isDark ? AppTokens.accentEnd : AppTokens.accentEnd,
           ),
         ),
 
@@ -341,7 +341,7 @@ class _DemoDataPage extends StatelessWidget {
         Text(
           'Vuoi inserire alcuni dati demo per\nprovare le funzionalità dell\'app?',
           style: theme.textTheme.bodyLarge?.copyWith(
-            color: isDark ? AppColors.darkSubtle : AppColors.dawnSubtle,
+            color: isDark ? AppTokens.darkSubtle : AppTokens.lightSubtle,
           ),
           textAlign: TextAlign.center,
         ),
@@ -375,10 +375,10 @@ class _DemoDataPage extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: (isDark ? AppColors.darkFoam : AppColors.dawnFoam).withValues(alpha: 0.1),
+            color: (isDark ? AppTokens.accentEnd : AppTokens.accentEnd).withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: (isDark ? AppColors.darkFoam : AppColors.dawnFoam).withValues(alpha: 0.3),
+              color: (isDark ? AppTokens.accentEnd : AppTokens.accentEnd).withValues(alpha: 0.3),
             ),
           ),
           child: Row(
@@ -387,7 +387,7 @@ class _DemoDataPage extends StatelessWidget {
               Icon(
                 Icons.lightbulb_outline,
                 size: 20,
-                color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
+                color: isDark ? AppTokens.accentEnd : AppTokens.accentEnd,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -398,14 +398,14 @@ class _DemoDataPage extends StatelessWidget {
                       'Nota importante',
                       style: theme.textTheme.labelMedium?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
+                        color: isDark ? AppTokens.accentEnd : AppTokens.accentEnd,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'Anche senza dati demo, l\'app mostrerà suggerimenti per le iniezioni future basati sul piano terapeutico (Lun/Mer/Ven). I suggerimenti NON sono dati demo.',
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: isDark ? AppColors.darkSubtle : AppColors.dawnSubtle,
+                        color: isDark ? AppTokens.darkSubtle : AppTokens.lightSubtle,
                       ),
                     ),
                   ],
@@ -439,10 +439,10 @@ class _OptionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final selectedColor = isDark ? AppColors.darkPine : AppColors.dawnPine;
+    final selectedColor = isDark ? AppTokens.accent : AppTokens.accent;
     final borderColor = isSelected
         ? selectedColor
-        : (isDark ? AppColors.darkMuted : AppColors.dawnMuted);
+        : (isDark ? AppTokens.darkMuted : AppTokens.lightMuted);
 
     return InkWell(
       onTap: onTap,
@@ -456,7 +456,7 @@ class _OptionCard extends StatelessWidget {
           ),
           borderRadius: BorderRadius.circular(12),
           color: isSelected
-              ? (isDark ? AppColors.darkOverlay : AppColors.dawnOverlay)
+              ? (isDark ? AppTokens.darkOverlay : AppTokens.lightOverlay)
               : null,
         ),
         child: Row(
@@ -481,7 +481,7 @@ class _OptionCard extends StatelessWidget {
                   Text(
                     description,
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: isDark ? AppColors.darkSubtle : AppColors.dawnSubtle,
+                      color: isDark ? AppTokens.darkSubtle : AppTokens.lightSubtle,
                     ),
                   ),
                 ],

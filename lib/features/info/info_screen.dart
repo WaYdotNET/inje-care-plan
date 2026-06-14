@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_tokens.dart';
 
 /// Provider per le informazioni del package (versione, ecc.)
 final packageInfoProvider = FutureProvider<PackageInfo>((ref) async {
@@ -60,19 +60,19 @@ class InfoScreen extends ConsumerWidget {
               data: (info) => Text(
                 'Versione ${info.version} (build ${info.buildNumber})',
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                  color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
                 ),
               ),
               loading: () => Text(
                 'Caricamento versione...',
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                  color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
                 ),
               ),
               error: (e, st) => Text(
                 'Versione non disponibile',
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                  color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
                 ),
               ),
             ),
@@ -89,7 +89,7 @@ class InfoScreen extends ConsumerWidget {
                       children: [
                         Icon(
                           Icons.info_outline,
-                          color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
+                          color: isDark ? AppTokens.accentEnd : AppTokens.accentEnd,
                         ),
                         const SizedBox(width: 12),
                         Text(
@@ -157,7 +157,7 @@ class InfoScreen extends ConsumerWidget {
                       children: [
                         Icon(
                           Icons.shield_outlined,
-                          color: isDark ? AppColors.darkPine : AppColors.dawnPine,
+                          color: isDark ? AppTokens.accent : AppTokens.accent,
                         ),
                         const SizedBox(width: 12),
                         Text(
@@ -194,7 +194,7 @@ class InfoScreen extends ConsumerWidget {
                       children: [
                         Icon(
                           Icons.person_outline,
-                          color: isDark ? AppColors.darkIris : AppColors.dawnIris,
+                          color: isDark ? AppTokens.darkIris : AppTokens.accent,
                         ),
                         const SizedBox(width: 12),
                         Text(
@@ -241,7 +241,7 @@ class InfoScreen extends ConsumerWidget {
                       children: [
                         Icon(
                           Icons.gavel,
-                          color: isDark ? AppColors.darkGold : AppColors.dawnGold,
+                          color: isDark ? AppTokens.warnDark : AppTokens.warnLight,
                         ),
                         const SizedBox(width: 12),
                         Text(
@@ -263,7 +263,7 @@ class InfoScreen extends ConsumerWidget {
                     Text(
                       '© 2024-2026 Carlo Bertini (WaYdotNET)',
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                        color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
                       ),
                     ),
                   ],
@@ -305,7 +305,7 @@ class _FeatureItem extends StatelessWidget {
           Icon(
             icon,
             size: 18,
-            color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
+            color: isDark ? AppTokens.accentEnd : AppTokens.accentEnd,
           ),
           const SizedBox(width: 12),
           Expanded(

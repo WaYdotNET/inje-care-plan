@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
-import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_tokens.dart';
 import '../../app/router.dart';
 import '../../models/body_zone.dart';
 import '../../models/injection_record.dart';
@@ -80,7 +80,7 @@ class _WeeklyProposalsScreenState
             Icon(
               Icons.check_circle_outline,
               size: 64,
-              color: isDark ? AppColors.darkPine : AppColors.dawnPine,
+              color: isDark ? AppTokens.accent : AppTokens.accent,
             ),
             const SizedBox(height: 16),
             Text(
@@ -91,7 +91,7 @@ class _WeeklyProposalsScreenState
             Text(
               'Non ci sono proposte da approvare per questa settimana.',
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
               ),
               textAlign: TextAlign.center,
             ),
@@ -117,8 +117,8 @@ class _WeeklyProposalsScreenState
           padding: const EdgeInsets.all(16),
           child: Card(
             color: isDark
-                ? AppColors.darkHighlightLow
-                : AppColors.dawnHighlightLow,
+                ? AppTokens.darkHighlightLow
+                : AppTokens.lightHighlightLow,
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -140,7 +140,7 @@ class _WeeklyProposalsScreenState
                   Text(
                     'Queste iniezioni sono state suggerite in base alla rotazione ottimale dei punti.',
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                      color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -192,7 +192,7 @@ class _WeeklyProposalsScreenState
                           Icon(
                             Icons.calendar_today,
                             size: 18,
-                            color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
+                            color: isDark ? AppTokens.accentEnd : AppTokens.accentEnd,
                           ),
                           const SizedBox(width: 8),
                           Text(
@@ -208,8 +208,8 @@ class _WeeklyProposalsScreenState
                               ),
                               decoration: BoxDecoration(
                                 color: isDark
-                                    ? AppColors.darkPine.withValues(alpha: 0.2)
-                                    : AppColors.dawnPine.withValues(alpha: 0.2),
+                                    ? AppTokens.accent.withValues(alpha: 0.2)
+                                    : AppTokens.accent.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Row(
@@ -219,8 +219,8 @@ class _WeeklyProposalsScreenState
                                     Icons.check,
                                     size: 14,
                                     color: isDark
-                                        ? AppColors.darkPine
-                                        : AppColors.dawnPine,
+                                        ? AppTokens.accent
+                                        : AppTokens.accent,
                                   ),
                                   const SizedBox(width: 4),
                                   Text(
@@ -228,8 +228,8 @@ class _WeeklyProposalsScreenState
                                     style: TextStyle(
                                       fontSize: 12,
                                       color: isDark
-                                          ? AppColors.darkPine
-                                          : AppColors.dawnPine,
+                                          ? AppTokens.accent
+                                          : AppTokens.accent,
                                     ),
                                   ),
                                 ],
@@ -243,8 +243,8 @@ class _WeeklyProposalsScreenState
                               ),
                               decoration: BoxDecoration(
                                 color: (isDark
-                                        ? AppColors.darkMuted
-                                        : AppColors.dawnMuted)
+                                        ? AppTokens.darkMuted
+                                        : AppTokens.lightMuted)
                                     .withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(4),
                               ),
@@ -253,8 +253,8 @@ class _WeeklyProposalsScreenState
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: isDark
-                                      ? AppColors.darkMuted
-                                      : AppColors.dawnMuted,
+                                      ? AppTokens.darkMuted
+                                      : AppTokens.lightMuted,
                                 ),
                               ),
                             ),
@@ -271,8 +271,8 @@ class _WeeklyProposalsScreenState
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
                                 color: isDark
-                                    ? AppColors.darkHighlightMed
-                                    : AppColors.dawnHighlightMed,
+                                    ? AppTokens.darkBorder
+                                    : AppTokens.lightBorder,
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
@@ -293,8 +293,8 @@ class _WeeklyProposalsScreenState
                                     'Orario preferito: ${proposal.preferredTime ?? "20:00"}',
                                     style: theme.textTheme.bodySmall?.copyWith(
                                       color: isDark
-                                          ? AppColors.darkMuted
-                                          : AppColors.dawnMuted,
+                                          ? AppTokens.darkMuted
+                                          : AppTokens.lightMuted,
                                     ),
                                   ),
                                 ],

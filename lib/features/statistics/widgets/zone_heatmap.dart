@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../statistics_provider.dart';
 
 /// Heatmap delle zone più utilizzate
@@ -22,7 +22,7 @@ class ZoneHeatmap extends StatelessWidget {
         child: Text(
           'Nessun dato disponibile',
           style: theme.textTheme.bodyMedium?.copyWith(
-            color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+            color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
           ),
         ),
       );
@@ -58,13 +58,13 @@ class _ZoneHeatmapItem extends StatelessWidget {
   Color _getHeatColor(double intensity) {
     // Da verde chiaro (poco usata) a rosso (molto usata)
     if (intensity < 0.25) {
-      return isDark ? AppColors.darkPine.withValues(alpha: 0.3) : AppColors.dawnPine.withValues(alpha: 0.3);
+      return isDark ? AppTokens.accent.withValues(alpha: 0.3) : AppTokens.accent.withValues(alpha: 0.3);
     } else if (intensity < 0.5) {
-      return isDark ? AppColors.darkPine.withValues(alpha: 0.5) : AppColors.dawnPine.withValues(alpha: 0.5);
+      return isDark ? AppTokens.accent.withValues(alpha: 0.5) : AppTokens.accent.withValues(alpha: 0.5);
     } else if (intensity < 0.75) {
-      return isDark ? AppColors.darkGold.withValues(alpha: 0.7) : AppColors.dawnGold.withValues(alpha: 0.7);
+      return isDark ? AppTokens.warnDark.withValues(alpha: 0.7) : AppTokens.warnLight.withValues(alpha: 0.7);
     } else {
-      return isDark ? AppColors.darkLove.withValues(alpha: 0.8) : AppColors.dawnLove.withValues(alpha: 0.8);
+      return isDark ? AppTokens.dangerDark.withValues(alpha: 0.8) : AppTokens.dangerLight.withValues(alpha: 0.8);
     }
   }
 
@@ -169,8 +169,8 @@ class ZoneStatsCard extends StatelessWidget {
               height: 56,
               decoration: BoxDecoration(
                 color: isDark
-                    ? AppColors.darkOverlay
-                    : AppColors.dawnOverlay,
+                    ? AppTokens.darkOverlay
+                    : AppTokens.lightOverlay,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Center(
@@ -192,7 +192,7 @@ class ZoneStatsCard extends StatelessWidget {
                   Text(
                     '${zone.count} iniezioni (${zone.percentage.toStringAsFixed(1)}%)',
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                      color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
                     ),
                   ),
                   if (zone.lastUsed != null) ...[
@@ -200,7 +200,7 @@ class ZoneStatsCard extends StatelessWidget {
                     Text(
                       'Ultima: ${_formatDate(zone.lastUsed!)}',
                       style: theme.textTheme.labelSmall?.copyWith(
-                        color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
+                        color: isDark ? AppTokens.accentEnd : AppTokens.accentEnd,
                       ),
                     ),
                   ],

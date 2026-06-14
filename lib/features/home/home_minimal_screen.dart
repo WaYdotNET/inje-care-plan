@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_tokens.dart';
 import '../../core/widgets/completion_time_dialog.dart';
 import '../../core/database/database_provider.dart';
@@ -259,7 +258,7 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
                                 : 'Tocca per vedere il dettaglio')
                             : 'Tocca per registrare',
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                          color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
                         ),
                       ),
                   ],
@@ -595,7 +594,7 @@ class _MainCardState extends State<_MainCard> {
                 Icon(
                   Icons.medical_services_outlined,
                   size: 64,
-                  color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                  color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
                 ),
                 const SizedBox(height: 16),
                 Text(
@@ -607,7 +606,7 @@ class _MainCardState extends State<_MainCard> {
                 Text(
                   'Configura il tuo piano terapeutico nelle impostazioni',
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                    color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -620,8 +619,8 @@ class _MainCardState extends State<_MainCard> {
 
     final displayPointNumber = widget.pointNumber ?? 1;
     final isFront = _currentView == BodyView.front;
-    final frontColor = isDark ? AppColors.darkFoam : AppColors.dawnFoam;
-    final backColor = isDark ? AppColors.darkIris : AppColors.dawnIris;
+    final frontColor = isDark ? AppTokens.accentEnd : AppTokens.accentEnd;
+    final backColor = isDark ? AppTokens.darkIris : AppTokens.accent;
     final activeColor = isFront ? frontColor : backColor;
 
     return Column(
@@ -709,8 +708,8 @@ class _MainCardState extends State<_MainCard> {
                           style: theme.textTheme.headlineSmall?.copyWith(
                             fontWeight: FontWeight.bold,
                             color: isDark
-                                ? AppColors.darkPine
-                                : AppColors.dawnPine,
+                                ? AppTokens.accent
+                                : AppTokens.accent,
                           ),
                         ),
 
@@ -786,7 +785,7 @@ class _HomeViewToggle extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = isSelected
         ? activeColor
-        : (isDark ? AppColors.darkMuted : AppColors.dawnMuted);
+        : (isDark ? AppTokens.darkMuted : AppTokens.lightMuted);
 
     return GestureDetector(
       onTap: onTap,
@@ -954,9 +953,9 @@ class _NotificationPermissionBanner extends ConsumerWidget {
 
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final bg = (isDark ? AppColors.darkGold : AppColors.dawnGold)
+    final bg = (isDark ? AppTokens.warnDark : AppTokens.warnLight)
         .withValues(alpha: 0.15);
-    final fg = isDark ? AppColors.darkGold : AppColors.dawnGold;
+    final fg = isDark ? AppTokens.warnDark : AppTokens.warnLight;
 
     return Material(
       color: bg,

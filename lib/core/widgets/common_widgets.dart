@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_colors.dart';
+import '../theme/app_tokens.dart';
 
 /// Card per mostrare stato di caricamento
 class LoadingCard extends StatelessWidget {
@@ -45,7 +45,7 @@ class ErrorCard extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Card(
-      color: isDark ? AppColors.darkLove.withAlpha(50) : AppColors.dawnLove.withAlpha(50),
+      color: isDark ? AppTokens.dangerDark.withAlpha(50) : AppTokens.dangerLight.withAlpha(50),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -53,7 +53,7 @@ class ErrorCard extends StatelessWidget {
           children: [
             Icon(
               Icons.error_outline,
-              color: isDark ? AppColors.darkLove : AppColors.dawnLove,
+              color: isDark ? AppTokens.dangerDark : AppTokens.dangerLight,
               size: 48,
             ),
             const SizedBox(height: 12),
@@ -61,7 +61,7 @@ class ErrorCard extends StatelessWidget {
               message,
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: isDark ? AppColors.darkLove : AppColors.dawnLove,
+                color: isDark ? AppTokens.dangerDark : AppTokens.dangerLight,
               ),
             ),
             if (onRetry != null) ...[
@@ -132,7 +132,7 @@ class StatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final effectiveColor = color ?? (isDark ? AppColors.darkPine : AppColors.dawnPine);
+    final effectiveColor = color ?? (isDark ? AppTokens.accent : AppTokens.accent);
 
     return Card(
       child: Padding(
@@ -169,7 +169,7 @@ class StatCard extends StatelessWidget {
               Text(
                 subtitle!,
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                  color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
                 ),
               ),
             ],
@@ -235,7 +235,7 @@ class ConfirmDialog extends StatelessWidget {
           onPressed: () => Navigator.pop(context, true),
           style: isDestructive
               ? ElevatedButton.styleFrom(
-                  backgroundColor: isDark ? AppColors.darkLove : AppColors.dawnLove,
+                  backgroundColor: isDark ? AppTokens.dangerDark : AppTokens.dangerLight,
                   foregroundColor: Colors.white,
                 )
               : null,
@@ -275,7 +275,7 @@ class EmptyStateCard extends StatelessWidget {
             Icon(
               icon,
               size: 64,
-              color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+              color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
             ),
             const SizedBox(height: 16),
             Text(
@@ -288,7 +288,7 @@ class EmptyStateCard extends StatelessWidget {
               Text(
                 subtitle!,
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                  color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
                 ),
                 textAlign: TextAlign.center,
               ),

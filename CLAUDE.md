@@ -51,7 +51,7 @@ lib/
 │   ├── database/     # Drift tables, AppDatabase, migrations (generates .g.dart)
 │   ├── ml/           # Rule-based recommendation algorithms (not real ML)
 │   ├── services/     # Notifications, PDF/CSV export, crypto, smart reminders
-│   ├── theme/        # Rosé Pine design system (light=Dawn, dark=default)
+│   ├── theme/        # "Pop Gradient" design system (AppTokens + AppTheme, light+dark)
 │   ├── utils/        # Helper functions
 │   └── widgets/      # Shared UI components (ShimmerLoading, StatCard, etc.)
 ├── features/         # Self-contained feature modules (screen + widgets + providers)

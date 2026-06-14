@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../theme/app_colors.dart';
+import '../theme/app_tokens.dart';
 
 /// A wrapper that centers and limits the width of its child on large screens.
 /// This prevents the UI from stretching too much on ultrawide monitors.
@@ -19,7 +19,7 @@ class ResponsiveWrapper extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     // Background color for the areas outside the centered content
-    final backgroundColor = isDark ? AppColors.darkBase : AppColors.dawnBase;
+    final backgroundColor = isDark ? AppTokens.darkBg : AppTokens.lightBgTop;
 
     return Container(
       color: backgroundColor,

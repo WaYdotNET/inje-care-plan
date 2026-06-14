@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
-import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_tokens.dart';
 import '../../core/database/database_provider.dart';
 import '../../app/router.dart';
 import '../../models/body_zone.dart';
@@ -98,7 +98,7 @@ class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
             children: [
               Icon(
                 Icons.calendar_today,
-                color: isDark ? AppColors.darkSubtle : AppColors.dawnSubtle,
+                color: isDark ? AppTokens.darkSubtle : AppTokens.lightSubtle,
               ),
               const SizedBox(width: 8),
               Text(

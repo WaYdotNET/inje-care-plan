@@ -129,7 +129,7 @@ lib/
 │   ├── database/           # Drift database
 │   ├── ml/                 # Algoritmi ML/suggerimenti
 │   ├── services/           # Notifiche, export, etc.
-│   ├── theme/              # Tema Rosé Pine
+│   ├── theme/              # Design system "Pop Gradient" (token + tema)
 │   └── widgets/            # Widget riutilizzabili
 ├── features/
 │   ├── auth/               # Onboarding
@@ -159,9 +159,9 @@ lib/
 
 ## Design System
 
-L'app utilizza la palette [Rosé Pine](https://rosepinetheme.com/palette/):
-- **Light Mode**: Rosé Pine Dawn
-- **Dark Mode**: Rosé Pine
+L'app utilizza il design system **"Pop Gradient"**: accento a gradiente viola→magenta, tipografia Plus Jakarta Sans, card arrotondate con ombre morbide e sfondo a gradiente.
+- **Light Mode**: superfici chiare su sfondo a gradiente tenue
+- **Dark Mode**: superfici scure coerenti (viola profondo) con accento a gradiente
 
 ## Localizzazione
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
-import '../theme/app_colors.dart';
+import '../theme/app_tokens.dart';
 
 /// Widget per loading shimmer effect
 class ShimmerLoading extends StatelessWidget {
@@ -21,8 +21,8 @@ class ShimmerLoading extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Shimmer.fromColors(
-      baseColor: isDark ? AppColors.darkOverlay : Colors.grey.shade300,
-      highlightColor: isDark ? AppColors.darkHighlightMed : Colors.grey.shade100,
+      baseColor: isDark ? AppTokens.darkOverlay : Colors.grey.shade300,
+      highlightColor: isDark ? AppTokens.darkBorder : Colors.grey.shade100,
       child: child,
     );
   }
@@ -48,7 +48,7 @@ class ShimmerCard extends StatelessWidget {
         height: height,
         width: width,
         decoration: BoxDecoration(
-          color: isDark ? AppColors.darkSurface : Colors.white,
+          color: isDark ? AppTokens.darkSurface : Colors.white,
           borderRadius: BorderRadius.circular(16),
         ),
       ),
@@ -76,7 +76,7 @@ class ShimmerText extends StatelessWidget {
         width: width,
         height: height,
         decoration: BoxDecoration(
-          color: isDark ? AppColors.darkSurface : Colors.white,
+          color: isDark ? AppTokens.darkSurface : Colors.white,
           borderRadius: BorderRadius.circular(4),
         ),
       ),
@@ -126,7 +126,7 @@ class _ShimmerListItem extends StatelessWidget {
             width: height - 20,
             height: height - 20,
             decoration: BoxDecoration(
-              color: isDark ? AppColors.darkSurface : Colors.white,
+              color: isDark ? AppTokens.darkSurface : Colors.white,
               shape: BoxShape.circle,
             ),
           ),
@@ -142,7 +142,7 @@ class _ShimmerListItem extends StatelessWidget {
                   width: double.infinity,
                   height: 16,
                   decoration: BoxDecoration(
-                    color: isDark ? AppColors.darkSurface : Colors.white,
+                    color: isDark ? AppTokens.darkSurface : Colors.white,
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
@@ -151,7 +151,7 @@ class _ShimmerListItem extends StatelessWidget {
                   width: 150,
                   height: 12,
                   decoration: BoxDecoration(
-                    color: isDark ? AppColors.darkSurface : Colors.white,
+                    color: isDark ? AppTokens.darkSurface : Colors.white,
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),

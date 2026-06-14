@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_tokens.dart';
 import '../../core/database/app_database.dart' show BodyZone;
 import '../../core/ml/rotation_pattern_engine.dart';
 
@@ -69,15 +69,15 @@ class _CustomPatternScreenState extends ConsumerState<CustomPatternScreen> {
                     Container(
                       padding: const EdgeInsets.all(16),
                       color: isDark
-                          ? AppColors.darkOverlay
-                          : AppColors.dawnOverlay,
+                          ? AppTokens.darkOverlay
+                          : AppTokens.lightOverlay,
                       child: Row(
                         children: [
                           Icon(
                             Icons.info_outline,
                             color: isDark
-                                ? AppColors.darkFoam
-                                : AppColors.dawnFoam,
+                                ? AppTokens.accentEnd
+                                : AppTokens.accentEnd,
                           ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -116,8 +116,8 @@ class _CustomPatternScreenState extends ConsumerState<CustomPatternScreen> {
                                     ),
                                     decoration: BoxDecoration(
                                       color: isDark
-                                          ? AppColors.darkHighlightMed
-                                          : AppColors.dawnHighlightMed,
+                                          ? AppTokens.darkBorder
+                                          : AppTokens.lightBorder,
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: Text(
@@ -320,7 +320,7 @@ class _ZoneReorderTile extends StatelessWidget {
           width: 36,
           height: 36,
           decoration: BoxDecoration(
-            color: isDark ? AppColors.darkHighlightMed : AppColors.dawnHighlightMed,
+            color: isDark ? AppTokens.darkBorder : AppTokens.lightBorder,
             borderRadius: BorderRadius.circular(18),
           ),
           child: Center(
@@ -348,7 +348,7 @@ class _ZoneReorderTile extends StatelessWidget {
             IconButton(
               icon: Icon(
                 Icons.remove_circle_outline,
-                color: isDark ? AppColors.darkLove : AppColors.dawnLove,
+                color: isDark ? AppTokens.dangerDark : AppTokens.dangerLight,
               ),
               onPressed: onRemove,
             ),

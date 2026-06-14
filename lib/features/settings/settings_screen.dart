@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:file_picker/file_picker.dart';
 
-import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_tokens.dart';
 import '../../core/theme/theme_provider.dart';
 import '../info/info_screen.dart' show packageInfoProvider;
 import '../../core/services/backup_service.dart';
@@ -91,7 +91,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             error: (e, st) => const SizedBox(),
             data: (blacklist) => _SettingsTile(
               icon: Icons.block,
-              iconColor: isDark ? AppColors.darkLove : AppColors.dawnLove,
+              iconColor: isDark ? AppTokens.dangerDark : AppTokens.dangerLight,
               title: 'Punti esclusi',
               trailing: Text('${blacklist.length}'),
               onTap: () => context.push(AppRoutes.blacklist),
@@ -103,14 +103,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Card(
-                color: isDark ? AppColors.darkOverlay : AppColors.dawnOverlay,
+                color: isDark ? AppTokens.darkOverlay : AppTokens.lightOverlay,
                 child: Padding(
                   padding: const EdgeInsets.all(12),
                   child: Row(
                     children: [
                       Icon(
                         Icons.notifications_off,
-                        color: isDark ? AppColors.darkGold : AppColors.dawnGold,
+                        color: isDark ? AppTokens.warnDark : AppTokens.warnLight,
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -297,7 +297,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
           _SettingsTile(
             title: 'Elimina tutti i dati',
-            titleColor: isDark ? AppColors.darkLove : AppColors.dawnLove,
+            titleColor: isDark ? AppTokens.dangerDark : AppTokens.dangerLight,
             onTap: () => _showDeleteConfirmation(context),
           ),
 
@@ -346,7 +346,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             child: Text(
               'Privacy-first · Offline-first',
               style: theme.textTheme.bodySmall?.copyWith(
-                color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
               ),
             ),
           ),
@@ -699,7 +699,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
               ],
             ),
-            backgroundColor: isDark ? AppColors.darkPine : AppColors.dawnPine,
+            backgroundColor: isDark ? AppTokens.accent : AppTokens.accent,
             duration: const Duration(seconds: 3),
           ),
         );
@@ -1038,8 +1038,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   SnackBar(
                     content: const Text('Tutti i dati sono stati eliminati'),
                     backgroundColor: isDark
-                        ? AppColors.darkPine
-                        : AppColors.dawnPine,
+                        ? AppTokens.accent
+                        : AppTokens.accent,
                   ),
                 );
               }
@@ -1130,12 +1130,12 @@ class _AppInfoHeader extends StatelessWidget {
           CircleAvatar(
             radius: 30,
             backgroundColor: isDark
-                ? AppColors.darkOverlay
-                : AppColors.dawnOverlay,
+                ? AppTokens.darkOverlay
+                : AppTokens.lightOverlay,
             child: Icon(
               Icons.favorite,
               size: 30,
-              color: isDark ? AppColors.darkPine : AppColors.dawnPine,
+              color: isDark ? AppTokens.accent : AppTokens.accent,
             ),
           ),
           const SizedBox(width: 16),
@@ -1149,13 +1149,13 @@ class _AppInfoHeader extends StatelessWidget {
                     Icon(
                       Icons.phone_android,
                       size: 14,
-                      color: isDark ? AppColors.darkPine : AppColors.dawnPine,
+                      color: isDark ? AppTokens.accent : AppTokens.accent,
                     ),
                     const SizedBox(width: 4),
                     Text(
                       'Dati salvati localmente',
                       style: theme.textTheme.labelSmall?.copyWith(
-                        color: isDark ? AppColors.darkPine : AppColors.dawnPine,
+                        color: isDark ? AppTokens.accent : AppTokens.accent,
                       ),
                     ),
                   ],
@@ -1240,7 +1240,7 @@ class _RotationPatternSection extends ConsumerWidget {
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: Card(
-                    color: isDark ? AppColors.darkOverlay : AppColors.dawnOverlay,
+                    color: isDark ? AppTokens.darkOverlay : AppTokens.lightOverlay,
                     child: Padding(
                       padding: const EdgeInsets.all(12),
                       child: Row(
@@ -1248,7 +1248,7 @@ class _RotationPatternSection extends ConsumerWidget {
                           Icon(
                             Icons.info_outline,
                             size: 20,
-                            color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
+                            color: isDark ? AppTokens.accentEnd : AppTokens.accentEnd,
                           ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -1340,7 +1340,7 @@ class _RotationPatternSection extends ConsumerWidget {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -1407,7 +1407,7 @@ class _RotationPatternSection extends ConsumerWidget {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(
-                              color: isDark ? AppColors.darkPine : AppColors.dawnPine,
+                              color: isDark ? AppTokens.accent : AppTokens.accent,
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
@@ -1428,7 +1428,7 @@ class _RotationPatternSection extends ConsumerWidget {
                       ),
                     ),
                     selected: isSelected,
-                    activeColor: isDark ? AppColors.darkIris : AppColors.dawnIris,
+                    activeColor: isDark ? AppTokens.darkIris : AppTokens.accent,
                   );
                 },
               ),

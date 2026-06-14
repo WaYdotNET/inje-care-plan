@@ -7,7 +7,8 @@ import 'package:intl/intl.dart';
 
 import '../../core/database/app_database.dart' as db;
 import '../../core/services/notification_service.dart';
-import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_tokens.dart';
+import '../../core/theme/injection_status_colors.dart';
 import '../../core/widgets/completion_time_dialog.dart';
 import 'injection_provider.dart';
 import 'injection_repository.dart';
@@ -191,7 +192,7 @@ class _InjectionDetailScreenState extends ConsumerState<InjectionDetailScreen> {
                 Text(
                   dateFormat.format(injection.scheduledAt),
                   style: theme.textTheme.bodyMedium?.copyWith(
-                    color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                    color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
                   ),
                 ),
                 const SizedBox(height: 12),

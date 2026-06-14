@@ -4,7 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 
-import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_tokens.dart';
+import '../../core/theme/injection_status_colors.dart';
 import '../../core/database/app_database.dart' as db;
 import '../../app/router.dart';
 import '../../core/services/missed_injection_service.dart';
@@ -101,7 +102,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                 formatButtonShowsNext: false,
                 formatButtonDecoration: BoxDecoration(
                   border: Border.all(
-                    color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                    color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
                   ),
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -109,26 +110,26 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 
               calendarStyle: CalendarStyle(
                 todayDecoration: BoxDecoration(
-                  color: (isDark ? AppColors.darkFoam : AppColors.dawnFoam)
+                  color: (isDark ? AppTokens.accentEnd : AppTokens.accentEnd)
                       .withValues(alpha: 0.3),
                   shape: BoxShape.circle,
                 ),
                 todayTextStyle: TextStyle(
-                  color: isDark ? AppColors.darkText : AppColors.dawnText,
+                  color: isDark ? AppTokens.darkInk : AppTokens.lightInk,
                 ),
                 selectedDecoration: BoxDecoration(
-                  color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
+                  color: isDark ? AppTokens.accentEnd : AppTokens.accentEnd,
                   shape: BoxShape.circle,
                 ),
                 selectedTextStyle: TextStyle(
-                  color: isDark ? AppColors.darkBase : AppColors.dawnBase,
+                  color: isDark ? AppTokens.darkBg : AppTokens.lightBgTop,
                   fontWeight: FontWeight.bold,
                 ),
                 weekendTextStyle: TextStyle(
-                  color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                  color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
                 ),
                 outsideTextStyle: TextStyle(
-                  color: (isDark ? AppColors.darkMuted : AppColors.dawnMuted)
+                  color: (isDark ? AppTokens.darkMuted : AppTokens.lightMuted)
                       .withValues(alpha: 0.5),
                 ),
               ),
@@ -196,9 +197,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       margin: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: isSelected
-            ? (isDark ? AppColors.darkFoam : AppColors.dawnFoam)
+            ? (isDark ? AppTokens.accentEnd : AppTokens.accentEnd)
             : isToday
-                ? (isDark ? AppColors.darkFoam : AppColors.dawnFoam)
+                ? (isDark ? AppTokens.accentEnd : AppTokens.accentEnd)
                     .withValues(alpha: 0.3)
                 : null,
         shape: BoxShape.circle,
@@ -208,10 +209,10 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
           '${day.day}',
           style: TextStyle(
             color: isSelected
-                ? (isDark ? AppColors.darkBase : AppColors.dawnBase)
+                ? (isDark ? AppTokens.darkBg : AppTokens.lightBgTop)
                 : isDark
-                    ? AppColors.darkText
-                    : AppColors.dawnText,
+                    ? AppTokens.darkInk
+                    : AppTokens.lightInk,
             fontWeight: isSelected ? FontWeight.bold : null,
           ),
         ),
@@ -234,13 +235,13 @@ class _EmptyState extends StatelessWidget {
           Icon(
             Icons.calendar_today_outlined,
             size: 48,
-            color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+            color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
           ),
           const SizedBox(height: 16),
           Text(
             'Seleziona un giorno',
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                  color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
                 ),
           ),
         ],
@@ -271,19 +272,19 @@ class _DayInjectionsList extends StatelessWidget {
             Icon(
               Icons.check_circle_outline,
               size: 48,
-              color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+              color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
             ),
             const SizedBox(height: 16),
             Text(
               'Nessuna iniezione programmata',
               style: theme.textTheme.bodyLarge?.copyWith(
-                color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
               ),
             ),
             Text(
               DateFormat('d MMMM yyyy', 'it_IT').format(selectedDay),
               style: theme.textTheme.bodySmall?.copyWith(
-                color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
               ),
             ),
           ],
@@ -335,27 +336,27 @@ class _InjectionCard extends ConsumerWidget {
 
     switch (injection.status) {
       case 'completed':
-        statusColor = isDark ? AppColors.darkPine : AppColors.dawnPine;
+        statusColor = isDark ? AppTokens.accent : AppTokens.accent;
         statusIcon = Icons.check_circle;
         statusLabel = 'Completata';
         break;
       case 'skipped':
-        statusColor = isDark ? AppColors.darkLove : AppColors.dawnLove;
+        statusColor = isDark ? AppTokens.dangerDark : AppTokens.dangerLight;
         statusIcon = Icons.cancel;
         statusLabel = 'Saltata';
         break;
       case 'missed':
-        statusColor = isDark ? AppColors.darkLove : AppColors.dawnLove;
+        statusColor = isDark ? AppTokens.dangerDark : AppTokens.dangerLight;
         statusIcon = Icons.warning_amber;
         statusLabel = 'Mancata';
         break;
       case 'delayed':
-        statusColor = isDark ? AppColors.darkGold : AppColors.dawnGold;
+        statusColor = isDark ? AppTokens.warnDark : AppTokens.warnLight;
         statusIcon = Icons.schedule;
         statusLabel = 'In ritardo';
         break;
       default:
-        statusColor = isDark ? AppColors.darkFoam : AppColors.dawnFoam;
+        statusColor = isDark ? AppTokens.accentEnd : AppTokens.accentEnd;
         statusIcon = Icons.pending;
         statusLabel = 'Programmata';
     }
@@ -382,7 +383,7 @@ class _InjectionCard extends ConsumerWidget {
                     Text(
                       injection.pointCode,
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                        color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
                       ),
                     ),
                   ],
@@ -406,7 +407,7 @@ class _InjectionCard extends ConsumerWidget {
               const SizedBox(width: 8),
               Icon(
                 Icons.chevron_right,
-                color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
               ),
             ],
           ),
@@ -614,7 +615,7 @@ class _InjectionEditSheet extends StatelessWidget {
                           DateFormat('d MMMM yyyy, HH:mm', 'it_IT')
                               .format(injection.scheduledAt),
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color: isDark ? AppColors.darkMuted : AppColors.dawnMuted,
+                            color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
                           ),
                         ),
                       ],
@@ -632,8 +633,8 @@ class _InjectionEditSheet extends StatelessWidget {
                 leading: Icon(
                   Icons.check_circle,
                   color: !canComplete
-                      ? (isDark ? AppColors.darkMuted : AppColors.dawnMuted)
-                      : (isDark ? AppColors.darkPine : AppColors.dawnPine),
+                      ? (isDark ? AppTokens.darkMuted : AppTokens.lightMuted)
+                      : (isDark ? AppTokens.accent : AppTokens.accent),
                 ),
                 title: const Text('Segna come completata'),
                 subtitle: !canComplete
@@ -641,8 +642,8 @@ class _InjectionEditSheet extends StatelessWidget {
                         'Disponibile dal ${DateFormat('d MMM yyyy', 'it_IT').format(injection.scheduledAt)}',
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: isDark
-                              ? AppColors.darkMuted
-                              : AppColors.dawnMuted,
+                              ? AppTokens.darkMuted
+                              : AppTokens.lightMuted,
                         ),
                       )
                     : null,
@@ -652,7 +653,7 @@ class _InjectionEditSheet extends StatelessWidget {
               ListTile(
                 leading: Icon(
                   Icons.cancel,
-                  color: isDark ? AppColors.darkGold : AppColors.dawnGold,
+                  color: isDark ? AppTokens.warnDark : AppTokens.warnLight,
                 ),
                 title: const Text('Segna come saltata'),
                 onTap: onSkip,
@@ -661,7 +662,7 @@ class _InjectionEditSheet extends StatelessWidget {
               ListTile(
                 leading: Icon(
                   Icons.restore,
-                  color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
+                  color: isDark ? AppTokens.accentEnd : AppTokens.accentEnd,
                 ),
                 title: const Text('Ripristina come pianificata'),
                 onTap: onRestore,
@@ -669,7 +670,7 @@ class _InjectionEditSheet extends StatelessWidget {
             ListTile(
               leading: Icon(
                 Icons.edit_note,
-                color: isDark ? AppColors.darkIris : AppColors.dawnIris,
+                color: isDark ? AppTokens.darkIris : AppTokens.accent,
               ),
               title: const Text('Apri dettaglio (note + effetti)'),
               onTap: onOpenDetail,
@@ -677,7 +678,7 @@ class _InjectionEditSheet extends StatelessWidget {
             ListTile(
               leading: Icon(
                 Icons.edit,
-                color: isDark ? AppColors.darkFoam : AppColors.dawnFoam,
+                color: isDark ? AppTokens.accentEnd : AppTokens.accentEnd,
               ),
               title: const Text('Cambia punto'),
               onTap: onChangePoint,

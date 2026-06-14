@@ -13,6 +13,7 @@ void main() {
       theme: AppTheme.light,
       home: Scaffold(
         body: NextInjectionHeroCard(
+          state: HeroState.upcoming,
           pointLabel: 'Addome Dx · 4',
           scheduledAt: DateTime(2026, 6, 14, 20, 30),
           ctaLabel: 'Completa',

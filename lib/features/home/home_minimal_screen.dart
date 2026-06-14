@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_tokens.dart';
+import '../../core/widgets/completion_time_dialog.dart';
 import '../../core/database/database_provider.dart';
 import '../../models/body_zone.dart' as model;
 import '../../models/injection_record.dart' as inj;
@@ -348,32 +349,14 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
       return;
     }
 
-    final shouldComplete = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Conferma iniezione'),
-        content: Text(
-          'Vuoi segnare $resolvedLabel come completata?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('No'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Sì, completata'),
-          ),
-        ],
-      ),
-    );
+    final at = await showCompletionTimeDialog(context, pointLabel: resolvedLabel);
 
-    if (shouldComplete == true && context.mounted) {
+    if (at != null && context.mounted) {
       // Cancella le notifiche pre-iniezione e schedula side-effects reminder
       // usando l'id stabile dell'iniezione (no più id derivato da timestamp).
       await NotificationService.instance.cancelNotification(injectionId);
 
-      await repository.completeInjection(injectionId);
+      await repository.completeInjection(injectionId, at: at);
 
       final notifSettings = ref.read(notificationSettingsProvider);
       if (notifSettings.enabled && notifSettings.permissionsGranted) {

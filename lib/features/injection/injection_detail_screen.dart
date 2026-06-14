@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import '../../core/database/app_database.dart' as db;
 import '../../core/services/notification_service.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/widgets/completion_time_dialog.dart';
 import 'injection_provider.dart';
 import 'injection_repository.dart';
 
@@ -85,10 +86,17 @@ class _InjectionDetailScreenState extends ConsumerState<InjectionDetailScreen> {
   }
 
   Future<void> _complete(db.Injection injection) async {
+    final at = await showCompletionTimeDialog(
+      context,
+      pointLabel: injection.pointLabel,
+    );
+    if (at == null) return;
+
     final repo = ref.read(injectionRepositoryProvider);
     try {
       await repo.completeInjection(
         injection.id,
+        at: at,
         notes: _notesController.text,
         sideEffects: _selectedEffects.toList(),
       );

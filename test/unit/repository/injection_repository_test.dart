@@ -297,6 +297,40 @@ void main() {
       expect(injections.first.sideEffects, 'redness');
     });
 
+    test('completeInjection con "at" imposta scheduledAt e completedAt al tempo scelto', () async {
+      final id = await db.insertInjection(InjectionsCompanion.insert(
+        zoneId: 1,
+        pointNumber: 1,
+        pointCode: 'CD-1',
+        pointLabel: 'Coscia Dx · 1',
+        scheduledAt: DateTime(2020, 1, 1, 20, 30), // passato → completabile
+        status: const Value('scheduled'),
+      ));
+      final at = DateTime(2020, 1, 1, 21, 15);
+      await repository.completeInjection(id, at: at);
+      final inj = await db.getInjectionById(id);
+      expect(inj!.status, 'completed');
+      expect(inj.completedAt, at);
+      expect(inj.scheduledAt, at);
+    });
+
+    test('completeInjection senza "at" usa ~adesso', () async {
+      final id = await db.insertInjection(InjectionsCompanion.insert(
+        zoneId: 1,
+        pointNumber: 2,
+        pointCode: 'CD-2',
+        pointLabel: 'Coscia Dx · 2',
+        scheduledAt: DateTime(2020, 1, 1, 20, 30),
+        status: const Value('scheduled'),
+      ));
+      final before = DateTime.now();
+      await repository.completeInjection(id);
+      final inj = await db.getInjectionById(id);
+      expect(inj!.status, 'completed');
+      expect(inj.completedAt!.isAfter(before.subtract(const Duration(seconds: 5))), isTrue);
+      expect(inj.scheduledAt.isAfter(before.subtract(const Duration(seconds: 5))), isTrue);
+    });
+
     test('skipInjection marks as skipped', () async {
       final zones = await db.getAllZones();
 

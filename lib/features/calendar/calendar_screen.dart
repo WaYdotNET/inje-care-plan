@@ -12,6 +12,7 @@ import '../../core/services/notification_service.dart';
 import '../../core/services/notification_settings_provider.dart';
 import '../injection/injection_provider.dart';
 import '../injection/injection_repository.dart';
+import '../../core/widgets/completion_time_dialog.dart';
 
 /// Calendar screen with injection schedule
 class CalendarScreen extends ConsumerStatefulWidget {
@@ -450,12 +451,20 @@ class _InjectionCard extends ConsumerWidget {
         isDark: isDark,
         onComplete: () async {
           Navigator.pop(ctx);
+          if (!context.mounted) return;
+
+          final at = await showCompletionTimeDialog(
+            context,
+            pointLabel: injection.pointLabel,
+          );
+          if (at == null) return;
+
           final repository = ref.read(injectionRepositoryProvider);
 
           await NotificationService.instance.cancelNotification(injection.id);
 
           try {
-            await repository.completeInjection(injection.id);
+            await repository.completeInjection(injection.id, at: at);
           } on StateError catch (_) {
             if (context.mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -473,7 +482,7 @@ class _InjectionCard extends ConsumerWidget {
           if (notifSettings.enabled && notifSettings.permissionsGranted) {
             await NotificationService.instance.scheduleSideEffectsReminder(
               id: injection.id,
-              completedAt: DateTime.now(),
+              completedAt: at,
               pointLabel: injection.pointLabel,
               hoursAfter: notifSettings.sideEffectsReminderHours,
             );

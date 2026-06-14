@@ -120,10 +120,13 @@ class InjectionRepository {
     ));
   }
 
-  /// Complete an injection. Throws [StateError] if the injection is scheduled
-  /// for a future calendar day (defensive guard against UI bypass).
+  /// Complete an injection at [at] (defaults to now). Records the actual time
+  /// in BOTH completedAt and scheduledAt (scheduledAt is the app's reference
+  /// for "when the injection was done"). Throws [StateError] if the injection
+  /// is scheduled for a future calendar day (defensive guard against UI bypass).
   Future<void> completeInjection(
     int injectionId, {
+    DateTime? at,
     String? notes,
     List<String> sideEffects = const [],
   }) async {
@@ -133,10 +136,12 @@ class InjectionRepository {
         'Cannot complete an injection scheduled for a future day',
       );
     }
+    final when = at ?? DateTime.now();
     await _db.updateInjection(InjectionsCompanion(
       id: Value(injectionId),
       status: const Value('completed'),
-      completedAt: Value(DateTime.now()),
+      scheduledAt: Value(when),
+      completedAt: Value(when),
       notes: Value(notes ?? ''),
       sideEffects: Value(sideEffects.join(',')),
       updatedAt: Value(DateTime.now()),

@@ -187,12 +187,13 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
     }
   }
 
-  ({List<DayStatus> statuses, List<int?> ids}) _weekData(
+  ({List<DayStatus> statuses, List<int?> ids, List<int> counts}) _weekData(
     List<db.Injection> injections,
     DateTime startOfWeek,
   ) {
     final statuses = List<DayStatus>.filled(7, DayStatus.none);
     final ids = List<int?>.filled(7, null);
+    final counts = List<int>.filled(7, 0);
     final start = DateTime(startOfWeek.year, startOfWeek.month, startOfWeek.day);
     for (final inj in injections) {
       final d = inj.scheduledAt;
@@ -201,8 +202,9 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
       if (i < 0 || i > 6) continue;
       statuses[i] = dayStatusFromString(inj.status);
       ids[i] = inj.id;
+      counts[i]++;
     }
-    return (statuses: statuses, ids: ids);
+    return (statuses: statuses, ids: ids, counts: counts);
   }
 
   /// Renders the original silhouette view (next/suggested injection body map).
@@ -363,6 +365,7 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
                     child: WeekDots(
                       weekStart: startOfWeek,
                       statuses: wd.statuses,
+                      counts: wd.counts,
                       onTapDay: (i) {
                         final id = wd.ids[i];
                         if (id != null) context.push('/injection/$id');

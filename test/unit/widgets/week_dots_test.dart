@@ -47,4 +47,80 @@ void main() {
     expect(dayStatusFromString('delayed'), DayStatus.scheduled);
     expect(dayStatusFromString('qualsiasi'), DayStatus.scheduled);
   });
+
+  testWidgets('badge "2" appare sul giorno con count > 1', (tester) async {
+    final counts = List<int>.filled(7, 0);
+    counts[0] = 2; // lunedì: 2 iniezioni
+    await tester.pumpWidget(host(WeekDots(
+      weekStart: monday,
+      statuses: const [
+        DayStatus.done,
+        DayStatus.none,
+        DayStatus.none,
+        DayStatus.none,
+        DayStatus.none,
+        DayStatus.none,
+        DayStatus.none,
+      ],
+      counts: counts,
+    )));
+    expect(find.text('2'), findsOneWidget);
+  });
+
+  testWidgets('nessun badge quando count == 1', (tester) async {
+    final counts = List<int>.filled(7, 0);
+    counts[0] = 1;
+    await tester.pumpWidget(host(WeekDots(
+      weekStart: monday,
+      statuses: const [
+        DayStatus.done,
+        DayStatus.none,
+        DayStatus.none,
+        DayStatus.none,
+        DayStatus.none,
+        DayStatus.none,
+        DayStatus.none,
+      ],
+      counts: counts,
+    )));
+    expect(find.text('1'), findsNothing);
+  });
+
+  testWidgets('badge non appare quando counts è null', (tester) async {
+    await tester.pumpWidget(host(WeekDots(
+      weekStart: monday,
+      statuses: const [
+        DayStatus.done,
+        DayStatus.none,
+        DayStatus.none,
+        DayStatus.none,
+        DayStatus.none,
+        DayStatus.none,
+        DayStatus.none,
+      ],
+    )));
+    // nessun testo numerico atteso nei pallini
+    expect(find.text('1'), findsNothing);
+    expect(find.text('2'), findsNothing);
+  });
+
+  testWidgets('badge "3" su due giorni distinti', (tester) async {
+    final counts = List<int>.filled(7, 0);
+    counts[1] = 3; // martedì
+    counts[4] = 3; // venerdì
+    await tester.pumpWidget(host(WeekDots(
+      weekStart: monday,
+      statuses: const [
+        DayStatus.none,
+        DayStatus.done,
+        DayStatus.none,
+        DayStatus.none,
+        DayStatus.done,
+        DayStatus.none,
+        DayStatus.none,
+      ],
+      counts: counts,
+    )));
+    expect(find.text('3'), findsNWidgets(2));
+  });
 }

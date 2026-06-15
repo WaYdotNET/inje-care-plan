@@ -17,16 +17,27 @@ DayStatus dayStatusFromString(String status) => switch (status) {
 
 /// Striscia compatta dei 7 giorni (Lun→Dom) con pallino di stato "Accent-led".
 /// Oggi è evidenziato dall'iniziale del giorno in grassetto viola.
+/// Quando [counts] è fornito e `counts[i] > 1`, mostra un badge con il
+/// conteggio nell'angolo in alto a destra del pallino.
 class WeekDots extends StatelessWidget {
   const WeekDots({
     super.key,
     required this.weekStart,
     required this.statuses,
+    this.counts,
     this.onTapDay,
-  }) : assert(statuses.length == 7, 'statuses deve avere 7 elementi (Lun→Dom)');
+  })  : assert(statuses.length == 7, 'statuses deve avere 7 elementi (Lun→Dom)'),
+        assert(
+          counts == null || counts.length == 7,
+          'counts deve avere 7 elementi (Lun→Dom)',
+        );
 
   final DateTime weekStart;
   final List<DayStatus> statuses;
+
+  /// Conteggio iniezioni per giorno (lunedì = indice 0). Opzionale.
+  /// Un badge appare solo quando il valore è > 1.
+  final List<int>? counts;
   final void Function(int index)? onTapDay;
 
   @override
@@ -57,7 +68,10 @@ class WeekDots extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 6),
-                _StatusDot(status: statuses[i]),
+                _StatusDot(
+                  status: statuses[i],
+                  count: counts?[i],
+                ),
               ],
             ),
           ),
@@ -68,27 +82,74 @@ class WeekDots extends StatelessWidget {
 }
 
 class _StatusDot extends StatelessWidget {
-  const _StatusDot({required this.status});
+  const _StatusDot({
+    required this.status,
+    this.count,
+  });
 
   final DayStatus status;
 
+  /// Se > 1, mostra un piccolo badge con il numero nell'angolo in alto a destra.
+  final int? count;
+
   @override
   Widget build(BuildContext context) {
-    switch (status) {
-      case DayStatus.none:
-        return Container(
+    final dot = switch (status) {
+      DayStatus.none => Container(
           width: 8,
           height: 8,
-          decoration: const BoxDecoration(color: AppTokens.dotEmpty, shape: BoxShape.circle),
-        );
-      case DayStatus.done:
-        return _circle(AppTokens.accent, const Icon(PhosphorIconsDuotone.check, size: 13, color: Colors.white));
-      case DayStatus.scheduled:
-        return _circle(AppTokens.accentSoft, null);
-      case DayStatus.skipped:
-      case DayStatus.missed:
-        return _circle(AppTokens.skipBg, const Icon(PhosphorIconsDuotone.x, size: 12, color: AppTokens.skipFg));
-    }
+          decoration: const BoxDecoration(
+            color: AppTokens.dotEmpty,
+            shape: BoxShape.circle,
+          ),
+        ),
+      DayStatus.done => _circle(
+          AppTokens.accent,
+          const Icon(PhosphorIconsDuotone.check, size: 13, color: Colors.white),
+        ),
+      DayStatus.scheduled => _circle(AppTokens.accentSoft, null),
+      DayStatus.skipped || DayStatus.missed => _circle(
+          AppTokens.skipBg,
+          const Icon(
+            PhosphorIconsDuotone.x,
+            size: 12,
+            color: AppTokens.skipFg,
+          ),
+        ),
+    };
+
+    final showBadge = count != null && count! > 1;
+    if (!showBadge) return dot;
+
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        dot,
+        Positioned(
+          top: -4,
+          right: -4,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 3),
+            constraints: const BoxConstraints(minWidth: 14, minHeight: 14),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: AppTokens.accent,
+              borderRadius: BorderRadius.circular(AppRadius.pill),
+              border: Border.all(color: Colors.white, width: 1.5),
+            ),
+            child: Text(
+              '$count',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 8,
+                fontWeight: FontWeight.w700,
+                height: 1,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _circle(Color bg, Widget? child) => Container(

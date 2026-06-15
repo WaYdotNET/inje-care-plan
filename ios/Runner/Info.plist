@@ -47,5 +47,16 @@
 	<true/>
 	<key>NSCalendarsUsageDescription</key>
 	<string>InjeCare Plan aggiunge le tue iniezioni al calendario del telefono per ricordartele con affidabilità. I dati restano sul tuo dispositivo.</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.injecare.plan</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>injecare</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

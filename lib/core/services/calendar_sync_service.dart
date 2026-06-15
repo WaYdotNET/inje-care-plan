@@ -197,7 +197,7 @@ class CalendarSyncService {
         start: start,
         end: end,
         reminders: reminders,
-        url: Uri.parse('injecare://injection/${injection.id}'),
+        url: Uri.parse('injecare:///injection/${injection.id}'),
       );
 
       final result = await _withTimeout(_plugin.createOrUpdateEvent(event));
@@ -263,7 +263,7 @@ class CalendarSyncService {
         start: start,
         end: end,
         reminders: const [],
-        url: Uri.parse('injecare://injection/${injection.id}'),
+        url: Uri.parse('injecare:///injection/${injection.id}'),
       );
 
       await _withTimeout(_plugin.createOrUpdateEvent(event));

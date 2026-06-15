@@ -12,6 +12,7 @@ import '../../core/services/export_service.dart';
 import '../../core/services/import_service.dart';
 import '../../core/services/notification_service.dart';
 import '../../core/services/notification_settings_provider.dart';
+import 'diagnostic_screen.dart';
 import 'reminder_calendar_screen.dart';
 import '../../core/utils/picked_file_to_string.dart';
 import '../../core/database/app_database.dart' as db;
@@ -340,6 +341,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: 'Rivedi introduzione',
             icon: PhosphorIconsDuotone.arrowCounterClockwise,
             onTap: () => _showOnboardingConfirmation(context),
+          ),
+          _SettingsTile(
+            icon: PhosphorIconsDuotone.bug,
+            title: 'Diagnostica',
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => const DiagnosticScreen(),
+              ),
+            ),
           ),
 
           const SizedBox(height: 32),

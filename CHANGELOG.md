@@ -1,5 +1,15 @@
 # Changelog
 
+## 4.11.2 - 2026-06-15
+
+### Corretto
+- **Pianificazione settimanale/mensile**: risolto il blocco che impediva la creazione delle iniezioni (e non mostrava alcun riscontro). Verificato: ora crea correttamente tutte le iniezioni dei prossimi 7/30 giorni.
+- **Anteprima data (aggiunta manuale)**: quando aggiungi un'iniezione scegliendo un giorno dal calendario, l'anteprima mostra ora **quel giorno** e non "adesso". (Il salvataggio era già corretto.)
+- Pianificazione: se non c'è storico, il dialog "Da quale punto partire?" ora compare sempre.
+
+### Aggiunto
+- Nel dialog "Da quale punto partire?" è indicata anche la **rotazione attiva**.
+
 ## 4.11.1 - 2026-06-15
 
 ### Corretto

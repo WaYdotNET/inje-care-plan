@@ -785,6 +785,32 @@ class AppDatabase extends _$AppDatabase {
             ..limit(1))
           .getSingleOrNull();
 
+  /// Restituisce l'ultima iniezione completata prima di [when] (esclusa).
+  Future<Injection?> getPreviousCompletedBefore(DateTime when) {
+    return (select(injections)
+          ..where((i) =>
+              i.status.equals('completed') & i.scheduledAt.isSmallerThanValue(when))
+          ..orderBy([(i) => OrderingTerm.desc(i.scheduledAt)])
+          ..limit(1))
+        .getSingleOrNull();
+  }
+
+  /// Imposta il [calendarEventId] per una iniezione.
+  Future<void> setCalendarEventId(int injectionId, String eventId) {
+    return (update(injections)..where((i) => i.id.equals(injectionId)))
+        .write(InjectionsCompanion(calendarEventId: Value(eventId)));
+  }
+
+  /// Restituisce le iniezioni future pianificate (scheduled o delayed) da [from] in poi.
+  Future<List<Injection>> getFutureScheduledInjections(DateTime from) {
+    return (select(injections)
+          ..where((i) =>
+              i.scheduledAt.isBiggerOrEqualValue(from) &
+              (i.status.equals('scheduled') | i.status.equals('delayed')))
+          ..orderBy([(i) => OrderingTerm.asc(i.scheduledAt)]))
+        .get();
+  }
+
   // --- Utilities ---
   Future<void> deleteAllData() async {
     await delete(injections).go();

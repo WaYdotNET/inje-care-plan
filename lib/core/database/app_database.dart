@@ -27,7 +27,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -56,6 +56,20 @@ class AppDatabase extends _$AppDatabase {
         // Alcuni utenti vedono il side invertito (es. Coscia Sx con side='right')
         // probabilmente per un seed errato in una build precedente.
         await _alignZoneSideToCode();
+      }
+      if (from < 5) {
+        // v5 — garantisce la colonna calendar_event_id sulle installazioni
+        // aggiornate da schemi precedenti. Idempotente: i fresh-install v4
+        // hanno già la colonna (creata da createAll), quindi non riaggiungere.
+        final info = await customSelect(
+          "PRAGMA table_info('injections')",
+        ).get();
+        final hasColumn = info.any(
+          (row) => row.data['name'] == 'calendar_event_id',
+        );
+        if (!hasColumn) {
+          await m.addColumn(injections, injections.calendarEventId);
+        }
       }
     },
     beforeOpen: (details) async {

@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.12.0 - 2026-06-15
+
+### Cambiato
+- **Selezione punto ridisegnata**: pulsante **"Registra iniezione" fisso in basso** sempre visibile (niente più scroll per confermare), la sezione del **punto/silhouette compare dopo aver scelto la zona** (con scorrimento automatico), e un **indicatore di avanzamento** (Zona · Punto · Conferma) in alto. Più fluida e comoda. Vale anche per l'esclusione punto.
+
 ## 4.11.2 - 2026-06-15
 
 ### Corretto

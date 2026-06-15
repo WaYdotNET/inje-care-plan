@@ -9,6 +9,7 @@ import '../../core/database/database_provider.dart';
 import '../../app/router.dart';
 import '../../models/body_zone.dart';
 import '../../models/injection_record.dart';
+import '../../core/services/diagnostic_log_service.dart';
 import '../../core/services/notification_service.dart';
 import '../../core/services/notification_settings_provider.dart';
 import '../../core/services/reminder_settings_provider.dart';
@@ -226,6 +227,7 @@ class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
       final repository = ref.read(injectionRepositoryProvider);
       final now = DateTime.now();
       final scheduledAt = widget.scheduledDate ?? now;
+      DiagnosticLogService.instance.logEvent('add-date', 'RecordScreen save widget.scheduledDate=${widget.scheduledDate} -> scheduledAt=$scheduledAt');
 
       // Workflow: SEMPRE salvata prima come "scheduled", poi può essere completata
       // Questo permette all'utente di programmare e poi confermare

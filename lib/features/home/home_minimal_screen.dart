@@ -19,6 +19,7 @@ import '../../app/router.dart';
 import '../../core/services/missed_injection_service.dart';
 import '../../core/services/notification_settings_provider.dart';
 import '../../core/services/notification_service.dart';
+import '../../core/services/reminder_settings_provider.dart';
 import '../../core/ml/rotation_pattern_engine.dart';
 import '../../core/utils/schedule_utils.dart';
 import '../injection/injection_provider.dart' hide bodyZonesProvider;
@@ -571,7 +572,9 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
       ref.invalidate(currentRotationPatternProvider);
       ref.invalidate(rotationPatternEngineProvider);
 
-      if (notificationSettings.enabled &&
+      final reminderSettings = ref.read(reminderSettingsProvider);
+      if (!reminderSettings.suppressAppPreReminders &&
+          notificationSettings.enabled &&
           notificationSettings.permissionsGranted) {
         await NotificationService.instance.scheduleInjectionNotifications(
           injection: record.copyWith(id: newId),

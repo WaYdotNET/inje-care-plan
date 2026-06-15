@@ -1,5 +1,4 @@
 // test/unit/database/calendar_event_id_migration_test.dart
-import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:injecare_plan/core/database/app_database.dart';

@@ -45,5 +45,7 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSCalendarsUsageDescription</key>
+	<string>InjeCare Plan aggiunge le tue iniezioni al calendario del telefono per ricordartele con affidabilità. I dati restano sul tuo dispositivo.</string>
 </dict>
 </plist>

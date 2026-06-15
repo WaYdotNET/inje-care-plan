@@ -157,7 +157,7 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
     switch (state) {
       case HeroState.allDone:
         return _HeroMessageCard(
-          gradient: AppTokens.successGradient,
+          baseColor: AppTokens.successLight,
           icon: PhosphorIconsDuotone.checkCircle,
           text: 'Per oggi è tutto',
           fill: fill,
@@ -263,10 +263,6 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
 
             return Column(
               children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
-                  child: _buildHero(context),
-                ),
                 Expanded(
                   child: GestureDetector(
                     onTap: zone != null
@@ -451,7 +447,7 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
           ..showSnackBar(
             SnackBar(
               content: Text('✓ $resolvedLabel completata!'),
-              backgroundColor: Colors.green,
+              backgroundColor: AppTokens.successLight,
               duration: const Duration(seconds: 2),
             ),
           );
@@ -755,7 +751,7 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
 /// Card hero per stati allDone (gradiente) e none (neutro).
 class _HeroMessageCard extends StatelessWidget {
   const _HeroMessageCard({
-    required this.gradient,
+    required this.baseColor,
     required this.icon,
     required this.text,
     this.fill = false,
@@ -767,10 +763,10 @@ class _HeroMessageCard extends StatelessWidget {
     required this.text,
     this.fill = false,
     this.onTap,
-  })  : gradient = null,
+  })  : baseColor = null,
         _neutral = true;
 
-  final Gradient? gradient;
+  final Color? baseColor;
   final IconData icon;
   final String text;
   final bool _neutral;
@@ -806,16 +802,17 @@ class _HeroMessageCard extends StatelessWidget {
       );
     }
 
+    final base = baseColor ?? AppTokens.accent;
     final row = Row(
       mainAxisSize: fill ? MainAxisSize.min : MainAxisSize.max,
       children: [
-        Icon(icon, color: Colors.white, size: 22),
+        Icon(icon, color: base, size: 22),
         const SizedBox(width: 10),
         Flexible(
           child: Text(
             text,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
               fontWeight: FontWeight.w800,
               fontSize: 15,
             ),
@@ -828,8 +825,16 @@ class _HeroMessageCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: gradient,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            base.withValues(alpha: isDark ? 0.30 : 0.16),
+            base.withValues(alpha: isDark ? 0.16 : 0.07),
+          ],
+        ),
         borderRadius: BorderRadius.circular(AppRadius.card),
+        border: Border.all(color: base.withValues(alpha: 0.25)),
         boxShadow: AppTokens.softShadow(),
       ),
       child: fill ? Center(child: row) : row,
@@ -941,7 +946,7 @@ class _MainCardState extends State<_MainCard> {
               isDark: isDark,
               onTap: () => setState(() => _currentView = BodyView.front),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 8),
             _HomeViewToggle(
               icon: PhosphorIconsDuotone.user,
               label: 'Retro',
@@ -1094,12 +1099,12 @@ class _HomeViewToggle extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
           color: isSelected
               ? color.withValues(alpha: 0.2)
               : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppRadius.pill),
           border: Border.all(
             color: isSelected ? color : color.withValues(alpha: 0.3),
             width: isSelected ? 2 : 1,
@@ -1108,12 +1113,12 @@ class _HomeViewToggle extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: color, size: 20),
-            const SizedBox(width: 6),
+            Icon(icon, color: color, size: 16),
+            const SizedBox(width: 4),
             Text(
               label,
               style: TextStyle(
-                fontSize: 13,
+                fontSize: 12,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                 color: color,
               ),
@@ -1174,7 +1179,7 @@ class _LayoutToggle extends StatelessWidget {
     final mutedColor = isDark ? AppTokens.darkMuted : AppTokens.lightMuted;
     return Padding(
       padding: const EdgeInsets.symmetric(
-        vertical: AppSpacing.s,
+        vertical: AppSpacing.xs,
         horizontal: AppSpacing.l,
       ),
       child: Row(
@@ -1219,8 +1224,8 @@ class _Pill extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
         padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.xl,
-          vertical: AppSpacing.xs + 2,
+          horizontal: AppSpacing.l,
+          vertical: AppSpacing.xs,
         ),
         decoration: BoxDecoration(
           color: selected ? AppTokens.accent : Colors.transparent,
@@ -1234,7 +1239,7 @@ class _Pill extends StatelessWidget {
           style: TextStyle(
             color: selected ? Colors.white : mutedColor,
             fontWeight: FontWeight.w600,
-            fontSize: 13,
+            fontSize: 12,
           ),
         ),
       ),

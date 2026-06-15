@@ -28,7 +28,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -74,6 +74,14 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 6) {
         await m.createTable(appLogs);
+      }
+      if (from < 7) {
+        // v7 — nuova silhouette CC0: lo spazio coordinate dei punti è cambiato
+        // (viewBox e proporzioni del corpo diversi). Le posizioni personalizzate
+        // sul vecchio corpo non sono più valide. Azzeriamo il flag custom così
+        // `beforeOpen` (_fixIncorrectPointCoordinates) le riallinea ai nuovi
+        // default. L'utente potrà ri-personalizzare sul nuovo corpo.
+        await customStatement('UPDATE point_configs SET is_custom_position = 0');
       }
     },
     beforeOpen: (details) async {

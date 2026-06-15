@@ -42,6 +42,7 @@ class BackupService {
 
   static const _prefKeys = [
     'home_layout',
+    'point_selection_style',
     'theme_mode',
     'app_theme_mode',
     'scheduled_dark_mode_config',

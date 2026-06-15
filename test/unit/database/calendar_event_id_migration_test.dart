@@ -4,10 +4,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:injecare_plan/core/database/app_database.dart';
 
 void main() {
-  test('schemaVersion è 6', () {
+  test('schemaVersion è 7', () {
     final db = AppDatabase.forTesting(NativeDatabase.memory());
     addTearDown(db.close);
-    expect(db.schemaVersion, 6);
+    expect(db.schemaVersion, 7);
   });
 
   test('la colonna calendar_event_id è utilizzabile (insert+read)', () async {

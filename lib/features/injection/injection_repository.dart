@@ -62,6 +62,24 @@ class InjectionRepository {
     }
   }
 
+  /// Ri-sincronizza l'evento dopo una modifica (note/effetti), rispettando lo
+  /// stato: una iniezione completata mantiene il ✓ (markDone), le altre usano
+  /// l'upsert standard. Best-effort.
+  Future<void> _resyncCalendar(int injectionId) async {
+    if (!_isCalendarEnabled() || _calendarSync == null) return;
+    try {
+      final inj = await _db.getInjectionById(injectionId);
+      if (inj == null || inj.calendarEventId.isEmpty) return;
+      if (inj.status == 'completed') {
+        await _calendarSync.markDone(inj, _completionBehaviorOf());
+      } else {
+        await _syncToCalendar(injectionId);
+      }
+    } catch (_) {
+      // best-effort
+    }
+  }
+
   /// Resolve the display label for a point, using custom names if configured.
   /// Format: "ZoneName · CustomName (N)" when custom name exists,
   /// otherwise "ZoneName · N" (default format).
@@ -226,6 +244,7 @@ class InjectionRepository {
       sideEffects: Value(sideEffects.join(',')),
       updatedAt: Value(DateTime.now()),
     ));
+    await _resyncCalendar(injectionId);
   }
 
   /// Update notes for an existing injection (editable at any time)
@@ -235,6 +254,7 @@ class InjectionRepository {
       notes: Value(notes ?? ''),
       updatedAt: Value(DateTime.now()),
     ));
+    await _resyncCalendar(injectionId);
   }
 
   /// Skip an injection

@@ -336,11 +336,13 @@ void main() {
       SharedPreferences.setMockInitialValues({
         'home_layout': 'silhouette',
         'theme_mode': 'dark',
+        'point_selection_style': 'classic',
       });
       final data = await BackupService.instance.generateBackupJson(db);
       final prefs = data['preferences'] as Map<String, dynamic>;
       expect(prefs['home_layout'], 'silhouette');
       expect(prefs['theme_mode'], 'dark');
+      expect(prefs['point_selection_style'], 'classic');
     });
 
     test('importBackup ripristina le preferenze SharedPreferences', () async {
@@ -352,11 +354,15 @@ void main() {
         'bodyZones': <dynamic>[],
         'therapyPlans': <dynamic>[],
         'injections': <dynamic>[],
-        'preferences': {'home_layout': 'silhouette'},
+        'preferences': {
+          'home_layout': 'silhouette',
+          'point_selection_style': 'classic',
+        },
       };
       await BackupService.instance.importBackup(db, jsonEncode(backup));
       final prefs = await SharedPreferences.getInstance();
       expect(prefs.getString('home_layout'), 'silhouette');
+      expect(prefs.getString('point_selection_style'), 'classic');
     });
   });
 }

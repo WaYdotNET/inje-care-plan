@@ -4,6 +4,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../core/database/app_database.dart';
 import '../../core/services/diagnostic_log_service.dart';
+import '../../core/services/notification_service.dart';
 import '../../core/theme/app_tokens.dart';
 
 /// Schermata "Diagnostica" nelle Impostazioni.
@@ -39,6 +40,34 @@ class _DiagnosticScreenState extends State<DiagnosticScreen> {
 
   Future<void> _share() async {
     await DiagnosticLogService.instance.shareReport();
+  }
+
+  Future<void> _testNotification() async {
+    await NotificationService.instance.showNotification(
+      id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      title: '💉 Promemoria Iniezione',
+      body: 'È ora della tua iniezione! Zona suggerita: Braccio Sx 💪',
+    );
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Notifica di test inviata')),
+      );
+    }
+  }
+
+  Future<void> _testScheduled() async {
+    final now = DateTime.now();
+    await NotificationService.instance.scheduleInjectionReminder(
+      id: (now.millisecondsSinceEpoch ~/ 1000) + 42,
+      scheduledTime: now.add(const Duration(seconds: 10)),
+      pointLabel: 'Test promemoria (10s)',
+      minutesBefore: 0,
+    );
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Promemoria programmato tra 10 secondi')),
+      );
+    }
   }
 
   Future<void> _confirmClear() async {
@@ -121,6 +150,21 @@ class _DiagnosticScreenState extends State<DiagnosticScreen> {
               ),
             ),
           ),
+
+          // Strumenti di test (spostati qui dalle Impostazioni)
+          ListTile(
+            leading: const Icon(PhosphorIconsDuotone.bellRinging),
+            title: const Text('Testa notifica'),
+            subtitle: const Text('Invia subito un esempio di promemoria'),
+            onTap: _testNotification,
+          ),
+          ListTile(
+            leading: const Icon(PhosphorIconsDuotone.alarm),
+            title: const Text('Testa promemoria (10s)'),
+            subtitle: const Text('Notifica programmata tra 10 secondi'),
+            onTap: _testScheduled,
+          ),
+          const Divider(height: 1),
 
           // Lista o stato vuoto
           Expanded(

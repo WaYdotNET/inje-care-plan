@@ -10,7 +10,6 @@ import '../info/info_screen.dart' show packageInfoProvider;
 import '../../core/services/backup_service.dart';
 import '../../core/services/export_service.dart';
 import '../../core/services/import_service.dart';
-import '../../core/services/notification_service.dart';
 import '../../core/services/notification_settings_provider.dart';
 import 'diagnostic_screen.dart';
 import 'reminder_calendar_screen.dart';
@@ -24,6 +23,7 @@ import '../../models/therapy_plan.dart';
 import '../auth/auth_provider.dart';
 import '../home/home_layout_provider.dart';
 import '../injection/injection_provider.dart';
+import '../injection/point_selection_style_provider.dart';
 
 /// Settings screen
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -52,7 +52,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
           const Divider(),
 
-          const _SectionHeader(title: 'PIANO TERAPEUTICO'),
+          const _SectionHeader(title: 'TERAPIA'),
           therapyPlanAsync.when(
             loading: () => const ListTile(title: Text('Caricamento...')),
             error: (e, st) =>
@@ -81,7 +81,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             },
           ),
 
-          const _SectionHeader(title: 'PATTERN DI ROTAZIONE'),
           _RotationPatternSection(),
 
           const _SectionHeader(title: 'ZONE E PUNTI'),
@@ -195,40 +194,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               notificationSettings.sideEffectsReminderHours,
             ),
           ),
-          ListTile(
-            title: const Text('Testa notifica'),
-            subtitle: const Text('Visualizza un esempio di promemoria'),
-            trailing: const Icon(PhosphorIconsDuotone.bellRinging),
-            enabled: notificationSettings.permissionsGranted,
-            onTap: notificationSettings.permissionsGranted
-                ? () => _showTestNotification(context)
-                : null,
-          ),
-          ListTile(
-            title: const Text('Testa promemoria (10s)'),
-            subtitle: const Text('Verifica notifica programmata anche con app chiusa'),
-            trailing: const Icon(PhosphorIconsDuotone.alarm),
-            enabled: notificationSettings.permissionsGranted,
-            onTap: notificationSettings.permissionsGranted
-                ? () async {
-                    final now = DateTime.now();
-                    await NotificationService.instance.scheduleInjectionReminder(
-                      id: (now.millisecondsSinceEpoch ~/ 1000) + 42,
-                      scheduledTime: now.add(const Duration(seconds: 10)),
-                      pointLabel: 'Test promemoria (10s)',
-                      minutesBefore: 0,
-                    );
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Promemoria programmato tra 10 secondi'),
-                          duration: Duration(seconds: 2),
-                        ),
-                      );
-                    }
-                  }
-                : null,
-          ),
           _SettingsTile(
             icon: PhosphorIconsDuotone.calendarCheck,
             title: 'Promemoria e Calendario',
@@ -257,52 +222,30 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               );
             },
           ),
+          Consumer(
+            builder: (context, ref, _) {
+              final style = ref.watch(pointSelectionStyleProvider);
+              final label = style == PointSelectionStyle.classic
+                  ? 'Classico (a step)'
+                  : 'Mappa del corpo';
+              return ListTile(
+                title: const Text('Stile selezione punto'),
+                subtitle: Text(label),
+                onTap: () => _showPointSelectionStyleSelector(context),
+              );
+            },
+          ),
 
           const _SectionHeader(title: 'DATI'),
           injectionsAsync.when(
             loading: () => const SizedBox(),
             error: (e, st) => const SizedBox(),
-            data: (injections) => Column(
-              children: [
-                _SettingsTile(
-                  title: 'Esporta storico (PDF)',
-                  onTap: injections.isNotEmpty
-                      ? () async {
-                          final messenger = ScaffoldMessenger.of(context);
-                          try {
-                            await ExportService.instance.exportToPdf(
-                              _convertInjections(injections),
-                            );
-                          } catch (e) {
-                            if (mounted) {
-                              messenger.showSnackBar(
-                                SnackBar(content: Text('Errore: $e')),
-                              );
-                            }
-                          }
-                        }
-                      : () {},
-                ),
-                _SettingsTile(
-                  title: 'Esporta storico (CSV)',
-                  onTap: injections.isNotEmpty
-                      ? () async {
-                          final messenger = ScaffoldMessenger.of(context);
-                          try {
-                            await ExportService.instance.exportToCsv(
-                              _convertInjections(injections),
-                            );
-                          } catch (e) {
-                            if (mounted) {
-                              messenger.showSnackBar(
-                                SnackBar(content: Text('Errore: $e')),
-                              );
-                            }
-                          }
-                        }
-                      : () {},
-                ),
-              ],
+            data: (injections) => _SettingsTile(
+              icon: PhosphorIconsDuotone.export,
+              title: 'Esporta storico',
+              onTap: injections.isNotEmpty
+                  ? () => _showExportSelector(context, injections)
+                  : () {},
             ),
           ),
           _SettingsTile(
@@ -561,36 +504,99 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   void _editOverdueGraceMinutes(BuildContext context, int currentValue) {
+    _showStepperDialog(
+      context: context,
+      title: 'Tolleranza mancata',
+      subtitle: 'Dopo questo tempo una programmata diventa mancata',
+      current: currentValue,
+      min: 0,
+      max: 360,
+      step: 5,
+      format: _formatMinutes,
+      onSave: (v) => ref
+          .read(notificationSettingsProvider.notifier)
+          .setOverdueGraceMinutes(v),
+    );
+  }
+
+  /// Formatta una quantità di minuti in modo leggibile.
+  static String _formatMinutes(int n) {
+    if (n == 0) return 'Subito';
+    if (n < 60) return '$n min';
+    final h = n ~/ 60;
+    final m = n % 60;
+    final hLabel = '$h ${h == 1 ? 'ora' : 'ore'}';
+    return m == 0 ? hLabel : '$hLabel $m min';
+  }
+
+  /// Dialog con selettore libero (− valore +) entro [min]..[max] a passo [step].
+  void _showStepperDialog({
+    required BuildContext context,
+    required String title,
+    String? subtitle,
+    required int current,
+    required int min,
+    required int max,
+    required int step,
+    required String Function(int) format,
+    required void Function(int) onSave,
+  }) {
     showDialog<void>(
       context: context,
       builder: (context) {
-        int value = currentValue;
+        int value = current.clamp(min, max);
         return AlertDialog(
-          title: const Text('Tolleranza mancata'),
+          title: Text(title),
           content: StatefulBuilder(
-            builder: (context, setState) => RadioGroup<int>(
-              groupValue: value,
-              onChanged: (v) => setState(() => value = v!),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [0, 15, 30, 45, 60, 90, 120, 180]
-                    .map(
-                      (n) => RadioListTile<int>(
-                        title: Text(
-                          n == 0
-                              ? 'Subito'
-                              : n < 60
-                                  ? '$n minuti'
-                                  : '${n ~/ 60} ${n == 60 ? 'ora' : 'ore'}',
-                        ),
-                        subtitle: const Text(
-                          'Dopo questo tempo una programmata diventa mancata',
-                        ),
-                        value: n,
+            builder: (context, setState) => Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (subtitle != null) ...[
+                  Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
+                  const SizedBox(height: 16),
+                ],
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    IconButton.filledTonal(
+                      iconSize: 28,
+                      style: IconButton.styleFrom(
+                        backgroundColor: AppTokens.accent.withValues(alpha: 0.14),
+                        foregroundColor: AppTokens.accent,
                       ),
-                    )
-                    .toList(),
-              ),
+                      icon: const Icon(PhosphorIconsDuotone.minus),
+                      onPressed: value > min
+                          ? () => setState(
+                                () => value = (value - step).clamp(min, max),
+                              )
+                          : null,
+                    ),
+                    SizedBox(
+                      width: 120,
+                      child: Text(
+                        format(value),
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                      ),
+                    ),
+                    IconButton.filledTonal(
+                      iconSize: 28,
+                      style: IconButton.styleFrom(
+                        backgroundColor: AppTokens.accent.withValues(alpha: 0.14),
+                        foregroundColor: AppTokens.accent,
+                      ),
+                      icon: const Icon(PhosphorIconsDuotone.plus),
+                      onPressed: value < max
+                          ? () => setState(
+                                () => value = (value + step).clamp(min, max),
+                              )
+                          : null,
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
           actions: [
@@ -601,9 +607,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ElevatedButton(
               onPressed: () {
                 Navigator.pop(context);
-                ref
-                    .read(notificationSettingsProvider.notifier)
-                    .setOverdueGraceMinutes(value);
+                onSave(value);
               },
               child: const Text('Salva'),
             ),
@@ -614,130 +618,77 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   void _editNotificationMinutes(BuildContext context, int currentValue) {
-    showDialog<void>(
+    _showStepperDialog(
       context: context,
-      builder: (context) {
-        int value = currentValue;
-        return AlertDialog(
-          title: const Text('Anticipo promemoria'),
-          content: StatefulBuilder(
-            builder: (context, setState) => RadioGroup<int>(
-              groupValue: value,
-              onChanged: (v) => setState(() => value = v!),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [15, 30, 45, 60, 120]
-                    .map(
-                      (n) => RadioListTile<int>(
-                        title: Text(
-                          n < 60
-                              ? '$n minuti'
-                              : '${n ~/ 60} ${n == 60 ? 'ora' : 'ore'}',
-                        ),
-                        value: n,
-                      ),
-                    )
-                    .toList(),
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Annulla'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                ref
-                    .read(notificationSettingsProvider.notifier)
-                    .setMinutesBefore(value);
-              },
-              child: const Text('Salva'),
-            ),
-          ],
-        );
-      },
+      title: 'Anticipo promemoria',
+      subtitle: 'Quanto prima dell\'orario ricevere il promemoria',
+      current: currentValue,
+      min: 0,
+      max: 240,
+      step: 5,
+      format: _formatMinutes,
+      onSave: (v) =>
+          ref.read(notificationSettingsProvider.notifier).setMinutesBefore(v),
     );
   }
 
   void _editSideEffectsReminderHours(BuildContext context, int currentValue) {
-    showDialog<void>(
+    _showStepperDialog(
       context: context,
-      builder: (context) {
-        int value = currentValue;
-        return AlertDialog(
-          title: const Text('Promemoria effetti collaterali'),
-          content: StatefulBuilder(
-            builder: (context, setState) => RadioGroup<int>(
-              groupValue: value,
-              onChanged: (v) => setState(() => value = v!),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [2, 4, 6, 8]
-                    .map(
-                      (n) => RadioListTile<int>(
-                        title: Text('$n ore dopo l\'iniezione'),
-                        value: n,
-                      ),
-                    )
-                    .toList(),
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Annulla'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                ref
-                    .read(notificationSettingsProvider.notifier)
-                    .setSideEffectsReminderHours(value);
-              },
-              child: const Text('Salva'),
-            ),
-          ],
-        );
-      },
+      title: 'Promemoria effetti collaterali',
+      subtitle: 'Quanto dopo l\'iniezione ricordare di annotare gli effetti',
+      current: currentValue,
+      min: 1,
+      max: 48,
+      step: 1,
+      format: (n) => '$n ${n == 1 ? 'ora' : 'ore'} dopo',
+      onSave: (v) => ref
+          .read(notificationSettingsProvider.notifier)
+          .setSideEffectsReminderHours(v),
     );
   }
 
-  Future<void> _showTestNotification(BuildContext context) async {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    // Show immediate test notification
-    await NotificationService.instance.showNotification(
-      id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
-      title: '💉 Promemoria Iniezione',
-      body: 'È ora della tua iniezione! Zona suggerita: Braccio Sx 💪',
-    );
-
-    if (context.mounted) {
-      ScaffoldMessenger.of(context)
-        ..clearSnackBars()
-        ..showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                Icon(
-                  PhosphorIconsDuotone.checkCircle,
-                  color: isDark ? Colors.white : Colors.white,
-                ),
-                const SizedBox(width: 12),
-                const Expanded(
-                  child: Text('Notifica di test inviata! Controlla il pannello notifiche.'),
-                ),
-              ],
-            ),
-            backgroundColor: isDark ? AppTokens.accent : AppTokens.accent,
-            duration: const Duration(seconds: 3),
-          ),
-        );
+  void _showExportSelector(BuildContext context, List<db.Injection> injections) {
+    Future<void> run(Future<void> Function(List<dynamic>) export) async {
+      final messenger = ScaffoldMessenger.of(context);
+      try {
+        await export(_convertInjections(injections));
+      } catch (e) {
+        if (mounted) {
+          messenger.showSnackBar(SnackBar(content: Text('Errore: $e')));
+        }
+      }
     }
+
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(PhosphorIconsDuotone.filePdf),
+              title: const Text('PDF'),
+              subtitle: const Text('Report stampabile'),
+              onTap: () {
+                Navigator.pop(ctx);
+                run(ExportService.instance.exportToPdf);
+              },
+            ),
+            ListTile(
+              leading: const Icon(PhosphorIconsDuotone.fileCsv),
+              title: const Text('CSV'),
+              subtitle: const Text('Foglio di calcolo'),
+              onTap: () {
+                Navigator.pop(ctx);
+                run(ExportService.instance.exportToCsv);
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
   }
 
   void _showThemeSelector(BuildContext context) {
@@ -796,6 +747,37 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               title: Text('Silhouette'),
               subtitle: Text('Mappa del corpo con il punto'),
               value: HomeLayout.silhouette,
+            ),
+            SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showPointSelectionStyleSelector(BuildContext context) {
+    final current = ref.read(pointSelectionStyleProvider);
+
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (ctx) => RadioGroup<PointSelectionStyle>(
+        groupValue: current,
+        onChanged: (value) {
+          ref.read(pointSelectionStyleProvider.notifier).setStyle(value!);
+          Navigator.pop(ctx);
+        },
+        child: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            RadioListTile<PointSelectionStyle>(
+              title: Text('Mappa del corpo'),
+              subtitle: Text('Tutti i punti sulla silhouette, un tap per sceglierli'),
+              value: PointSelectionStyle.map,
+            ),
+            RadioListTile<PointSelectionStyle>(
+              title: Text('Classico (a step)'),
+              subtitle: Text('Scegli prima la zona, poi il punto'),
+              value: PointSelectionStyle.classic,
             ),
             SizedBox(height: 16),
           ],

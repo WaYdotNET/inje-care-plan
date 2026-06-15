@@ -8,6 +8,9 @@ import '../../core/utils/schedule_utils.dart';
 import '../../models/rotation_pattern.dart';
 import '../../models/therapy_plan.dart';
 import 'injection_repository.dart';
+import 'point_usage_level.dart';
+import 'zone_provider.dart';
+import 'widgets/body_silhouette_editor.dart';
 
 /// CalendarSyncService singleton provider
 final calendarSyncServiceProvider = Provider<CalendarSyncService>(
@@ -439,3 +442,106 @@ final suggestedPointForDateProvider =
     return (zoneId: zoneId, pointNumber: point);
   },
 );
+
+/// Punto della mappa corpo: posizione + stato, attraverso tutte le zone.
+class BodyMapPoint {
+  const BodyMapPoint({
+    required this.zoneId,
+    required this.zoneName,
+    required this.zoneEmoji,
+    required this.pointNumber,
+    required this.x,
+    required this.y,
+    required this.bodyView,
+    required this.usageLevel,
+    required this.isBlacklisted,
+    required this.isSuggested,
+  });
+
+  final int zoneId;
+  final String zoneName;
+  final String zoneEmoji;
+  final int pointNumber;
+  final double x;
+  final double y;
+  final BodyView bodyView;
+  final PointUsageLevel usageLevel;
+  final bool isBlacklisted;
+  final bool isSuggested;
+
+  String get fullLabel => '$zoneEmoji $zoneName · Punto $pointNumber';
+}
+
+/// Aggrega i punti di tutte le zone abilitate con posizione e stato (uso,
+/// blacklist, suggerito) per la mappa unica del corpo.
+final bodyMapPointsProvider = FutureProvider.family<List<BodyMapPoint>,
+    ({DateTime scheduledAt, int? ignoreInjectionId})>((ref, params) async {
+  final database = ref.watch(databaseProvider);
+  final zones = await ref.watch(enabledZonesProvider.future);
+  final blacklist = await ref.watch(blacklistedPointsProvider.future);
+  final suggested = await ref.watch(
+    suggestedPointForDateProvider(
+      (
+        scheduledAt: params.scheduledAt,
+        ignoreInjectionId: params.ignoreInjectionId,
+      ),
+    ).future,
+  );
+
+  final result = <BodyMapPoint>[];
+  for (final zone in zones) {
+    final configs = await database.getPointConfigsForZone(zone.id);
+    final positions = <int, PositionedPoint>{};
+    if (configs.isEmpty) {
+      for (final p in generateDefaultPointPositions(
+        zone.numberOfPoints,
+        zone.type,
+        zone.side,
+      )) {
+        positions[p.pointNumber] = p;
+      }
+    } else {
+      for (final c in configs) {
+        positions[c.pointNumber] = c.toPositionedPoint();
+      }
+      for (final p in generateDefaultPointPositions(
+        zone.numberOfPoints,
+        zone.type,
+        zone.side,
+      )) {
+        positions.putIfAbsent(p.pointNumber, () => p);
+      }
+    }
+
+    final usage = await database.getPointUsageHistory(
+      zone.id,
+      ignoreInjectionId: params.ignoreInjectionId,
+    );
+    final blacklisted = blacklist
+        .where((b) => b.zoneId == zone.id)
+        .map((b) => b.pointNumber)
+        .toSet();
+
+    for (var n = 1; n <= zone.numberOfPoints; n++) {
+      final pos = positions[n];
+      if (pos == null) continue;
+      final last = usage[n];
+      final days =
+          last != null ? DateTime.now().difference(last).inDays : null;
+      result.add(BodyMapPoint(
+        zoneId: zone.id,
+        zoneName: zone.displayName,
+        zoneEmoji: zone.emoji,
+        pointNumber: n,
+        x: pos.x,
+        y: pos.y,
+        bodyView: pos.bodyView,
+        usageLevel: PointUsageLevelExtension.fromDaysSinceLastUse(days),
+        isBlacklisted: blacklisted.contains(n),
+        isSuggested:
+            suggested?.zoneId == zone.id && suggested?.pointNumber == n,
+      ));
+    }
+  }
+  return result;
+});

@@ -46,3 +46,6 @@ app.*.map.json
 .claude/worktrees/
 .cursor/
 .superpowers/
+
+# Code graph index (locale, non versionare)
+.codegraph/

@@ -35,6 +35,7 @@ void main() {
         longestStreak: 0,
         completedCount: 0,
         skippedCount: 0,
+        missedCount: 0,
         scheduledCount: 0,
       );
 
@@ -97,6 +98,7 @@ void main() {
         longestStreak: 10,
         completedCount: 17,
         skippedCount: 3,
+        missedCount: 5,
         scheduledCount: 5,
       );
 

@@ -84,6 +84,7 @@ void main() {
         lastInjection: DateTime(2024, 6, 15),
         completedCount: 50,
         skippedCount: 10,
+        missedCount: 5,
         scheduledCount: 5,
       );
 
@@ -96,6 +97,7 @@ void main() {
       expect(stats.lastInjection, DateTime(2024, 6, 15));
       expect(stats.completedCount, 50);
       expect(stats.skippedCount, 10);
+      expect(stats.missedCount, 5);
       expect(stats.scheduledCount, 5);
     });
 
@@ -114,6 +116,7 @@ void main() {
       expect(stats.lastInjection, isNull);
       expect(stats.completedCount, 0);
       expect(stats.skippedCount, 0);
+      expect(stats.missedCount, 0);
       expect(stats.scheduledCount, 0);
     });
   });
@@ -141,7 +144,7 @@ void main() {
       await db.close();
     });
 
-    test('calculates adherence rate correctly', () async {
+    test('calculates adherence rate correctly with completed and skipped', () async {
       final zones = await db.getAllZones();
       final now = DateTime.now();
 
@@ -174,13 +177,182 @@ void main() {
 
       final completedCount = allInjections.where((i) => i.status == 'completed').length;
       final skippedCount = allInjections.where((i) => i.status == 'skipped').length;
+      final missedCount = allInjections.where((i) => i.status == 'missed').length;
       final totalDone = completedCount;
-      final totalExpected = completedCount + skippedCount;
+      final totalExpected = completedCount + skippedCount + missedCount;
       final adherenceRate = (totalDone / totalExpected) * 100;
 
       expect(completedCount, 8);
       expect(skippedCount, 2);
+      expect(missedCount, 0);
       expect(adherenceRate, 80.0);
+    });
+
+    // --- Aderenza con iniezioni 'missed' ---
+    // Questi test verificano il bug fix: le iniezioni missed devono essere
+    // nel denominatore, altrimenti l'aderenza risulta sempre 100%.
+
+    test('adherence is 66.67% with [completed, completed, missed]', () async {
+      final zones = await db.getAllZones();
+      final now = DateTime.now();
+
+      await db.insertInjection(InjectionsCompanion.insert(
+        zoneId: zones.first.id,
+        pointNumber: 1,
+        pointCode: 'CD-1',
+        pointLabel: 'Test',
+        scheduledAt: now.subtract(const Duration(days: 3)),
+        completedAt: Value(now.subtract(const Duration(days: 3))),
+        status: const Value('completed'),
+      ));
+      await db.insertInjection(InjectionsCompanion.insert(
+        zoneId: zones.first.id,
+        pointNumber: 2,
+        pointCode: 'CD-2',
+        pointLabel: 'Test',
+        scheduledAt: now.subtract(const Duration(days: 2)),
+        completedAt: Value(now.subtract(const Duration(days: 2))),
+        status: const Value('completed'),
+      ));
+      await db.insertInjection(InjectionsCompanion.insert(
+        zoneId: zones.first.id,
+        pointNumber: 3,
+        pointCode: 'CD-3',
+        pointLabel: 'Test',
+        scheduledAt: now.subtract(const Duration(days: 1)),
+        status: const Value('missed'),
+      ));
+
+      final allInjections = await db.getAllInjections();
+
+      final completedCount = allInjections.where((i) => i.status == 'completed').length;
+      final skippedCount = allInjections.where((i) => i.status == 'skipped').length;
+      final missedCount = allInjections.where((i) => i.status == 'missed').length;
+      final totalDone = completedCount;
+      final totalExpected = completedCount + skippedCount + missedCount;
+      final adherenceRate = (totalDone / totalExpected) * 100;
+
+      expect(completedCount, 2);
+      expect(missedCount, 1);
+      expect(totalExpected, 3);
+      expect(adherenceRate, closeTo(66.67, 0.01));
+    });
+
+    test('adherence is 50% with [completed, missed]', () async {
+      final zones = await db.getAllZones();
+      final now = DateTime.now();
+
+      await db.insertInjection(InjectionsCompanion.insert(
+        zoneId: zones.first.id,
+        pointNumber: 1,
+        pointCode: 'CD-1',
+        pointLabel: 'Test',
+        scheduledAt: now.subtract(const Duration(days: 2)),
+        completedAt: Value(now.subtract(const Duration(days: 2))),
+        status: const Value('completed'),
+      ));
+      await db.insertInjection(InjectionsCompanion.insert(
+        zoneId: zones.first.id,
+        pointNumber: 2,
+        pointCode: 'CD-2',
+        pointLabel: 'Test',
+        scheduledAt: now.subtract(const Duration(days: 1)),
+        status: const Value('missed'),
+      ));
+
+      final allInjections = await db.getAllInjections();
+
+      final completedCount = allInjections.where((i) => i.status == 'completed').length;
+      final skippedCount = allInjections.where((i) => i.status == 'skipped').length;
+      final missedCount = allInjections.where((i) => i.status == 'missed').length;
+      final totalDone = completedCount;
+      final totalExpected = completedCount + skippedCount + missedCount;
+      final adherenceRate = (totalDone / totalExpected) * 100;
+
+      expect(completedCount, 1);
+      expect(missedCount, 1);
+      expect(totalExpected, 2);
+      expect(adherenceRate, 50.0);
+    });
+
+    test('adherence is 100% with [completed, completed]', () async {
+      final zones = await db.getAllZones();
+      final now = DateTime.now();
+
+      await db.insertInjection(InjectionsCompanion.insert(
+        zoneId: zones.first.id,
+        pointNumber: 1,
+        pointCode: 'CD-1',
+        pointLabel: 'Test',
+        scheduledAt: now.subtract(const Duration(days: 2)),
+        completedAt: Value(now.subtract(const Duration(days: 2))),
+        status: const Value('completed'),
+      ));
+      await db.insertInjection(InjectionsCompanion.insert(
+        zoneId: zones.first.id,
+        pointNumber: 2,
+        pointCode: 'CD-2',
+        pointLabel: 'Test',
+        scheduledAt: now.subtract(const Duration(days: 1)),
+        completedAt: Value(now.subtract(const Duration(days: 1))),
+        status: const Value('completed'),
+      ));
+
+      final allInjections = await db.getAllInjections();
+
+      final completedCount = allInjections.where((i) => i.status == 'completed').length;
+      final skippedCount = allInjections.where((i) => i.status == 'skipped').length;
+      final missedCount = allInjections.where((i) => i.status == 'missed').length;
+      final totalDone = completedCount;
+      final totalExpected = completedCount + skippedCount + missedCount;
+      final adherenceRate = (totalDone / totalExpected) * 100;
+
+      expect(completedCount, 2);
+      expect(missedCount, 0);
+      expect(totalExpected, 2);
+      expect(adherenceRate, 100.0);
+    });
+
+    test('future scheduled injections are excluded from adherence denominator', () async {
+      final zones = await db.getAllZones();
+      final now = DateTime.now();
+
+      // 1 completed in the past
+      await db.insertInjection(InjectionsCompanion.insert(
+        zoneId: zones.first.id,
+        pointNumber: 1,
+        pointCode: 'CD-1',
+        pointLabel: 'Test',
+        scheduledAt: now.subtract(const Duration(days: 2)),
+        completedAt: Value(now.subtract(const Duration(days: 2))),
+        status: const Value('completed'),
+      ));
+      // 1 scheduled in the future (not yet due — must NOT count)
+      await db.insertInjection(InjectionsCompanion.insert(
+        zoneId: zones.first.id,
+        pointNumber: 2,
+        pointCode: 'CD-2',
+        pointLabel: 'Test',
+        scheduledAt: now.add(const Duration(days: 3)),
+        status: const Value('scheduled'),
+      ));
+
+      final allInjections = await db.getAllInjections();
+
+      final completedCount = allInjections.where((i) => i.status == 'completed').length;
+      final skippedCount = allInjections.where((i) => i.status == 'skipped').length;
+      final missedCount = allInjections.where((i) => i.status == 'missed').length;
+      final scheduledCount = allInjections.where((i) => i.status == 'scheduled').length;
+      final totalDone = completedCount;
+      // scheduled must NOT appear in totalExpected
+      final totalExpected = completedCount + skippedCount + missedCount;
+      final adherenceRate = (totalDone / totalExpected) * 100;
+
+      expect(completedCount, 1);
+      expect(scheduledCount, 1);
+      expect(missedCount, 0);
+      expect(totalExpected, 1); // scheduled is excluded
+      expect(adherenceRate, 100.0);
     });
 
     test('calculates zone usage correctly', () async {

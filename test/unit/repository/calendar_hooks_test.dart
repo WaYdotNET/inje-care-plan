@@ -89,4 +89,74 @@ void main() {
 
     verifyNever(() => sync.upsertEvent(any(), any(), any()));
   });
+
+  test('createInjection non-blocking: errore calendario non blocca il salvataggio', () async {
+    final db = createTestDatabase();
+    addTearDown(db.close);
+    final sync = _MockSync();
+    when(() => sync.upsertEvent(any(), any(), any()))
+        .thenThrow(Exception('calendar down'));
+
+    final repo = InjectionRepository(
+      database: db,
+      calendarSync: sync,
+      isCalendarEnabled: () => true,
+    );
+
+    // Non deve lanciare eccezione nonostante il calendario sia down
+    await expectLater(
+      repo.createInjection(
+        InjectionRecord(
+          zoneId: 1,
+          pointNumber: 1,
+          scheduledAt: DateTime(2026, 6, 20, 20),
+          status: InjectionStatus.scheduled,
+          customPointLabel: 'Coscia Dx · 1',
+          createdAt: DateTime(2026, 6, 15),
+          updatedAt: DateTime(2026, 6, 15),
+        ),
+      ),
+      completes,
+    );
+
+    // L'iniezione deve essere salvata nel DB nonostante l'errore del calendario
+    final saved = await db.getAllInjections();
+    expect(saved, hasLength(1));
+    expect(saved.first.pointLabel, 'Coscia Dx · 1');
+  });
+
+  test('deleteInjection non-blocking: errore removeEvent non blocca la cancellazione', () async {
+    final db = createTestDatabase();
+    addTearDown(db.close);
+    final sync = _MockSync();
+    when(() => sync.upsertEvent(any(), any(), any()))
+        .thenAnswer((_) async => 'evt-1');
+    when(() => sync.removeEvent(any()))
+        .thenThrow(Exception('calendar down'));
+
+    final repo = InjectionRepository(
+      database: db,
+      calendarSync: sync,
+      isCalendarEnabled: () => true,
+    );
+
+    final id = await repo.createInjection(
+      InjectionRecord(
+        zoneId: 1,
+        pointNumber: 1,
+        scheduledAt: DateTime(2026, 6, 20, 20),
+        status: InjectionStatus.scheduled,
+        customPointLabel: 'Coscia Dx · 1',
+        createdAt: DateTime(2026, 6, 15),
+        updatedAt: DateTime(2026, 6, 15),
+      ),
+    );
+
+    // Non deve lanciare eccezione nonostante il calendario sia down
+    await expectLater(repo.deleteInjection(id), completes);
+
+    // L'iniezione deve essere rimossa dal DB nonostante l'errore del calendario
+    final remaining = await db.getAllInjections();
+    expect(remaining, isEmpty);
+  });
 }

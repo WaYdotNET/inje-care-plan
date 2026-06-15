@@ -344,6 +344,7 @@ class NotificationService {
     required InjectionRecord injection,
     required int minutesBefore,
     required bool missedDoseReminder,
+    bool skipPreReminders = false,
   }) async {
     final injectionId = injection.id;
     if (injectionId == null) {
@@ -360,20 +361,25 @@ class NotificationService {
 
     final payload = 'injection:$injectionId';
 
-    await scheduleInjectionReminder(
-      id: injectionId,
-      scheduledTime: injection.scheduledAt,
-      pointLabel: injection.pointLabel,
-      minutesBefore: minutesBefore,
-      payload: payload,
-    );
+    // Le notifiche pre-iniezione vengono omesse quando il canale è solo
+    // calendario: l'allarme del calendario le sostituisce. Il promemoria dose
+    // mancata rimane sempre attivo perché il calendario non può sostituirlo.
+    if (!skipPreReminders) {
+      await scheduleInjectionReminder(
+        id: injectionId,
+        scheduledTime: injection.scheduledAt,
+        pointLabel: injection.pointLabel,
+        minutesBefore: minutesBefore,
+        payload: payload,
+      );
 
-    await scheduleOneMinuteReminder(
-      id: injectionId,
-      scheduledTime: injection.scheduledAt,
-      pointLabel: injection.pointLabel,
-      payload: payload,
-    );
+      await scheduleOneMinuteReminder(
+        id: injectionId,
+        scheduledTime: injection.scheduledAt,
+        pointLabel: injection.pointLabel,
+        payload: payload,
+      );
+    }
 
     if (missedDoseReminder) {
       await scheduleMissedDoseReminder(

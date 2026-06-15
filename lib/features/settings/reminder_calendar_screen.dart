@@ -29,12 +29,7 @@ class _ReminderCalendarScreenState
 
   // ── Helpers ─────────────────────────────────────────────────────────────────
 
-  ReminderSettingsView _viewFrom(ReminderSettings s) => ReminderSettingsView(
-        channelIncludesCalendar: s.channel == ReminderChannel.calendar ||
-            s.channel == ReminderChannel.both,
-        includeFeedback: s.includeFeedback,
-        activeRules: s.activeRules.toList(),
-      );
+  ReminderSettingsView _viewFrom(ReminderSettings s) => ReminderSettingsView.from(s);
 
   String _offsetLabel(int m) {
     if (m == 0) return "All'orario";

@@ -5,7 +5,6 @@ import '../../core/database/database_provider.dart';
 import '../../core/services/calendar_sync_service.dart';
 import '../../core/services/reminder_settings_provider.dart';
 import '../../core/utils/schedule_utils.dart';
-import '../../models/reminder_rule.dart';
 import '../../models/rotation_pattern.dart';
 import '../../models/therapy_plan.dart';
 import 'injection_repository.dart';
@@ -24,15 +23,8 @@ final injectionRepositoryProvider = Provider<InjectionRepository>((ref) {
     isCalendarEnabled: () => ref.read(reminderSettingsProvider).calendarEnabled,
     completionBehaviorOf: () =>
         ref.read(reminderSettingsProvider).completionBehavior,
-    calendarSettings: () {
-      final s = ref.read(reminderSettingsProvider);
-      return ReminderSettingsView(
-        channelIncludesCalendar: s.channel == ReminderChannel.calendar ||
-            s.channel == ReminderChannel.both,
-        includeFeedback: s.includeFeedback,
-        activeRules: s.activeRules.toList(),
-      );
-    },
+    calendarSettings: () =>
+        ReminderSettingsView.from(ref.read(reminderSettingsProvider)),
   );
 });
 

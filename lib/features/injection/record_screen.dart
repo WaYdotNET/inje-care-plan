@@ -273,13 +273,12 @@ class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
       final notificationSettings = ref.read(notificationSettingsProvider);
 
       final reminderSettings = ref.read(reminderSettingsProvider);
-      if (!reminderSettings.suppressAppPreReminders &&
-          notificationSettings.enabled &&
-          notificationSettings.permissionsGranted) {
+      if (notificationSettings.enabled && notificationSettings.permissionsGranted) {
         await NotificationService.instance.scheduleInjectionNotifications(
           injection: record.copyWith(id: injectionId),
           minutesBefore: notificationSettings.minutesBefore,
           missedDoseReminder: notificationSettings.missedDoseReminder,
+          skipPreReminders: reminderSettings.suppressAppPreReminders,
         );
       }
 

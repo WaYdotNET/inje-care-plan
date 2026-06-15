@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../database/app_database.dart';
 import '../../models/reminder_rule.dart';
 import 'calendar_event_content.dart';
+import 'reminder_settings_provider.dart';
 
 /// Parametri di configurazione promemoria necessari a [CalendarSyncService].
 /// Derivato dalla sorgente di verità (es. ReminderSettings provider) dal
@@ -25,6 +26,14 @@ class ReminderSettingsView {
 
   /// Regole attive (minutesBefore ≥ 0) da tradurre in [Reminder].
   final List<ReminderRule> activeRules;
+
+  /// Costruisce un [ReminderSettingsView] a partire da [ReminderSettings].
+  factory ReminderSettingsView.from(ReminderSettings s) => ReminderSettingsView(
+        channelIncludesCalendar:
+            s.channel == ReminderChannel.calendar || s.channel == ReminderChannel.both,
+        includeFeedback: s.includeFeedback,
+        activeRules: s.activeRules.toList(),
+      );
 }
 
 /// Wraps [DeviceCalendarPlugin] con logica best-effort.

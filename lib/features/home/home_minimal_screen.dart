@@ -573,13 +573,12 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
       ref.invalidate(rotationPatternEngineProvider);
 
       final reminderSettings = ref.read(reminderSettingsProvider);
-      if (!reminderSettings.suppressAppPreReminders &&
-          notificationSettings.enabled &&
-          notificationSettings.permissionsGranted) {
+      if (notificationSettings.enabled && notificationSettings.permissionsGranted) {
         await NotificationService.instance.scheduleInjectionNotifications(
           injection: record.copyWith(id: newId),
           minutesBefore: notificationSettings.minutesBefore,
           missedDoseReminder: notificationSettings.missedDoseReminder,
+          skipPreReminders: reminderSettings.suppressAppPreReminders,
         );
       }
     }

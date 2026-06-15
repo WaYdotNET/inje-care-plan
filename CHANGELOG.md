@@ -1,5 +1,16 @@
 # Changelog
 
+## 4.11.0 - 2026-06-15
+
+### Aggiunto
+- **Integrazione con il calendario di sistema** (offline): le iniezioni possono essere aggiunte automaticamente al calendario del telefono con **allarmi nativi** affidabili (sopravvivono all'ottimizzazione batteria). Calendario dedicato "InjeCare", attivabile dalle Impostazioni → **Promemoria e Calendario**. Le note dell'evento includono il **feedback dell'ultima iniezione** (effetti collaterali e note), opzionale.
+- **Promemoria personalizzabili**: regole di anticipo configurabili (all'orario, 30 min, 24h, ecc.), ognuna attivabile/disattivabile, e scelta del **canale** (solo calendario / solo notifiche app / entrambi) per evitare avvisi doppi. Comportamento a completamento configurabile (segna ✓ o rimuovi l'evento).
+- **Log diagnostico locale**: nuova schermata Impostazioni → **Diagnostica** che registra errori ed eventi chiave. Esportabile come file `.txt` da condividere per l'assistenza. Tutto locale; nessun invio automatico.
+
+### Corretto
+- **Pianificazione sempre invocabile**: nuovo pulsante **"Pianifica iniezioni"** in Home (prima la pianificazione partiva solo a settimana vuota). L'inserimento è ora robusto e dà sempre un riscontro; se non c'è storico, chiede da quale punto del pattern partire.
+- **Flash dello sfondo**: eliminato il lampo bianco→lilla durante i cambi di schermata.
+
 ## 4.10.3 - 2026-06-14
 
 ### Corretto

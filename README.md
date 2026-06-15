@@ -40,7 +40,9 @@ Applicazione Flutter per la gestione delle iniezioni di Interferone beta-1a per 
 - 🏠 **Due stili di Home**: Scegli la visualizzazione preferita
   - Classica: Vista completa con statistiche e azioni rapide
   - Minimalista: Solo prossima iniezione con silhouette interattiva
-- 🔔 **Promemoria avanzati**: Notifiche configurabili
+- 🔔 **Promemoria personalizzabili**: regole di anticipo attivabili singolarmente + scelta del canale (calendario di sistema / notifiche app / entrambi) per evitare avvisi doppi
+- 🗓️ **Integrazione calendario di sistema** (offline): aggiunge le iniezioni al calendario del telefono con allarmi nativi affidabili; calendario dedicato "InjeCare", note con il feedback dell'ultima iniezione (opzionale)
+- 🩺 **Log diagnostico locale**: schermata Diagnostica con esportazione di un file `.txt` da condividere per l'assistenza
 - 📊 **Statistiche avanzate**: Grafici aderenza, heatmap zone, trend settimanali
 - 🤖 **Suggerimenti AI**: Raccomandazioni intelligenti per zone e orari
 - 📤 **Export PDF/CSV**: Condivisione report con il medico

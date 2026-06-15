@@ -47,6 +47,10 @@ class BackupService {
     'scheduled_dark_mode_config',
   ];
 
+  /// Chiave SharedPreferences usata da ReminderSettingsNotifier.
+  static const _reminderSettingsKey = 'reminder_settings_v1';
+  static const _reminderSettingsMigratedKey = 'reminder_settings_migrated';
+
   /// Esporta un backup completo di tutte le tabelle in formato JSON
   Future<void> exportBackup(AppDatabase db) async {
     final data = await generateBackupJson(db);
@@ -82,6 +86,9 @@ class BackupService {
       if (value != null) preferences[key] = value;
     }
 
+    // Includi le impostazioni promemoria (calendarEventId escluso — device-specific).
+    final reminderRaw = sharedPrefs.getString(_reminderSettingsKey);
+
     return {
       'version': _backupVersion,
       'createdAt': DateTime.now().toIso8601String(),
@@ -93,6 +100,8 @@ class BackupService {
       'appSettings': settings.map(_settingToJson).toList(),
       'userProfile': profile != null ? _profileToJson(profile) : null,
       'preferences': preferences,
+      if (reminderRaw != null)
+        'reminderSettings': json.decode(reminderRaw),
     };
   }
 
@@ -251,8 +260,8 @@ class BackupService {
                   notes: Value(map['notes'] as String? ?? ''),
                   sideEffects:
                       Value(map['sideEffects'] as String? ?? ''),
-                  calendarEventId:
-                      Value(map['calendarEventId'] as String? ?? ''),
+                  // calendarEventId è device-specific: non ripristinato dal backup.
+                  calendarEventId: const Value(''),
                 ),
               );
           recordsImported++;
@@ -445,8 +454,8 @@ class BackupService {
                   notes: Value(map['notes'] as String? ?? ''),
                   sideEffects:
                       Value(map['sideEffects'] as String? ?? ''),
-                  calendarEventId:
-                      Value(map['calendarEventId'] as String? ?? ''),
+                  // calendarEventId è device-specific: non ripristinato dal backup.
+                  calendarEventId: const Value(''),
                 ),
               );
           recordsImported++;
@@ -564,15 +573,30 @@ class BackupService {
   }
 
   Future<void> _restorePreferences(Map<String, dynamic> data) async {
-    final raw = data['preferences'];
-    if (raw is! Map) return;
     final prefs = await SharedPreferences.getInstance();
-    for (final entry in raw.entries) {
-      final key = entry.key.toString();
-      final value = entry.value;
-      if (_prefKeys.contains(key) && value is String) {
-        await prefs.setString(key, value);
+
+    // Ripristina preferenze UI (layout, tema, ecc.)
+    final raw = data['preferences'];
+    if (raw is Map) {
+      for (final entry in raw.entries) {
+        final key = entry.key.toString();
+        final value = entry.value;
+        if (_prefKeys.contains(key) && value is String) {
+          await prefs.setString(key, value);
+        }
       }
+    }
+
+    // Ripristina le impostazioni promemoria (regole + calendario).
+    // calendarEventId non è incluso nel backup — viene azzerato al momento
+    // dell'import (const Value('')) e ripopolato dalla prossima sincronizzazione.
+    final reminderData = data['reminderSettings'];
+    if (reminderData is Map<String, dynamic>) {
+      await prefs.setString(
+        _reminderSettingsKey,
+        json.encode(reminderData),
+      );
+      await prefs.setBool(_reminderSettingsMigratedKey, true);
     }
   }
 
@@ -618,7 +642,7 @@ class BackupService {
         'status': i.status,
         'notes': i.notes,
         'sideEffects': i.sideEffects,
-        'calendarEventId': i.calendarEventId,
+        // calendarEventId è device-specific: escluso dal backup.
       };
 
   Map<String, dynamic> _blacklistedToJson(BlacklistedPoint b) => {

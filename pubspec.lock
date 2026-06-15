@@ -329,6 +329,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.7.11"
+  device_calendar:
+    dependency: "direct main"
+    description:
+      name: device_calendar
+      sha256: e5170a5a5a2027135705b099fe5f9b0dce415e27c94997b34e64f28de54e4226
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.9.0"
   drift:
     dependency: "direct main"
     description:
@@ -1162,6 +1170,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.10.1"
+  sprintf:
+    dependency: transitive
+    description:
+      name: sprintf
+      sha256: ec76d38910b6f1c854ce1353c62d37e7ef82b53dc5ab048c25400d35970776d1
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.0.2"
   sqflite:
     dependency: transitive
     description:

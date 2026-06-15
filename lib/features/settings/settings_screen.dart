@@ -12,6 +12,7 @@ import '../../core/services/export_service.dart';
 import '../../core/services/import_service.dart';
 import '../../core/services/notification_service.dart';
 import '../../core/services/notification_settings_provider.dart';
+import 'reminder_calendar_screen.dart';
 import '../../core/utils/picked_file_to_string.dart';
 import '../../core/database/app_database.dart' as db;
 import '../../core/database/database_provider.dart';
@@ -226,6 +227,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     }
                   }
                 : null,
+          ),
+          _SettingsTile(
+            icon: PhosphorIconsDuotone.calendarCheck,
+            title: 'Promemoria e Calendario',
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => const ReminderCalendarScreen(),
+              ),
+            ),
           ),
 
           const _SectionHeader(title: 'ASPETTO'),

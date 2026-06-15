@@ -2,15 +2,30 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/database/app_database.dart' as db;
 import '../../core/database/database_provider.dart';
+import '../../core/services/calendar_sync_service.dart';
+import '../../core/services/reminder_settings_provider.dart';
 import '../../core/utils/schedule_utils.dart';
 import '../../models/rotation_pattern.dart';
 import '../../models/therapy_plan.dart';
 import 'injection_repository.dart';
 
+/// CalendarSyncService singleton provider
+final calendarSyncServiceProvider = Provider<CalendarSyncService>(
+  (ref) => CalendarSyncService(),
+);
+
 /// Injection repository provider
 final injectionRepositoryProvider = Provider<InjectionRepository>((ref) {
   final database = ref.watch(databaseProvider);
-  return InjectionRepository(database: database);
+  return InjectionRepository(
+    database: database,
+    calendarSync: ref.watch(calendarSyncServiceProvider),
+    isCalendarEnabled: () => ref.read(reminderSettingsProvider).calendarEnabled,
+    completionBehaviorOf: () =>
+        ref.read(reminderSettingsProvider).completionBehavior,
+    calendarSettings: () =>
+        ReminderSettingsView.from(ref.read(reminderSettingsProvider)),
+  );
 });
 
 /// All injections provider

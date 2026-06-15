@@ -11,6 +11,7 @@ import '../../models/body_zone.dart';
 import '../../models/injection_record.dart';
 import '../../core/services/notification_service.dart';
 import '../../core/services/notification_settings_provider.dart';
+import '../../core/services/reminder_settings_provider.dart';
 import '../../core/ml/rotation_pattern_engine.dart';
 import 'injection_provider.dart';
 import 'zone_provider.dart';
@@ -271,11 +272,13 @@ class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
       // Schedula notifiche per QUESTA iniezione (anche con app chiusa)
       final notificationSettings = ref.read(notificationSettingsProvider);
 
+      final reminderSettings = ref.read(reminderSettingsProvider);
       if (notificationSettings.enabled && notificationSettings.permissionsGranted) {
         await NotificationService.instance.scheduleInjectionNotifications(
           injection: record.copyWith(id: injectionId),
           minutesBefore: notificationSettings.minutesBefore,
           missedDoseReminder: notificationSettings.missedDoseReminder,
+          skipPreReminders: reminderSettings.suppressAppPreReminders,
         );
       }
 

@@ -1,8 +1,10 @@
 import 'package:drift/drift.dart';
 
 import '../../core/database/app_database.dart';
+import '../../core/services/calendar_sync_service.dart';
 import '../../models/injection_record.dart' as models;
 import '../../models/blacklisted_point.dart' as models;
+import '../../models/reminder_rule.dart';
 import '../../models/therapy_plan.dart' as models;
 
 /// Returns true if an injection scheduled at [scheduledAt] can be completed now.
@@ -17,9 +19,48 @@ bool canCompleteNow(DateTime scheduledAt, {DateTime? now}) {
 
 /// Injection repository per operazioni Drift (offline-first)
 class InjectionRepository {
-  InjectionRepository({required AppDatabase database}) : _db = database;
+  InjectionRepository({
+    required AppDatabase database,
+    CalendarSyncService? calendarSync,
+    bool Function()? isCalendarEnabled,
+    ReminderSettingsView Function()? calendarSettings,
+    CompletionBehavior Function()? completionBehaviorOf,
+  })  : _db = database,
+        _calendarSync = calendarSync,
+        _isCalendarEnabled = isCalendarEnabled ?? (() => false),
+        _calendarSettings = calendarSettings,
+        _completionBehaviorOf =
+            completionBehaviorOf ?? (() => CompletionBehavior.markDone);
 
   final AppDatabase _db;
+  final CalendarSyncService? _calendarSync;
+  final bool Function() _isCalendarEnabled;
+  final ReminderSettingsView Function()? _calendarSettings;
+  final CompletionBehavior Function() _completionBehaviorOf;
+
+  /// Sincronizza l'iniezione [injectionId] con il calendario del device.
+  ///
+  /// Best-effort: le eccezioni vengono silenziate per non bloccare il salvataggio.
+  Future<void> _syncToCalendar(int injectionId) async {
+    if (!_isCalendarEnabled() || _calendarSync == null) return;
+    try {
+      final inj = await _db.getInjectionById(injectionId);
+      if (inj == null) return;
+      final prev = await _db.getPreviousCompletedBefore(inj.scheduledAt);
+      final view = _calendarSettings?.call() ??
+          const ReminderSettingsView(
+            channelIncludesCalendar: true,
+            includeFeedback: true,
+            activeRules: [],
+          );
+      final eventId = await _calendarSync.upsertEvent(inj, prev, view);
+      if (eventId != null && eventId != inj.calendarEventId) {
+        await _db.setCalendarEventId(injectionId, eventId);
+      }
+    } catch (_) {
+      // best-effort: il calendario non deve mai bloccare il salvataggio
+    }
+  }
 
   /// Resolve the display label for a point, using custom names if configured.
   /// Format: "ZoneName · CustomName (N)" when custom name exists,
@@ -87,8 +128,8 @@ class InjectionRepository {
   }
 
   /// Create a new injection record
-  Future<int> createInjection(models.InjectionRecord record) {
-    return _db.insertInjection(InjectionsCompanion.insert(
+  Future<int> createInjection(models.InjectionRecord record) async {
+    final id = await _db.insertInjection(InjectionsCompanion.insert(
       zoneId: record.zoneId,
       pointNumber: record.pointNumber,
       pointCode: record.pointCode,
@@ -100,11 +141,13 @@ class InjectionRepository {
       sideEffects: Value(record.sideEffects.join(',')),
       calendarEventId: Value(record.calendarEventId),
     ));
+    await _syncToCalendar(id);
+    return id;
   }
 
   /// Update an injection record
-  Future<int> updateInjection(int id, models.InjectionRecord record) {
-    return _db.updateInjection(InjectionsCompanion(
+  Future<int> updateInjection(int id, models.InjectionRecord record) async {
+    final rows = await _db.updateInjection(InjectionsCompanion(
       id: Value(id),
       zoneId: Value(record.zoneId),
       pointNumber: Value(record.pointNumber),
@@ -118,6 +161,8 @@ class InjectionRepository {
       calendarEventId: Value(record.calendarEventId),
       updatedAt: Value(DateTime.now()),
     ));
+    await _syncToCalendar(id);
+    return rows;
   }
 
   /// Complete an injection at [at] (defaults to now). Records the actual time
@@ -146,6 +191,16 @@ class InjectionRepository {
       sideEffects: Value(sideEffects.join(',')),
       updatedAt: Value(DateTime.now()),
     ));
+    if (_isCalendarEnabled() && _calendarSync != null) {
+      try {
+        final inj = await _db.getInjectionById(injectionId);
+        if (inj != null) {
+          await _calendarSync.markDone(inj, _completionBehaviorOf());
+        }
+      } catch (_) {
+        // best-effort: il calendario non deve mai bloccare il completamento
+      }
+    }
   }
 
   /// Update side effects for an existing injection
@@ -186,7 +241,17 @@ class InjectionRepository {
   }
 
   /// Delete an injection
-  Future<int> deleteInjection(int injectionId) {
+  Future<int> deleteInjection(int injectionId) async {
+    if (_isCalendarEnabled() && _calendarSync != null) {
+      try {
+        final inj = await _db.getInjectionById(injectionId);
+        if (inj != null) {
+          await _calendarSync.removeEvent(inj);
+        }
+      } catch (_) {
+        // best-effort: il calendario non deve mai bloccare la cancellazione
+      }
+    }
     return _db.deleteInjection(injectionId);
   }
 

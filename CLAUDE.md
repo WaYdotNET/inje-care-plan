@@ -101,7 +101,7 @@ When bumping the version and releasing, **always** update **all** of these (chan
 4. `README.md` (and any other README) — keep in sync: it has **no** version number/changelog today (feature docs only), so usually no change is needed — but verify and update the relevant section if a feature/behavior described there changed.
 5. `.github/workflows/build-apk.yml` and `pages.yml` — if Flutter SDK was upgraded, update `flutter-version` to match (currently `3.41.6`).
 6. Commit, tag (`v<version>`), push with `--tags` to trigger GitHub Actions release.
-7. Verify all 3 pipelines: Deploy Pages, Build APK (main), Build APK + Release (tag).
+7. Verify the pipelines: **Deploy Pages** (runs on push to `main`) and **Build APK & App Bundle** (runs **only on tags** `v*` — and via manual `workflow_dispatch`; this is the run that produces the APK/AAB and creates the GitHub Release). NOTE: the APK/App Bundle build does **not** run on plain pushes/merges to `main` — only tags trigger it.
 
 ### Two BodyZone types
 

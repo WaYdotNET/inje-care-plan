@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../database/app_database.dart';
 import '../../models/reminder_rule.dart';
 import 'calendar_event_content.dart';
+import 'diagnostic_log_service.dart';
 import 'reminder_settings_provider.dart';
 
 /// Parametri di configurazione promemoria necessari a [CalendarSyncService].
@@ -68,6 +69,7 @@ class CalendarSyncService {
       return req.data == true;
     } catch (e) {
       debugPrint('[CalendarSyncService] ensureCalendarPermission error: $e');
+      DiagnosticLogService.instance.logError('calendar', e);
       return false;
     }
   }
@@ -128,6 +130,7 @@ class CalendarSyncService {
       return null;
     } catch (e) {
       debugPrint('[CalendarSyncService] ensureInjeCareCalendar error: $e');
+      DiagnosticLogService.instance.logError('calendar', e);
       return null;
     }
   }
@@ -187,6 +190,7 @@ class CalendarSyncService {
       return result.isSuccess ? result.data : null;
     } catch (e) {
       debugPrint('[CalendarSyncService] upsertEvent error: $e');
+      DiagnosticLogService.instance.logError('calendar', e);
       return null;
     }
   }
@@ -203,6 +207,7 @@ class CalendarSyncService {
       await _plugin.deleteEvent(calendarId, injection.calendarEventId);
     } catch (e) {
       debugPrint('[CalendarSyncService] removeEvent error: $e');
+      DiagnosticLogService.instance.logError('calendar', e);
     }
   }
 
@@ -248,6 +253,7 @@ class CalendarSyncService {
       await _plugin.createOrUpdateEvent(event);
     } catch (e) {
       debugPrint('[CalendarSyncService] markDone error: $e');
+      DiagnosticLogService.instance.logError('calendar', e);
     }
   }
 
@@ -265,6 +271,7 @@ class CalendarSyncService {
       }
     } catch (e) {
       debugPrint('[CalendarSyncService] teardown error: $e');
+      DiagnosticLogService.instance.logError('calendar', e);
     }
   }
 }

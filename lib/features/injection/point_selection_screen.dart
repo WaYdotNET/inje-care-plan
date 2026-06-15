@@ -48,6 +48,26 @@ class _PointSelectionScreenState extends ConsumerState<PointSelectionScreen> {
   bool _userChangedTime = false;
   bool _usedFallbackPreferredTime = false;
 
+  // Ridisegno ibrido: scroll + auto-scroll alla sezione punto + abilitazione CTA.
+  final _scrollController = ScrollController();
+  final _pointSectionKey = GlobalKey();
+
+  bool get _canConfirm => _selectedZoneId != null && _selectedPoint != null;
+
+  /// Porta in vista la sezione punto quando compare (dopo la scelta zona).
+  void _scrollToPointSection() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final ctx = _pointSectionKey.currentContext;
+      if (ctx != null) {
+        Scrollable.ensureVisible(
+          ctx,
+          duration: const Duration(milliseconds: 300),
+          alignment: 0.05,
+        );
+      }
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -92,6 +112,7 @@ class _PointSelectionScreenState extends ConsumerState<PointSelectionScreen> {
   @override
   void dispose() {
     _reasonController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -195,11 +216,20 @@ class _PointSelectionScreenState extends ConsumerState<PointSelectionScreen> {
               ),
             ),
         ],
+        bottom: _ProgressBar(
+          zoneDone: _selectedZoneId != null,
+          pointDone: _selectedPoint != null,
+          mode: widget.mode,
+          isDark: isDark,
+        ),
       ),
+      bottomNavigationBar:
+          _buildStickyCta(zonesAsync.asData?.value ?? const <BodyZone>[], isDark),
       body: zonesAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Errore: $e')),
         data: (zones) => SingleChildScrollView(
+          controller: _scrollController,
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -250,6 +280,7 @@ class _PointSelectionScreenState extends ConsumerState<PointSelectionScreen> {
                             _selectedZoneId = zone.id;
                             _selectedPoint = suggested.pointNumber;
                           });
+                          _scrollToPointSection();
                         },
                       ),
                     );
@@ -284,6 +315,7 @@ class _PointSelectionScreenState extends ConsumerState<PointSelectionScreen> {
                     _selectedZoneId = zoneId;
                     _selectedPoint = null;
                   });
+                  _scrollToPointSection();
                 },
               ),
 
@@ -291,6 +323,7 @@ class _PointSelectionScreenState extends ConsumerState<PointSelectionScreen> {
 
               // Zone detail with point positions
               if (_selectedZoneId != null) ...[
+                SizedBox(key: _pointSectionKey, height: 0),
                 blacklistedAsync.when(
                   loading: () =>
                       const Center(child: CircularProgressIndicator()),
@@ -313,8 +346,9 @@ class _PointSelectionScreenState extends ConsumerState<PointSelectionScreen> {
                 const SizedBox(height: 24),
               ],
 
-              // Reason field (only for blacklist mode)
-              if (widget.mode == PointSelectionMode.blacklist) ...[
+              // Reason field (blacklist): solo dopo aver scelto il punto
+              if (widget.mode == PointSelectionMode.blacklist &&
+                  _selectedPoint != null) ...[
                 TextField(
                   controller: _reasonController,
                   decoration: InputDecoration(
@@ -332,27 +366,67 @@ class _PointSelectionScreenState extends ConsumerState<PointSelectionScreen> {
                 const SizedBox(height: 24),
               ],
 
-              // Action button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: _selectedZoneId != null && _selectedPoint != null
-                      ? () => _performAction(zones)
-                      : null,
-                  icon: Icon(_actionIcon),
-                  label: Text(_actionLabel),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    backgroundColor: widget.mode == PointSelectionMode.blacklist
-                        ? (isDark ? AppTokens.dangerDark : AppTokens.dangerLight)
-                        : null,
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 32),
+              // Il pulsante d'azione è ora nella barra sticky in basso.
+              const SizedBox(height: 16),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  /// Barra d'azione fissa in basso con recap + pulsante primario.
+  Widget _buildStickyCta(List<BodyZone> zones, bool isDark) {
+    final muted = isDark ? AppTokens.darkMuted : AppTokens.lightMuted;
+    final zone = _selectedZoneId == null
+        ? null
+        : zones.where((z) => z.id == _selectedZoneId).firstOrNull;
+    final pointLabel = (zone != null && _selectedPoint != null)
+        ? zone.pointLabel(_selectedPoint!)
+        : null;
+    final recap = pointLabel == null
+        ? 'Seleziona zona e punto'
+        : (widget.mode == PointSelectionMode.injection
+            ? '$pointLabel · ${DateFormat('EEE d MMM · HH:mm', 'it_IT').format(_scheduledDateTime)}'
+            : pointLabel);
+    return SafeArea(
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
+        decoration: BoxDecoration(
+          color: isDark ? AppTokens.darkSurface : AppTokens.lightSurface,
+          border: Border(
+            top: BorderSide(
+              color: isDark ? AppTokens.darkBorder : AppTokens.lightBorder,
+            ),
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              recap,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: _canConfirm ? null : muted,
+                  ),
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _canConfirm ? () => _performAction(zones) : null,
+                icon: Icon(_actionIcon),
+                label: Text(_actionLabel),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  backgroundColor: widget.mode == PointSelectionMode.blacklist
+                      ? (isDark ? AppTokens.dangerDark : AppTokens.dangerLight)
+                      : null,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -1365,6 +1439,86 @@ class _PointHistoryCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Indicatore di avanzamento ① Zona · ② Punto · ③ Conferma sotto l'AppBar.
+class _ProgressBar extends StatelessWidget implements PreferredSizeWidget {
+  const _ProgressBar({
+    required this.zoneDone,
+    required this.pointDone,
+    required this.mode,
+    required this.isDark,
+  });
+
+  final bool zoneDone;
+  final bool pointDone;
+  final PointSelectionMode mode;
+  final bool isDark;
+
+  @override
+  Size get preferredSize => const Size.fromHeight(34);
+
+  @override
+  Widget build(BuildContext context) {
+    final muted = isDark ? AppTokens.darkMuted : AppTokens.lightMuted;
+
+    Widget step(int n, String label, bool done) {
+      final color = done ? AppTokens.accent : muted;
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 18,
+            height: 18,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: done ? AppTokens.accent : Colors.transparent,
+              border: Border.all(color: color, width: 1.5),
+            ),
+            child: Text(
+              '$n',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+                color: done ? Colors.white : color,
+              ),
+            ),
+          ),
+          const SizedBox(width: 5),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
+          ),
+        ],
+      );
+    }
+
+    Widget connector() => Expanded(
+          child: Container(
+            height: 1,
+            margin: const EdgeInsets.symmetric(horizontal: 6),
+            color: muted.withValues(alpha: 0.4),
+          ),
+        );
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8, left: 16, right: 16),
+      child: Row(
+        children: [
+          step(1, 'Zona', zoneDone),
+          connector(),
+          step(2, 'Punto', pointDone),
+          connector(),
+          step(3, 'Conferma', pointDone),
+        ],
       ),
     );
   }

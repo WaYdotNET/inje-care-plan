@@ -517,8 +517,9 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
       final dbi = ref.read(databaseProvider);
       final now = DateTime.now();
 
-      final existing = await ref
-          .read(injectionsInRangeProvider((start: start, end: end)).future);
+      // Query DB diretta (NON il provider .future): un StreamProvider.future
+      // può non completare in alcuni contesti e appendere la pianificazione.
+      final existing = await dbi.getInjectionsByDateRange(start, end);
       final alreadyPlanned = existing
           .map(
             (i) => DateTime(
@@ -560,9 +561,23 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
       final hour = parts.length >= 2 ? int.tryParse(parts[0]) ?? 20 : 20;
       final minute = parts.length >= 2 ? int.tryParse(parts[1]) ?? 0 : 0;
 
+      // Log granulare: conferma che siamo arrivati oltre gli await pre-loop.
+      DiagnosticLogService.instance.logEvent(
+        'planning',
+        'pre-loop esistenti=${existing.length} daysToPlan=${daysToPlan.length} storico=${history.length}',
+      );
+
+      // Zone lette UNA volta (query DB diretta, non provider.future) per
+      // advancePattern: evita un await per iterazione e rischi di hang.
+      final allZones = await dbi.getAllZones();
+      final patternService = RotationPatternService(dbi);
+
       var created = 0;
       var skipped = 0;
-      final createdIds = <int>[];
+      // Record creati (con id) per schedulare notifiche + calendario in BACKGROUND
+      // dopo il loop. Il loop fa solo operazioni DB veloci → non si blocca mai
+      // su plugin lenti (notifiche/calendario).
+      final createdRecords = <inj.InjectionRecord>[];
       for (final day in daysToPlan) {
         final scheduledAt = DateTime(day.year, day.month, day.day, hour, minute);
 
@@ -599,34 +614,20 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
           updatedAt: now,
         );
 
-        // syncCalendar: false — la sincronizzazione avviene in background dopo
-        // il loop per non bloccare la UI durante la pianificazione batch.
+        // syncCalendar: false — calendario E notifiche vengono sincronizzati in
+        // background DOPO il loop, così il batch è solo DB e non si appende.
         final newId = await repository.createInjection(record, syncCalendar: false);
-        createdIds.add(newId);
+        createdRecords.add(record.copyWith(id: newId));
         created++;
 
-        final zones = await ref.read(bodyZonesProvider.future);
-        final usedZones = zones.where((z) => z.id == pt.zoneId).toList();
+        final usedZones = allZones.where((z) => z.id == pt.zoneId).toList();
         final usedZone = usedZones.isEmpty ? null : usedZones.first;
         if (usedZone != null) {
-          final patternService = RotationPatternService(dbi);
           await patternService.advancePattern(usedZone.id, usedZone.side);
-          ref.invalidate(currentRotationPatternProvider);
-          ref.invalidate(rotationPatternEngineProvider);
-        }
-
-        final reminderSettings = ref.read(reminderSettingsProvider);
-        if (notificationSettings.enabled &&
-            notificationSettings.permissionsGranted) {
-          await NotificationService.instance.scheduleInjectionNotifications(
-            injection: record.copyWith(id: newId),
-            minutesBefore: notificationSettings.minutesBefore,
-            missedDoseReminder: notificationSettings.missedDoseReminder,
-            skipPreReminders: reminderSettings.suppressAppPreReminders,
-          );
         }
       }
-
+      ref.invalidate(currentRotationPatternProvider);
+      ref.invalidate(rotationPatternEngineProvider);
       ref.invalidate(injectionsProvider);
       ref.invalidate(weeklyEventsProvider);
       ref.invalidate(nextScheduledInjectionProvider);
@@ -640,15 +641,36 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
         );
       }
 
-      // Sincronizzazione calendario in background: non blocca la UI.
-      // Il calendar sync avviene dopo il toast per garantire che la pianificazione
-      // sia percepita come immediata anche se il plugin del calendario è lento.
-      if (createdIds.isNotEmpty) {
+      // Side-effects (calendario + notifiche) in BACKGROUND: non bloccano la UI
+      // né la percezione di immediatezza della pianificazione. Ogni operazione
+      // è best-effort e con timeout, così un plugin lento/bloccato non ha effetti.
+      if (createdRecords.isNotEmpty) {
+        final notifEnabled = notificationSettings.enabled &&
+            notificationSettings.permissionsGranted;
+        final suppress = ref.read(reminderSettingsProvider).suppressAppPreReminders;
+        final minutesBefore = notificationSettings.minutesBefore;
+        final missedDose = notificationSettings.missedDoseReminder;
         // ignore: unawaited_futures
         Future(() async {
-          for (final id in createdIds) {
-            await repository.syncInjectionToCalendar(id);
+          for (final rec in createdRecords) {
+            try {
+              await repository.syncInjectionToCalendar(rec.id!);
+            } catch (_) {/* best-effort */}
+            if (notifEnabled) {
+              try {
+                await NotificationService.instance
+                    .scheduleInjectionNotifications(
+                      injection: rec,
+                      minutesBefore: minutesBefore,
+                      missedDoseReminder: missedDose,
+                      skipPreReminders: suppress,
+                    )
+                    .timeout(const Duration(seconds: 8));
+              } catch (_) {/* best-effort: notifica non deve bloccare */}
+            }
           }
+          DiagnosticLogService.instance
+              .logEvent('planning', 'background side-effects completati');
           ref.invalidate(nextScheduledInjectionProvider);
         });
       }
@@ -670,13 +692,47 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
   /// Dialog per scegliere la zona/punto da cui far partire il pattern quando
   /// non esiste alcuno storico. Ritorna null se annullato.
   Future<({int zoneId, int pointNumber})?> _askStartPoint() async {
-    final zones =
-        ref.read(zonesProvider).asData?.value ?? const <model.BodyZone>[];
-    if (zones.isEmpty) return null;
+    // Attende le zone (await), invece di leggere uno stato che potrebbe non
+    // essere ancora caricato (asData null) e far uscire silenziosamente.
+    List<model.BodyZone> zones;
+    try {
+      zones = await ref.read(zonesProvider.future);
+    } catch (_) {
+      zones = const <model.BodyZone>[];
+    }
+    if (zones.isEmpty || !mounted) return null;
+
+    // Nome della rotazione attiva, mostrato nel dialog per dare contesto.
+    String? rotationName;
+    try {
+      final activePlan = await ref.read(databaseProvider).getCurrentTherapyPlan();
+      rotationName = activePlan?.name;
+    } catch (_) {/* best-effort */}
+    if (!mounted) return null;
+
     return showDialog<({int zoneId, int pointNumber})>(
       context: context,
       builder: (ctx) => SimpleDialog(
-        title: const Text('Da quale punto partire?'),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Da quale punto partire?'),
+            if (rotationName != null && rotationName.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Text(
+                'Rotazione: $rotationName',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: Theme.of(ctx).brightness == Brightness.dark
+                      ? AppTokens.darkMuted
+                      : AppTokens.lightMuted,
+                ),
+              ),
+            ],
+          ],
+        ),
         children: [
           for (final z in zones)
             SimpleDialogOption(

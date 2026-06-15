@@ -102,7 +102,9 @@ class _BodyPointMapState extends State<BodyPointMap> {
   Widget _marker(BodyMapPoint p, BoxConstraints c, bool isDark) {
     final selected = p.zoneId == widget.selectedZoneId &&
         p.pointNumber == widget.selectedPointNumber;
-    final color = p.isBlacklisted ? Colors.grey : p.usageLevel.getColor(isDark);
+    final mutedColor = isDark ? AppTokens.darkMuted : AppTokens.lightMuted;
+    final color =
+        p.isBlacklisted ? mutedColor : p.usageLevel.getColor(isDark);
     final size = selected ? 28.0 : 22.0;
     // Area di tocco attorno al marker. Bilanciata: il corpo è stretto (~150px)
     // e i punti ravvicinati, quindi una hit-area troppo ampia farebbe "rubare"

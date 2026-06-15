@@ -49,6 +49,21 @@ void main() {
     expect(notes, isNot(contains('Ultima volta')));
   });
 
+  test('note ed effetti dell\'iniezione corrente inclusi nell\'evento', () {
+    final notes = buildEventNotes(
+      _inj(
+        id: 5,
+        pointLabel: 'Addome Dx · 1',
+        scheduledAt: DateTime(2026, 6, 20, 20),
+        notes: 'fatta di sera',
+        sideEffects: 'rossore',
+      ),
+      null,
+    );
+    expect(notes, contains('Note: fatta di sera'));
+    expect(notes, contains('Effetti: rossore'));
+  });
+
   test('note con precedente che ha feedback', () {
     final prev = _inj(
       id: 1,

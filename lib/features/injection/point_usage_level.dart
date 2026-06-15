@@ -23,7 +23,8 @@ extension PointUsageLevelExtension on PointUsageLevel {
         isDark ? AppTokens.successDark : AppTokens.successLight,
       PointUsageLevel.caution =>
         isDark ? AppTokens.warnDark : AppTokens.warnLight,
-      PointUsageLevel.warning => Colors.orange,
+      PointUsageLevel.warning =>
+        isDark ? AppTokens.warnDark : AppTokens.warnLight,
       PointUsageLevel.avoid =>
         isDark ? AppTokens.dangerDark : AppTokens.dangerLight,
     };

@@ -1314,13 +1314,16 @@ class _PointHistoryCard extends StatelessWidget {
                 height: 40,
                 decoration: BoxDecoration(
                   color: item.isBlacklisted
-                      ? Colors.grey.withValues(alpha: 0.3)
+                      ? (isDark ? AppTokens.darkMuted : AppTokens.lightMuted)
+                          .withValues(alpha: 0.3)
                       : usageColor.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   item.isBlacklisted ? PhosphorIconsDuotone.prohibit : item.usageLevel.icon,
-                  color: item.isBlacklisted ? Colors.grey : usageColor,
+                  color: item.isBlacklisted
+                      ? (isDark ? AppTokens.darkMuted : AppTokens.lightMuted)
+                      : usageColor,
                   size: 20,
                 ),
               ),

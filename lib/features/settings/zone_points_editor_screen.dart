@@ -115,7 +115,7 @@ class _ZonePointsEditorScreenState
               Text('Posizioni salvate!'),
             ],
           ),
-          backgroundColor: Colors.green.shade600,
+          backgroundColor: AppTokens.successLight,
           behavior: SnackBarBehavior.floating,
           margin: const EdgeInsets.only(bottom: 100, left: 16, right: 16),
         ),

@@ -355,7 +355,7 @@ class _PointSelectionMapScreenState
               'disponibile'),
           item(isDark ? AppTokens.warnDark : AppTokens.warnLight, 'recente'),
           item(isDark ? AppTokens.dangerDark : AppTokens.dangerLight, 'evita'),
-          item(Colors.grey, 'escluso'),
+          item(isDark ? AppTokens.darkMuted : AppTokens.lightMuted, 'escluso'),
           const Row(
             mainAxisSize: MainAxisSize.min,
             children: [

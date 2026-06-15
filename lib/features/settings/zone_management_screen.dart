@@ -49,6 +49,7 @@ class _ZoneManagementScreenState extends ConsumerState<ZoneManagementScreen> {
             return _ZoneTile(
               key: ValueKey(zone.id),
               zone: zone,
+              index: index,
               isDark: isDark,
               onEdit: () => _showEditZoneDialog(context, zone, isDark),
               onDelete: () => _showDeleteConfirmation(context, zone, isDark),
@@ -151,6 +152,7 @@ class _ZoneTile extends StatelessWidget {
   const _ZoneTile({
     super.key,
     required this.zone,
+    required this.index,
     required this.isDark,
     required this.onEdit,
     required this.onDelete,
@@ -158,6 +160,7 @@ class _ZoneTile extends StatelessWidget {
   });
 
   final BodyZone zone;
+  final int index;
   final bool isDark;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
@@ -193,30 +196,24 @@ class _ZoneTile extends StatelessWidget {
                 : (isDark ? AppTokens.darkMuted : AppTokens.lightMuted),
           ),
         ),
-        subtitle: Row(
-          children: [
-            Text(
-              zone.code,
-              style: theme.textTheme.bodySmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: isDark ? AppTokens.accentEnd : AppTokens.accentEnd,
+        subtitle: Text.rich(
+          TextSpan(
+            children: [
+              TextSpan(
+                text: zone.code,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? AppTokens.accentEnd : AppTokens.accentEnd,
+                ),
               ),
-            ),
-            const SizedBox(width: 8),
-            Text('•', style: theme.textTheme.bodySmall),
-            const SizedBox(width: 8),
-            Text(
-              '${zone.numberOfPoints} punti',
-              style: theme.textTheme.bodySmall,
-            ),
-            const SizedBox(width: 8),
-            Text('•', style: theme.textTheme.bodySmall),
-            const SizedBox(width: 8),
-            Text(
-              _sideLabel(zone.side),
-              style: theme.textTheme.bodySmall,
-            ),
-          ],
+              TextSpan(
+                text: ' • ${zone.numberOfPoints} punti • ${_sideLabel(zone.side)}',
+                style: theme.textTheme.bodySmall,
+              ),
+            ],
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
@@ -248,13 +245,26 @@ class _ZoneTile extends StatelessWidget {
                     ],
                   ),
                 ),
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'delete',
                   child: Row(
                     children: [
-                      Icon(PhosphorIconsDuotone.trash, size: 20, color: Colors.red),
-                      SizedBox(width: 8),
-                      Text('Elimina', style: TextStyle(color: Colors.red)),
+                      Icon(
+                        PhosphorIconsDuotone.trash,
+                        size: 20,
+                        color: isDark
+                            ? AppTokens.dangerDark
+                            : AppTokens.dangerLight,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Elimina',
+                        style: TextStyle(
+                          color: isDark
+                              ? AppTokens.dangerDark
+                              : AppTokens.dangerLight,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -267,7 +277,14 @@ class _ZoneTile extends StatelessWidget {
                 if (value == 'delete') onDelete();
               },
             ),
-            const Icon(PhosphorIconsDuotone.dotsSix),
+            // Maniglia di trascinamento funzionante per riordinare.
+            ReorderableDragStartListener(
+              index: index,
+              child: Icon(
+                PhosphorIconsDuotone.dotsSix,
+                color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
+              ),
+            ),
           ],
         ),
       ),

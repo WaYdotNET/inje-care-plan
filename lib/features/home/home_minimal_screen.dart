@@ -447,7 +447,7 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
           ..showSnackBar(
             SnackBar(
               content: Text('✓ $resolvedLabel completata!'),
-              backgroundColor: Colors.green,
+              backgroundColor: AppTokens.successLight,
               duration: const Duration(seconds: 2),
             ),
           );

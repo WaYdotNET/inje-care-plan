@@ -43,6 +43,10 @@ class DiagnosticLogService {
     String message,
     String details,
   ) async {
+    // Stampa SEMPRE in console (visibile in `flutter run`/`flutter logs`),
+    // oltre a salvare nel DB: utile per il debug live in debug mode.
+    debugPrint('[diag] $level/$tag: $message'
+        '${details.isNotEmpty ? ' | ${details.split('\n').first}' : ''}');
     final db = _db;
     if (db == null) return;
     try {

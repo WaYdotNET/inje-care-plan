@@ -105,7 +105,10 @@ class _RecordInjectionScreenState extends ConsumerState<RecordInjectionScreen> {
               ),
               const SizedBox(width: 8),
               Text(
-                dateFormat.format(now),
+                // Mostra la data/ora pianificata (es. giorno scelto dal
+                // calendario), non "adesso": l'anteprima deve coincidere con
+                // ciò che verrà salvato (widget.scheduledDate ?? now).
+                dateFormat.format(widget.scheduledDate ?? now),
                 style: theme.textTheme.bodyLarge,
               ),
             ],

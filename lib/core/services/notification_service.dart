@@ -303,6 +303,20 @@ class NotificationService {
     await _notifications.cancelAll();
   }
 
+  /// Cancella solo le notifiche app pre-iniezione (promemoria anticipato e
+  /// 1-minuto) per le iniezioni indicate, senza toccare i promemoria
+  /// dose-mancata (+10000) e effetti-collaterali (+30000).
+  ///
+  /// Usato quando l'utente passa al canale "Solo calendario": le notifiche
+  /// già schedulate prima del cambio vengono rimosse evitando duplicati con
+  /// l'allarme del calendario.
+  Future<void> cancelPreInjectionReminders(List<int> injectionIds) async {
+    for (final id in injectionIds) {
+      await _notifications.cancel(id);           // promemoria X min prima
+      await _notifications.cancel(id + 20000);   // promemoria 1 min prima
+    }
+  }
+
   /// Show an immediate notification
   Future<void> showNotification({
     required int id,

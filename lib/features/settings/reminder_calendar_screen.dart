@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/database/database_provider.dart';
 import '../../core/services/calendar_sync_service.dart';
+import '../../core/services/notification_service.dart';
 import '../../core/services/reminder_settings_provider.dart';
 import '../../models/reminder_rule.dart';
 import '../injection/injection_provider.dart';
@@ -40,6 +41,27 @@ class _ReminderCalendarScreenState
     return '$m min prima';
   }
 
+  // ── Cancella notifiche app pre-iniezione già schedulate ─────────────────────
+
+  /// Cancella le notifiche app pre-iniezione (promemoria anticipato e 1 min
+  /// prima) per tutte le iniezioni future. Chiamato best-effort quando
+  /// l'utente passa al canale "Solo calendario" per evitare duplicati con
+  /// l'allarme del calendario.
+  Future<void> _cancelPreInjectionRemindersIfNeeded() async {
+    try {
+      final db = ref.read(databaseProvider);
+      final injections = await db.getFutureScheduledInjections(DateTime.now());
+      final ids = injections.map((i) => i.id).toList();
+      if (ids.isNotEmpty) {
+        await NotificationService.instance.cancelPreInjectionReminders(ids);
+      }
+    } catch (e) {
+      debugPrint(
+        '[ReminderCalendarScreen] cancelPreInjectionReminders error (best-effort): $e',
+      );
+    }
+  }
+
   // ── Toggle calendario ON/OFF ─────────────────────────────────────────────────
 
   Future<void> _onCalendarToggle({required bool value}) async {
@@ -72,6 +94,10 @@ class _ReminderCalendarScreenState
           channel: ReminderChannel.calendar,
         );
         await notifier.update(updated);
+
+        // Cancella le notifiche app pre-iniezione già schedulate: il calendario
+        // le sostituirà, quindi non servono duplicati.
+        await _cancelPreInjectionRemindersIfNeeded();
 
         // Backfill: sincronizza le prossime iniezioni programmate
         final injections = await db.getFutureScheduledInjections(DateTime.now());
@@ -194,7 +220,14 @@ class _ReminderCalendarScreenState
             const _SectionHeader(title: 'CANALE PROMEMORIA'),
             RadioGroup<ReminderChannel>(
               groupValue: settings.channel,
-              onChanged: (v) => notifier.update(settings.copyWith(channel: v)),
+              onChanged: (v) async {
+                await notifier.update(settings.copyWith(channel: v));
+                // Se si passa a "Solo calendario", cancella le notifiche app
+                // pre-iniezione già schedulate per le iniezioni future.
+                if (v == ReminderChannel.calendar) {
+                  await _cancelPreInjectionRemindersIfNeeded();
+                }
+              },
               child: const Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [

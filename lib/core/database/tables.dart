@@ -107,6 +107,18 @@ class PointConfigs extends Table {
   List<Set<Column>> get uniqueKeys => [{zoneId, pointNumber}];
 }
 
+/// Log diagnostici locali (errori + eventi chiave). Capati agli ultimi 300.
+class AppLogs extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  TextColumn get level => text().withDefault(const Constant('event'))(); // error | event
+  TextColumn get tag => text().withDefault(const Constant(''))();
+  TextColumn get message => text().withDefault(const Constant(''))();
+  TextColumn get details => text().withDefault(const Constant(''))();
+  TextColumn get appVersion => text().withDefault(const Constant(''))();
+  TextColumn get platform => text().withDefault(const Constant(''))();
+}
+
 /// Profilo utente (locale)
 class UserProfiles extends Table {
   IntColumn get id => integer().autoIncrement()();

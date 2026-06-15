@@ -18,6 +18,7 @@ part 'app_database.g.dart';
     AppSettings,
     UserProfiles,
     PointConfigs,
+    AppLogs,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -27,7 +28,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -70,6 +71,9 @@ class AppDatabase extends _$AppDatabase {
         if (!hasColumn) {
           await m.addColumn(injections, injections.calendarEventId);
         }
+      }
+      if (from < 6) {
+        await m.createTable(appLogs);
       }
     },
     beforeOpen: (details) async {
@@ -810,6 +814,38 @@ class AppDatabase extends _$AppDatabase {
           ..orderBy([(i) => OrderingTerm.asc(i.scheduledAt)]))
         .get();
   }
+
+  // --- App Logs ---
+  Future<int> insertLog({
+    required String level,
+    required String tag,
+    required String message,
+    String details = '',
+    String appVersion = '',
+    String platform = '',
+  }) async {
+    final id = await into(appLogs).insert(AppLogsCompanion.insert(
+      level: Value(level),
+      tag: Value(tag),
+      message: Value(message),
+      details: Value(details),
+      appVersion: Value(appVersion),
+      platform: Value(platform),
+    ));
+    await customStatement(
+      'DELETE FROM app_logs WHERE id NOT IN '
+      '(SELECT id FROM app_logs ORDER BY id DESC LIMIT 300)',
+    );
+    return id;
+  }
+
+  Future<List<AppLog>> recentLogs({int limit = 300}) =>
+      (select(appLogs)
+            ..orderBy([(l) => OrderingTerm.desc(l.id)])
+            ..limit(limit))
+          .get();
+
+  Future<void> clearLogs() => delete(appLogs).go();
 
   // --- Utilities ---
   Future<void> deleteAllData() async {

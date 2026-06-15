@@ -52,7 +52,10 @@ sealed class AppTheme {
       brightness: brightness,
       fontFamily: _font,
       colorScheme: scheme,
-      scaffoldBackgroundColor: Colors.transparent,
+      // Sfondo solido (non trasparente) per evitare il flash bianco durante le
+      // transizioni: lo Scaffold trasparente lasciava intravedere il bianco di
+      // base prima che il gradiente venisse dipinto.
+      scaffoldBackgroundColor: isDark ? AppTokens.darkBg : AppTokens.lightBgTop,
       cardColor: surface,
       dividerColor: border,
       appBarTheme: AppBarTheme(

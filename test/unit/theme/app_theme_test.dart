@@ -18,8 +18,10 @@ void main() {
     expect(t.textTheme.bodyMedium!.fontFamily, 'Plus Jakarta Sans');
   });
 
-  test('scaffold trasparente (lo sfondo gradiente è dipinto a livello app)', () {
-    expect(AppTheme.light.scaffoldBackgroundColor, const Color(0x00000000));
-    expect(AppTheme.dark.scaffoldBackgroundColor, const Color(0x00000000));
+  test('scaffold con sfondo solido (no flash bianco nelle transizioni)', () {
+    // Lo sfondo è solido (non trasparente) per evitare il flash bianco durante
+    // le transizioni di schermata. Il gradiente resta dipinto a livello app.
+    expect(AppTheme.light.scaffoldBackgroundColor, AppTokens.lightBgTop);
+    expect(AppTheme.dark.scaffoldBackgroundColor, AppTokens.darkBg);
   });
 }

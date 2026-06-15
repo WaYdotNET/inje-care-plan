@@ -100,6 +100,17 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
     return Scaffold(
       appBar: AppBar(
         title: const Text('InjeCare Plan'),
+        actions: [
+          IconButton(
+            icon: const Icon(PhosphorIconsDuotone.calendarPlus),
+            tooltip: 'Pianifica iniezioni',
+            onPressed: () {
+              final plan = ref.read(therapyPlanProvider).asData?.value ??
+                  TherapyPlan.defaults;
+              _showFillWeekDialog(context, plan);
+            },
+          ),
+        ],
       ),
       body: SafeArea(
         child: Column(
@@ -495,106 +506,169 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
     DateTime start,
     DateTime end,
   ) async {
-    final repository = ref.read(injectionRepositoryProvider);
-    final notificationSettings = ref.read(notificationSettingsProvider);
-    final now = DateTime.now();
-
-    final existing = await ref
-        .read(injectionsInRangeProvider((start: start, end: end)).future);
-    final alreadyPlanned = existing
-        .map(
-          (i) => DateTime(
-            i.scheduledAt.year,
-            i.scheduledAt.month,
-            i.scheduledAt.day,
-          ),
-        )
-        .toSet();
-
-    final daysToPlan = ScheduleUtils.daysToPlan(
-      plan: plan,
-      start: start,
-      end: end,
-      now: now,
-      alreadyPlanned: alreadyPlanned,
-    );
-
-    if (daysToPlan.isEmpty) {
-      if (mounted) {
-        ScaffoldMessenger.of(context)
-          ..clearSnackBars()
-          ..showSnackBar(const SnackBar(
-            content: Text('Nessuna nuova iniezione da pianificare'),
-            duration: Duration(seconds: 2),
-          ));
-      }
-      return;
-    }
-
-    final parts = plan.preferredTime.split(':');
-    final hour = parts.length >= 2 ? int.tryParse(parts[0]) ?? 20 : 20;
-    final minute = parts.length >= 2 ? int.tryParse(parts[1]) ?? 0 : 0;
-
-    var created = 0;
-    for (final day in daysToPlan) {
-      final scheduledAt =
-          DateTime(day.year, day.month, day.day, hour, minute);
-      final suggested = await ref.read(
-        suggestedPointForDateProvider(
-          (scheduledAt: scheduledAt, ignoreInjectionId: null),
-        ).future,
-      );
-      if (suggested == null) continue;
-
-      final resolvedLabel = await repository.resolvePointLabel(
-        suggested.zoneId,
-        suggested.pointNumber,
-      );
-
-      final record = inj.InjectionRecord(
-        zoneId: suggested.zoneId,
-        pointNumber: suggested.pointNumber,
-        scheduledAt: scheduledAt,
-        status: inj.InjectionStatus.scheduled,
-        customPointLabel: resolvedLabel,
-        createdAt: now,
-        updatedAt: now,
-      );
-
-      final newId = await repository.createInjection(record);
-      created++;
-
-      final zones = await ref.read(bodyZonesProvider.future);
-      final usedZone = zones.firstWhere((z) => z.id == suggested.zoneId);
+    try {
+      final repository = ref.read(injectionRepositoryProvider);
+      final notificationSettings = ref.read(notificationSettingsProvider);
       final dbi = ref.read(databaseProvider);
-      final patternService = RotationPatternService(dbi);
-      await patternService.advancePattern(usedZone.id, usedZone.side);
-      ref.invalidate(currentRotationPatternProvider);
-      ref.invalidate(rotationPatternEngineProvider);
+      final now = DateTime.now();
 
-      final reminderSettings = ref.read(reminderSettingsProvider);
-      if (notificationSettings.enabled && notificationSettings.permissionsGranted) {
-        await NotificationService.instance.scheduleInjectionNotifications(
-          injection: record.copyWith(id: newId),
-          minutesBefore: notificationSettings.minutesBefore,
-          missedDoseReminder: notificationSettings.missedDoseReminder,
-          skipPreReminders: reminderSettings.suppressAppPreReminders,
+      final existing = await ref
+          .read(injectionsInRangeProvider((start: start, end: end)).future);
+      final alreadyPlanned = existing
+          .map(
+            (i) => DateTime(
+              i.scheduledAt.year,
+              i.scheduledAt.month,
+              i.scheduledAt.day,
+            ),
+          )
+          .toSet();
+
+      final daysToPlan = ScheduleUtils.daysToPlan(
+        plan: plan,
+        start: start,
+        end: end,
+        now: now,
+        alreadyPlanned: alreadyPlanned,
+      );
+
+      if (daysToPlan.isEmpty) {
+        _showSnack('Nessuna nuova iniezione da pianificare');
+        return;
+      }
+
+      // Punto di partenza del pattern: se NON esiste alcuno storico (di
+      // qualsiasi stato), chiediamo all'utente da dove partire. Se lo storico
+      // c'è, la suggestion segue già dall'ultima iniezione registrata.
+      final history = await dbi.getAllInjections();
+      ({int zoneId, int pointNumber})? seed;
+      if (history.isEmpty) {
+        seed = await _askStartPoint();
+        if (!mounted) return;
+        if (seed == null) {
+          _showSnack('Pianificazione annullata');
+          return;
+        }
+      }
+
+      final parts = plan.preferredTime.split(':');
+      final hour = parts.length >= 2 ? int.tryParse(parts[0]) ?? 20 : 20;
+      final minute = parts.length >= 2 ? int.tryParse(parts[1]) ?? 0 : 0;
+
+      var created = 0;
+      var skipped = 0;
+      for (final day in daysToPlan) {
+        final scheduledAt = DateTime(day.year, day.month, day.day, hour, minute);
+
+        // Primo giorno senza storico: usa il punto scelto dall'utente.
+        // Altrimenti chiedi la suggestion (che considera ogni iniezione prima
+        // di questa data, di qualsiasi stato).
+        final ({int zoneId, int pointNumber})? point;
+        if (seed != null) {
+          point = seed;
+          seed = null;
+        } else {
+          point = await ref.read(
+            suggestedPointForDateProvider(
+              (scheduledAt: scheduledAt, ignoreInjectionId: null),
+            ).future,
+          );
+        }
+        if (point == null) {
+          skipped++;
+          continue;
+        }
+        final pt = point; // non-nullable: evita problemi di promozione in closure
+
+        final resolvedLabel =
+            await repository.resolvePointLabel(pt.zoneId, pt.pointNumber);
+
+        final record = inj.InjectionRecord(
+          zoneId: pt.zoneId,
+          pointNumber: pt.pointNumber,
+          scheduledAt: scheduledAt,
+          status: inj.InjectionStatus.scheduled,
+          customPointLabel: resolvedLabel,
+          createdAt: now,
+          updatedAt: now,
+        );
+
+        final newId = await repository.createInjection(record);
+        created++;
+
+        final zones = await ref.read(bodyZonesProvider.future);
+        final usedZones = zones.where((z) => z.id == pt.zoneId).toList();
+        final usedZone = usedZones.isEmpty ? null : usedZones.first;
+        if (usedZone != null) {
+          final patternService = RotationPatternService(dbi);
+          await patternService.advancePattern(usedZone.id, usedZone.side);
+          ref.invalidate(currentRotationPatternProvider);
+          ref.invalidate(rotationPatternEngineProvider);
+        }
+
+        final reminderSettings = ref.read(reminderSettingsProvider);
+        if (notificationSettings.enabled &&
+            notificationSettings.permissionsGranted) {
+          await NotificationService.instance.scheduleInjectionNotifications(
+            injection: record.copyWith(id: newId),
+            minutesBefore: notificationSettings.minutesBefore,
+            missedDoseReminder: notificationSettings.missedDoseReminder,
+            skipPreReminders: reminderSettings.suppressAppPreReminders,
+          );
+        }
+      }
+
+      ref.invalidate(injectionsProvider);
+      ref.invalidate(weeklyEventsProvider);
+      ref.invalidate(nextScheduledInjectionProvider);
+
+      if (created > 0) {
+        _showSnack('Pianificate $created iniezioni');
+      } else if (skipped > 0) {
+        _showSnack(
+          'Nessun punto suggerito: verifica zone e pattern di rotazione',
         );
       }
+    } catch (e) {
+      _showSnack('Errore durante la pianificazione: $e');
     }
+  }
 
-    ref.invalidate(injectionsProvider);
-    ref.invalidate(weeklyEventsProvider);
-    ref.invalidate(nextScheduledInjectionProvider);
+  void _showSnack(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..clearSnackBars()
+      ..showSnackBar(
+        SnackBar(content: Text(message), duration: const Duration(seconds: 3)),
+      );
+  }
 
-    if (mounted) {
-      ScaffoldMessenger.of(context)
-        ..clearSnackBars()
-        ..showSnackBar(SnackBar(
-          content: Text('Pianificate $created iniezioni'),
-          duration: const Duration(seconds: 2),
-        ));
-    }
+  /// Dialog per scegliere la zona/punto da cui far partire il pattern quando
+  /// non esiste alcuno storico. Ritorna null se annullato.
+  Future<({int zoneId, int pointNumber})?> _askStartPoint() async {
+    final zones =
+        ref.read(zonesProvider).asData?.value ?? const <model.BodyZone>[];
+    if (zones.isEmpty) return null;
+    return showDialog<({int zoneId, int pointNumber})>(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        title: const Text('Da quale punto partire?'),
+        children: [
+          for (final z in zones)
+            SimpleDialogOption(
+              onPressed: () =>
+                  Navigator.pop(ctx, (zoneId: z.id, pointNumber: 1)),
+              child: Row(
+                children: [
+                  Text(z.emoji, style: const TextStyle(fontSize: 20)),
+                  const SizedBox(width: 12),
+                  Expanded(child: Text(z.displayName)),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
   }
 }
 

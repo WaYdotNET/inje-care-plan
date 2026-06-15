@@ -16,6 +16,7 @@ import '../../models/body_zone.dart' as model;
 import '../../models/injection_record.dart' as inj;
 import '../../models/therapy_plan.dart';
 import '../../app/router.dart';
+import '../../core/services/diagnostic_log_service.dart';
 import '../../core/services/missed_injection_service.dart';
 import '../../core/services/notification_settings_provider.dart';
 import '../../core/services/notification_service.dart';
@@ -507,6 +508,7 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
     DateTime end,
   ) async {
     try {
+      DiagnosticLogService.instance.logEvent('planning', 'avviata ${start.toIso8601String()}..${end.toIso8601String()}');
       final repository = ref.read(injectionRepositoryProvider);
       final notificationSettings = ref.read(notificationSettingsProvider);
       final dbi = ref.read(databaseProvider);
@@ -622,6 +624,7 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
       ref.invalidate(weeklyEventsProvider);
       ref.invalidate(nextScheduledInjectionProvider);
 
+      DiagnosticLogService.instance.logEvent('planning', 'create $created, saltate $skipped');
       if (created > 0) {
         _showSnack('Pianificate $created iniezioni');
       } else if (skipped > 0) {
@@ -629,7 +632,8 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
           'Nessun punto suggerito: verifica zone e pattern di rotazione',
         );
       }
-    } catch (e) {
+    } catch (e, st) {
+      DiagnosticLogService.instance.logError('planning', e, st);
       _showSnack('Errore durante la pianificazione: $e');
     }
   }

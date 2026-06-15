@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'app_tokens.dart';
 
 /// Tema dell'app — design system "Pop Gradient".
@@ -63,6 +64,17 @@ sealed class AppTheme {
         foregroundColor: ink,
         elevation: 0,
         centerTitle: false,
+        systemOverlayStyle: isDark
+            ? const SystemUiOverlayStyle(
+                statusBarColor: Colors.transparent,
+                statusBarIconBrightness: Brightness.light,
+                statusBarBrightness: Brightness.dark,
+              )
+            : const SystemUiOverlayStyle(
+                statusBarColor: Colors.transparent,
+                statusBarIconBrightness: Brightness.dark,
+                statusBarBrightness: Brightness.light,
+              ),
         titleTextStyle: TextStyle(
           fontFamily: _font,
           color: ink,

@@ -1,6 +1,7 @@
 import 'package:device_calendar/device_calendar.dart';
 import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:timezone/timezone.dart' as tz;
 
 import '../database/app_database.dart';
 import '../../models/reminder_rule.dart';
@@ -162,7 +163,7 @@ class CalendarSyncService {
         settings.includeFeedback ? previousCompleted : null,
       );
 
-      final start = injection.scheduledAt;
+      final start = tz.TZDateTime.from(injection.scheduledAt, tz.local);
       final end = start.add(const Duration(minutes: 15));
 
       List<Reminder>? reminders;
@@ -235,7 +236,7 @@ class CalendarSyncService {
       final doneTitle = '✓ $originalTitle';
       final description = buildEventNotes(injection, null);
 
-      final start = injection.scheduledAt;
+      final start = tz.TZDateTime.from(injection.scheduledAt, tz.local);
       final end = start.add(const Duration(minutes: 15));
 
       final event = Event(

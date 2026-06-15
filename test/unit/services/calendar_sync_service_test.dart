@@ -8,6 +8,8 @@ import 'package:injecare_plan/models/reminder_rule.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:timezone/data/latest.dart' as tz_data;
+import 'package:timezone/timezone.dart' as tz;
 
 class _MockPlugin extends Mock implements DeviceCalendarPlugin {}
 
@@ -59,7 +61,11 @@ const _noReminders = ReminderSettingsView(
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  setUpAll(() => initializeDateFormatting('it'));
+  setUpAll(() {
+    initializeDateFormatting('it');
+    tz_data.initializeTimeZones();
+    tz.setLocalLocation(tz.getLocation('Europe/Rome'));
+  });
 
   setUp(() => SharedPreferences.setMockInitialValues({}));
 

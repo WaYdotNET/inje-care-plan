@@ -559,6 +559,7 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
 
       var created = 0;
       var skipped = 0;
+      final createdIds = <int>[];
       for (final day in daysToPlan) {
         final scheduledAt = DateTime(day.year, day.month, day.day, hour, minute);
 
@@ -595,7 +596,10 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
           updatedAt: now,
         );
 
-        final newId = await repository.createInjection(record);
+        // syncCalendar: false — la sincronizzazione avviene in background dopo
+        // il loop per non bloccare la UI durante la pianificazione batch.
+        final newId = await repository.createInjection(record, syncCalendar: false);
+        createdIds.add(newId);
         created++;
 
         final zones = await ref.read(bodyZonesProvider.future);
@@ -631,6 +635,19 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
         _showSnack(
           'Nessun punto suggerito: verifica zone e pattern di rotazione',
         );
+      }
+
+      // Sincronizzazione calendario in background: non blocca la UI.
+      // Il calendar sync avviene dopo il toast per garantire che la pianificazione
+      // sia percepita come immediata anche se il plugin del calendario è lento.
+      if (createdIds.isNotEmpty) {
+        // ignore: unawaited_futures
+        Future(() async {
+          for (final id in createdIds) {
+            await repository.syncInjectionToCalendar(id);
+          }
+          ref.invalidate(nextScheduledInjectionProvider);
+        });
       }
     } catch (e, st) {
       DiagnosticLogService.instance.logError('planning', e, st);

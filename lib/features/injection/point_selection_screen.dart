@@ -6,21 +6,20 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../core/services/diagnostic_log_service.dart';
 import '../../core/theme/app_tokens.dart';
-import '../../core/database/app_database.dart' as db;
-import '../../core/database/database_provider.dart';
 import '../../models/body_zone.dart';
 import '../../models/therapy_plan.dart';
 import 'zone_provider.dart';
 import 'injection_provider.dart' hide blacklistedPointsProvider;
-import 'widgets/body_silhouette_editor.dart';
+import 'point_selection_classic.dart';
+import 'point_selection_mode.dart';
+import 'point_selection_style_provider.dart';
+import 'widgets/body_point_map.dart';
 
-/// Unified screen for selecting injection points
-/// Can be used for: recording injections, blacklisting points
-enum PointSelectionMode { injection, blacklist }
+export 'point_selection_mode.dart';
 
-// Emoji used from zone.emoji property
-
-class PointSelectionScreen extends ConsumerStatefulWidget {
+/// Dispatcher: in base allo stile scelto (Impostazioni) mostra la nuova mappa
+/// del corpo oppure la versione classica a step/scroll. Default: mappa.
+class PointSelectionScreen extends ConsumerWidget {
   const PointSelectionScreen({
     super.key,
     required this.mode,
@@ -35,11 +34,49 @@ class PointSelectionScreen extends ConsumerStatefulWidget {
   final int? existingInjectionId;
 
   @override
-  ConsumerState<PointSelectionScreen> createState() =>
-      _PointSelectionScreenState();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final style = ref.watch(pointSelectionStyleProvider);
+    if (style == PointSelectionStyle.classic) {
+      return PointSelectionClassicScreen(
+        mode: mode,
+        initialZoneId: initialZoneId,
+        scheduledDate: scheduledDate,
+        existingInjectionId: existingInjectionId,
+      );
+    }
+    return PointSelectionMapScreen(
+      mode: mode,
+      initialZoneId: initialZoneId,
+      scheduledDate: scheduledDate,
+      existingInjectionId: existingInjectionId,
+    );
+  }
 }
 
-class _PointSelectionScreenState extends ConsumerState<PointSelectionScreen> {
+// Emoji used from zone.emoji property
+
+/// Nuova selezione punto: mappa unica del corpo con tutti i punti colorati.
+class PointSelectionMapScreen extends ConsumerStatefulWidget {
+  const PointSelectionMapScreen({
+    super.key,
+    required this.mode,
+    this.initialZoneId,
+    this.scheduledDate,
+    this.existingInjectionId,
+  });
+
+  final PointSelectionMode mode;
+  final int? initialZoneId;
+  final DateTime? scheduledDate;
+  final int? existingInjectionId;
+
+  @override
+  ConsumerState<PointSelectionMapScreen> createState() =>
+      _PointSelectionMapScreenState();
+}
+
+class _PointSelectionMapScreenState
+    extends ConsumerState<PointSelectionMapScreen> {
   int? _selectedZoneId;
   int? _selectedPoint;
   final _reasonController = TextEditingController();
@@ -48,25 +85,7 @@ class _PointSelectionScreenState extends ConsumerState<PointSelectionScreen> {
   bool _userChangedTime = false;
   bool _usedFallbackPreferredTime = false;
 
-  // Ridisegno ibrido: scroll + auto-scroll alla sezione punto + abilitazione CTA.
-  final _scrollController = ScrollController();
-  final _pointSectionKey = GlobalKey();
-
   bool get _canConfirm => _selectedZoneId != null && _selectedPoint != null;
-
-  /// Porta in vista la sezione punto quando compare (dopo la scelta zona).
-  void _scrollToPointSection() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final ctx = _pointSectionKey.currentContext;
-      if (ctx != null) {
-        Scrollable.ensureVisible(
-          ctx,
-          duration: const Duration(milliseconds: 300),
-          alignment: 0.05,
-        );
-      }
-    });
-  }
 
   @override
   void initState() {
@@ -112,7 +131,6 @@ class _PointSelectionScreenState extends ConsumerState<PointSelectionScreen> {
   @override
   void dispose() {
     _reasonController.dispose();
-    _scrollController.dispose();
     super.dispose();
   }
 
@@ -148,6 +166,67 @@ class _PointSelectionScreenState extends ConsumerState<PointSelectionScreen> {
     }
   }
 
+  /// Banner in cima al corpo che mostra la data/ora dell'iniezione.
+  /// La data è sola lettura (dal "+" = oggi, dal calendario = giorno scelto);
+  /// l'orario è modificabile col chip a destra.
+  Widget _buildDateTimeBanner(ThemeData theme, bool isDark) {
+    final now = DateTime.now();
+    final isToday = _scheduledDateTime.year == now.year &&
+        _scheduledDateTime.month == now.month &&
+        _scheduledDateTime.day == now.day;
+    final dateRaw = isToday
+        ? 'Oggi, ${DateFormat('d MMMM', 'it_IT').format(_scheduledDateTime)}'
+        : DateFormat('EEEE d MMMM', 'it_IT').format(_scheduledDateTime);
+    final dateLabel =
+        dateRaw.isEmpty ? dateRaw : '${dateRaw[0].toUpperCase()}${dateRaw.substring(1)}';
+    final timeLabel = DateFormat('HH:mm', 'it_IT').format(_scheduledDateTime);
+    final muted = isDark ? AppTokens.darkMuted : AppTokens.lightMuted;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppTokens.accentEnd.withValues(alpha: isDark ? 0.16 : 0.10),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          const Icon(PhosphorIconsDuotone.calendarBlank, color: AppTokens.accentEnd),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Data iniezione',
+                  style: theme.textTheme.bodySmall?.copyWith(color: muted),
+                ),
+                Text(
+                  dateLabel,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          ActionChip(
+            avatar: const Icon(
+              PhosphorIconsDuotone.clock,
+              size: 18,
+              color: AppTokens.accentEnd,
+            ),
+            label: Text(
+              timeLabel,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            onPressed: _showTimePickerDialog,
+          ),
+        ],
+      ),
+    );
+  }
+
   String get _title => switch (widget.mode) {
     PointSelectionMode.injection => 'Seleziona punto iniezione',
     PointSelectionMode.blacklist => 'Escludi un punto',
@@ -180,13 +259,10 @@ class _PointSelectionScreenState extends ConsumerState<PointSelectionScreen> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final zonesAsync = ref.watch(enabledZonesProvider);
-    final blacklistedAsync = ref.watch(blacklistedPointsProvider);
-    final suggestedAsync = ref.watch(
-      suggestedPointForDateProvider((
-        scheduledAt: _scheduledDateTime,
-        ignoreInjectionId: widget.existingInjectionId,
-      )),
-    );
+    final mapAsync = ref.watch(bodyMapPointsProvider((
+      scheduledAt: _scheduledDateTime,
+      ignoreInjectionId: widget.existingInjectionId,
+    )));
 
     return Scaffold(
       appBar: AppBar(
@@ -195,182 +271,99 @@ class _PointSelectionScreenState extends ConsumerState<PointSelectionScreen> {
           icon: const Icon(PhosphorIconsDuotone.x),
           onPressed: () => context.pop(),
         ),
-        actions: [
-          if (widget.mode == PointSelectionMode.injection)
-            Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: ActionChip(
-                avatar: Icon(
-                  PhosphorIconsDuotone.clock,
-                  size: 18,
-                  color: isDark ? AppTokens.accentEnd : AppTokens.accentEnd,
-                ),
-                label: Text(
-                  DateFormat('HH:mm', 'it_IT').format(_scheduledDateTime),
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: isDark ? AppTokens.accentEnd : AppTokens.accentEnd,
-                  ),
-                ),
-                onPressed: _showTimePickerDialog,
-              ),
-            ),
-        ],
-        bottom: _ProgressBar(
-          zoneDone: _selectedZoneId != null,
-          pointDone: _selectedPoint != null,
-          mode: widget.mode,
-          isDark: isDark,
-        ),
       ),
       bottomNavigationBar:
           _buildStickyCta(zonesAsync.asData?.value ?? const <BodyZone>[], isDark),
-      body: zonesAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Errore: $e')),
-        data: (zones) => SingleChildScrollView(
-          controller: _scrollController,
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+      body: Column(
+        children: [
+          // Banner data/ora (solo injection): mostra QUANDO verrà salvata.
+          if (widget.mode == PointSelectionMode.injection)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+              child: _buildDateTimeBanner(theme, isDark),
+            ),
+          // Mappa unica del corpo: tutti i punti di tutte le zone, colorati
+          // per stato; un tap = zona+punto.
+          Expanded(
+            child: mapAsync.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, _) => Center(child: Text('Errore: $e')),
+              data: (points) => Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                child: BodyPointMap(
+                  points: points,
+                  selectedZoneId: _selectedZoneId,
+                  selectedPointNumber: _selectedPoint,
+                  onTap: (p) {
+                    // I punti esclusi (grigi) non sono selezionabili.
+                    if (p.isBlacklisted) return;
+                    setState(() {
+                      _selectedZoneId = p.zoneId;
+                      _selectedPoint = p.pointNumber;
+                    });
+                  },
+                ),
+              ),
+            ),
+          ),
+          // Motivo (blacklist): solo dopo aver scelto il punto.
+          if (widget.mode == PointSelectionMode.blacklist &&
+              _selectedPoint != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+              child: TextField(
+                controller: _reasonController,
+                decoration: InputDecoration(
+                  labelText: 'Motivo (opzionale)',
+                  hintText: 'Es: cicatrice, reazione, difficile da raggiungere',
+                  border: const OutlineInputBorder(),
+                  filled: true,
+                  fillColor:
+                      isDark ? AppTokens.darkSurface : AppTokens.lightSurface,
+                ),
+                maxLines: 2,
+              ),
+            ),
+          _buildLegend(isDark),
+        ],
+      ),
+    );
+  }
+
+  /// Legenda sempre visibile dei colori di stato dei punti.
+  Widget _buildLegend(bool isDark) {
+    Widget item(Color c, String t) => Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 10,
+              height: 10,
+              decoration: BoxDecoration(color: c, shape: BoxShape.circle),
+            ),
+            const SizedBox(width: 4),
+            Text(t, style: const TextStyle(fontSize: 11)),
+          ],
+        );
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Wrap(
+        spacing: 14,
+        runSpacing: 6,
+        alignment: WrapAlignment.center,
+        children: [
+          item(isDark ? AppTokens.successDark : AppTokens.successLight,
+              'disponibile'),
+          item(isDark ? AppTokens.warnDark : AppTokens.warnLight, 'recente'),
+          item(isDark ? AppTokens.dangerDark : AppTokens.dangerLight, 'evita'),
+          item(Colors.grey, 'escluso'),
+          const Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              // Instructions card
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      Icon(
-                        PhosphorIconsDuotone.info,
-                        color: isDark ? AppTokens.accentEnd : AppTokens.accentEnd,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          widget.mode == PointSelectionMode.injection
-                              ? 'Seleziona una zona e poi il punto dove effettuare l\'iniezione.'
-                              : 'Seleziona una zona e poi il punto che vuoi escludere dalla rotazione.',
-                          style: theme.textTheme.bodyMedium,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // Suggested point (only for injection mode)
-              if (widget.mode == PointSelectionMode.injection)
-                suggestedAsync.when(
-                  loading: () => const SizedBox(),
-                  error: (e, st) => const SizedBox(),
-                  data: (suggested) {
-                    if (suggested == null) return const SizedBox();
-                    final zone = zones.firstWhere(
-                      (z) => z.id == suggested.zoneId,
-                      orElse: () => zones.first,
-                    );
-                    return Padding(
-                      padding: const EdgeInsets.only(top: 16),
-                      child: _SuggestedPointCard(
-                        zone: zone,
-                        pointNumber: suggested.pointNumber,
-                        isDark: isDark,
-                        onTap: () {
-                          setState(() {
-                            _selectedZoneId = zone.id;
-                            _selectedPoint = suggested.pointNumber;
-                          });
-                          _scrollToPointSection();
-                        },
-                      ),
-                    );
-                  },
-                ),
-
-              const SizedBox(height: 24),
-
-              // Zone selection header
-              Text(
-                'Seleziona la zona',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Le zone sono organizzate per lato anatomico (vista frontale: la tua sinistra è a sinistra).',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Zone grid - organized by left/right sides
-              _ZoneGrid(
-                zones: zones,
-                selectedZoneId: _selectedZoneId,
-                isDark: isDark,
-                onZoneTap: (zoneId) {
-                  setState(() {
-                    _selectedZoneId = zoneId;
-                    _selectedPoint = null;
-                  });
-                  _scrollToPointSection();
-                },
-              ),
-
-              const SizedBox(height: 24),
-
-              // Zone detail with point positions
-              if (_selectedZoneId != null) ...[
-                SizedBox(key: _pointSectionKey, height: 0),
-                blacklistedAsync.when(
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
-                  error: (Object e, _) => Text('Errore: $e'),
-                  data: (List<db.BlacklistedPoint> blacklist) {
-                    final zone = zones.firstWhere(
-                      (z) => z.id == _selectedZoneId,
-                    );
-                    return _ZoneDetailCard(
-                      zone: zone,
-                      selectedPoint: _selectedPoint,
-                      isDark: isDark,
-                      onPointTap: (point) =>
-                          setState(() => _selectedPoint = point),
-                      blacklistedPoints: blacklist,
-                      existingInjectionId: widget.existingInjectionId,
-                    );
-                  },
-                ),
-                const SizedBox(height: 24),
-              ],
-
-              // Reason field (blacklist): solo dopo aver scelto il punto
-              if (widget.mode == PointSelectionMode.blacklist &&
-                  _selectedPoint != null) ...[
-                TextField(
-                  controller: _reasonController,
-                  decoration: InputDecoration(
-                    labelText: 'Motivo (opzionale)',
-                    hintText:
-                        'Es: cicatrice, reazione, difficile da raggiungere',
-                    border: const OutlineInputBorder(),
-                    filled: true,
-                    fillColor: isDark
-                        ? AppTokens.darkSurface
-                        : AppTokens.lightSurface,
-                  ),
-                  maxLines: 2,
-                ),
-                const SizedBox(height: 24),
-              ],
-
-              // Il pulsante d'azione è ora nella barra sticky in basso.
-              const SizedBox(height: 16),
+              Text('◯ ', style: TextStyle(color: AppTokens.accent)),
+              Text('consigliato', style: TextStyle(fontSize: 11)),
             ],
           ),
-        ),
+        ],
       ),
     );
   }
@@ -479,1047 +472,5 @@ class _PointSelectionScreenState extends ConsumerState<PointSelectionScreen> {
         context.pop();
       }
     }
-  }
-}
-
-/// Suggested point card
-class _SuggestedPointCard extends StatelessWidget {
-  const _SuggestedPointCard({
-    required this.zone,
-    required this.pointNumber,
-    required this.isDark,
-    required this.onTap,
-  });
-
-  final BodyZone zone;
-  final int pointNumber;
-  final bool isDark;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Card(
-      color: isDark
-          ? AppTokens.accent.withValues(alpha: 0.2)
-          : AppTokens.accent.withValues(alpha: 0.1),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Icon(
-                PhosphorIconsDuotone.lightbulb,
-                color: isDark ? AppTokens.accent : AppTokens.accent,
-                size: 32,
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Suggerito: ${zone.pointLabel(pointNumber)}',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      'Tocca per selezionare automaticamente',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: isDark
-                            ? AppTokens.darkSubtle
-                            : AppTokens.lightSubtle,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Icon(
-                PhosphorIconsDuotone.handTap,
-                color: isDark ? AppTokens.accent : AppTokens.accent,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Zone grid - organized by anatomical sides
-class _ZoneGrid extends StatelessWidget {
-  const _ZoneGrid({
-    required this.zones,
-    required this.selectedZoneId,
-    required this.isDark,
-    required this.onZoneTap,
-  });
-
-  final List<BodyZone> zones;
-  final int? selectedZoneId;
-  final bool isDark;
-  final void Function(int) onZoneTap;
-
-  @override
-  Widget build(BuildContext context) {
-    // Separate zones by side (anatomical view: left zones on left column)
-    final leftZones = zones.where((z) => z.side == 'left').toList();
-    final rightZones = zones.where((z) => z.side == 'right').toList();
-    final centerZones = zones.where((z) => z.side == 'none').toList();
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // Header with sides
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'SINISTRA',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Text(
-                    'DESTRA',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-
-            // Paired zones (left/right)
-            _buildPairedZones(leftZones, rightZones),
-
-            // Center zones (if any)
-            if (centerZones.isNotEmpty) ...[
-              const SizedBox(height: 16),
-              const Divider(),
-              const SizedBox(height: 8),
-              Text(
-                'ALTRE ZONE',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: centerZones
-                    .map(
-                      (zone) => _ZoneButton(
-                        zone: zone,
-                        isSelected: selectedZoneId == zone.id,
-                        isDark: isDark,
-                        onTap: () => onZoneTap(zone.id),
-                      ),
-                    )
-                    .toList(),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPairedZones(
-    List<BodyZone> leftZones,
-    List<BodyZone> rightZones,
-  ) {
-    // Group zones by type for better pairing
-    final types = <String>{
-      ...leftZones.map((z) => z.type),
-      ...rightZones.map((z) => z.type),
-    };
-
-    final rows = <Widget>[];
-    for (final type in types) {
-      final left = leftZones.where((z) => z.type == type).toList();
-      final right = rightZones.where((z) => z.type == type).toList();
-
-      final maxLen = left.length > right.length ? left.length : right.length;
-      for (var i = 0; i < maxLen; i++) {
-        rows.add(
-          Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Row(
-              children: [
-                Expanded(
-                  child: i < left.length
-                      ? _ZoneButton(
-                          zone: left[i],
-                          isSelected: selectedZoneId == left[i].id,
-                          isDark: isDark,
-                          onTap: () => onZoneTap(left[i].id),
-                        )
-                      : const SizedBox(),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: i < right.length
-                      ? _ZoneButton(
-                          zone: right[i],
-                          isSelected: selectedZoneId == right[i].id,
-                          isDark: isDark,
-                          onTap: () => onZoneTap(right[i].id),
-                        )
-                      : const SizedBox(),
-                ),
-              ],
-            ),
-          ),
-        );
-      }
-    }
-
-    return Column(children: rows);
-  }
-}
-
-/// Zone button
-class _ZoneButton extends StatelessWidget {
-  const _ZoneButton({
-    required this.zone,
-    required this.isSelected,
-    required this.isDark,
-    required this.onTap,
-  });
-
-  final BodyZone zone;
-  final bool isSelected;
-  final bool isDark;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final bgColor = isSelected
-        ? (isDark ? AppTokens.accentEnd : AppTokens.accentEnd)
-        : (isDark ? AppTokens.darkSurface : AppTokens.lightSurface);
-    final textColor = isSelected
-        ? (isDark ? AppTokens.darkBg : AppTokens.lightBgTop)
-        : (isDark ? AppTokens.darkInk : AppTokens.lightInk);
-    final subtitleColor = isSelected
-        ? textColor.withValues(alpha: 0.8)
-        : (isDark ? AppTokens.darkMuted : AppTokens.lightMuted);
-
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: bgColor,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected
-                ? (isDark ? AppTokens.accent : AppTokens.accent)
-                : Colors.transparent,
-            width: 2,
-          ),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(zone.emoji, style: const TextStyle(fontSize: 24)),
-            const SizedBox(height: 4),
-            Text(
-              zone.displayName,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
-                color: textColor,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            Text(
-              '${zone.numberOfPoints} punti',
-              style: TextStyle(fontSize: 11, color: subtitleColor),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Zone detail with point selection using body silhouette
-class _ZoneDetailCard extends ConsumerStatefulWidget {
-  const _ZoneDetailCard({
-    required this.zone,
-    required this.selectedPoint,
-    required this.isDark,
-    required this.onPointTap,
-    required this.blacklistedPoints,
-    this.existingInjectionId,
-  });
-
-  final BodyZone zone;
-  final int? selectedPoint;
-  final bool isDark;
-  final void Function(int) onPointTap;
-  final List<db.BlacklistedPoint> blacklistedPoints;
-  final int? existingInjectionId;
-
-  @override
-  ConsumerState<_ZoneDetailCard> createState() => _ZoneDetailCardState();
-}
-
-class _ZoneDetailCardState extends ConsumerState<_ZoneDetailCard> {
-  List<PositionedPoint> _points = [];
-  bool _isLoading = true;
-  Map<int, DateTime?> _usageHistory = {};
-
-  @override
-  void initState() {
-    super.initState();
-    _loadData();
-  }
-
-  @override
-  void didUpdateWidget(_ZoneDetailCard oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.zone.id != widget.zone.id) {
-      _loadData();
-    }
-  }
-
-  Future<void> _loadData() async {
-    setState(() => _isLoading = true);
-
-    final database = ref.read(databaseProvider);
-
-    // Carica posizioni punti
-    final configs = await database.getPointConfigsForZone(widget.zone.id);
-    if (configs.isEmpty) {
-      _points = generateDefaultPointPositions(
-        widget.zone.numberOfPoints,
-        widget.zone.type,
-        widget.zone.side,
-      );
-    } else {
-      _points = configs.map((c) => c.toPositionedPoint()).toList();
-      for (var i = configs.length + 1; i <= widget.zone.numberOfPoints; i++) {
-        final defaults = generateDefaultPointPositions(
-          widget.zone.numberOfPoints,
-          widget.zone.type,
-          widget.zone.side,
-        );
-        final defaultPoint = defaults.firstWhere(
-          (p) => p.pointNumber == i,
-          orElse: () => PositionedPoint(pointNumber: i, x: 0.5, y: 0.5),
-        );
-        _points.add(defaultPoint);
-      }
-    }
-
-    // Carica storico utilizzo, escludendo l'iniezione attualmente in modifica
-    // così il punto da cui ci si sta spostando mostra la sua data precedente.
-    _usageHistory = await database.getPointUsageHistory(
-      widget.zone.id,
-      ignoreInjectionId: widget.existingInjectionId,
-    );
-
-    if (mounted) setState(() => _isLoading = false);
-  }
-
-  /// Ottiene l'etichetta del punto, preferendo il nome personalizzato se presente
-  String _getPointLabel(int pointNumber) {
-    final point = _points.firstWhere(
-      (p) => p.pointNumber == pointNumber,
-      orElse: () => PositionedPoint(pointNumber: pointNumber, x: 0.5, y: 0.5),
-    );
-    if (point.customName != null && point.customName!.isNotEmpty) {
-      return '${widget.zone.displayName} · ${point.customName}';
-    }
-    return widget.zone.pointLabel(pointNumber);
-  }
-
-  List<_PointHistoryItem> _buildHistoryItems() {
-    final items = <_PointHistoryItem>[];
-    for (var i = 1; i <= widget.zone.numberOfPoints; i++) {
-      items.add(_PointHistoryItem(
-        pointNumber: i,
-        pointLabel: _getPointLabel(i),
-        lastUsed: _usageHistory[i],
-        isBlacklisted: _blacklistedNumbers.contains(i),
-      ));
-    }
-    return items;
-  }
-
-  Set<int> get _blacklistedNumbers {
-    return widget.blacklistedPoints
-        .where((bp) => bp.zoneId == widget.zone.id)
-        .map((bp) => bp.pointNumber)
-        .toSet();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final zone = widget.zone;
-    final selectedPoint = widget.selectedPoint;
-    final isDark = widget.isDark;
-    final onPointTap = widget.onPointTap;
-    final theme = Theme.of(context);
-
-    return Card(
-      color: isDark ? AppTokens.darkOverlay : AppTokens.lightOverlay,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Zone header
-            Row(
-              children: [
-                Text(zone.emoji, style: const TextStyle(fontSize: 32)),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        zone.displayName,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        '${zone.numberOfPoints} punti disponibili',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: isDark
-                              ? AppTokens.darkSubtle
-                              : AppTokens.lightSubtle,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 16),
-
-            // Instructions
-            Text(
-              _getZoneInstructions(),
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Point selection with silhouette
-            Text('Seleziona il punto:', style: theme.textTheme.titleSmall),
-            const SizedBox(height: 12),
-
-            if (_isLoading)
-              const Center(child: CircularProgressIndicator())
-            else
-              SizedBox(
-                height: 500,
-                child: _PointSelectionSilhouette(
-                  points: _points,
-                  selectedPoint: selectedPoint,
-                  blacklistedNumbers: _blacklistedNumbers,
-                  isDark: isDark,
-                  zoneType: zone.type,
-                  onPointTap: onPointTap,
-                ),
-              ),
-
-            if (selectedPoint != null) ...[
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? AppTokens.accent.withValues(alpha: 0.2)
-                      : AppTokens.accent.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      PhosphorIconsDuotone.checkCircle,
-                      color: isDark ? AppTokens.accent : AppTokens.accent,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Selezionato: ${_getPointLabel(selectedPoint)}',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: isDark ? AppTokens.accent : AppTokens.accent,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-
-            // Point usage history section
-            const SizedBox(height: 24),
-            const Divider(),
-            const SizedBox(height: 16),
-
-            Row(
-              children: [
-                Icon(
-                  PhosphorIconsDuotone.clockCounterClockwise,
-                  color: isDark ? AppTokens.accentEnd : AppTokens.accentEnd,
-                  size: 20,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'Storico d\'uso',
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'I punti sono ordinati dal meno usato (consigliato) al più recente',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            _PointHistoryList(
-              items: _buildHistoryItems(),
-              selectedPoint: selectedPoint,
-              isDark: isDark,
-              onPointTap: onPointTap,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  String _getZoneInstructions() {
-    return switch (widget.zone.type) {
-      'thigh' =>
-        'Parte anteriore e laterale della coscia, evitare l\'interno coscia',
-      'arm' => 'Superficie esterna del braccio superiore',
-      'abdomen' => 'Almeno 5cm dall\'ombelico, evitare la linea centrale',
-      'buttock' => 'Quadrante superiore esterno del gluteo',
-      _ => 'Seguire le indicazioni del medico',
-    };
-  }
-}
-
-/// Silhouette-based point selection widget with side view toggle
-class _PointSelectionSilhouette extends StatefulWidget {
-  const _PointSelectionSilhouette({
-    required this.points,
-    required this.selectedPoint,
-    required this.blacklistedNumbers,
-    required this.isDark,
-    required this.zoneType,
-    required this.onPointTap,
-  });
-
-  final List<PositionedPoint> points;
-  final int? selectedPoint;
-  final Set<int> blacklistedNumbers;
-  final bool isDark;
-  final String zoneType;
-  final void Function(int) onPointTap;
-
-  @override
-  State<_PointSelectionSilhouette> createState() =>
-      _PointSelectionSilhouetteState();
-}
-
-class _PointSelectionSilhouetteState extends State<_PointSelectionSilhouette> {
-  late BodyView _currentView;
-
-  @override
-  void initState() {
-    super.initState();
-    _currentView = pickInitialBodyView(widget.points, widget.zoneType);
-  }
-
-  @override
-  void didUpdateWidget(_PointSelectionSilhouette oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.zoneType != widget.zoneType ||
-        oldWidget.points.length != widget.points.length) {
-      setState(() {
-        _currentView = pickInitialBodyView(widget.points, widget.zoneType);
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final visiblePoints = widget.points.map((p) {
-      if (widget.blacklistedNumbers.contains(p.pointNumber)) {
-        return p.copyWith(customName: '✗');
-      }
-      return p;
-    }).toList();
-
-    final isDark = widget.isDark;
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        // Compact side toggle for front/back view
-        Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _ViewToggleButton(
-              icon: PhosphorIconsDuotone.user,
-              label: 'Fronte',
-              isSelected: _currentView == BodyView.front,
-              isDark: isDark,
-              onTap: () => setState(() => _currentView = BodyView.front),
-            ),
-            const SizedBox(height: 8),
-            _ViewToggleButton(
-              icon: PhosphorIconsDuotone.userCircle,
-              label: 'Retro',
-              isSelected: _currentView == BodyView.back,
-              isDark: isDark,
-              onTap: () => setState(() => _currentView = BodyView.back),
-            ),
-          ],
-        ),
-        const SizedBox(width: 4),
-        // Silhouette (expanded, toggle controlled externally)
-        Expanded(
-          child: BodySilhouetteEditor(
-            points: visiblePoints,
-            selectedPointNumber: widget.selectedPoint,
-            zoneType: widget.zoneType,
-            editable: false,
-            enableZoom: true,
-            pointScale: 0.6,
-            currentView: _currentView,
-            onViewChanged: (view) => setState(() => _currentView = view),
-            onPointMoved: (p1, p2, p3, p4) {},
-            onPointTapped: (pointNumber) {
-              if (!widget.blacklistedNumbers.contains(pointNumber)) {
-                widget.onPointTap(pointNumber);
-              }
-            },
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-/// Compact toggle button for front/back view selection
-class _ViewToggleButton extends StatelessWidget {
-  const _ViewToggleButton({
-    required this.icon,
-    required this.label,
-    required this.isSelected,
-    required this.isDark,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final bool isSelected;
-  final bool isDark;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = isSelected
-        ? (isDark ? AppTokens.accentEnd : AppTokens.accentEnd)
-        : (isDark ? AppTokens.darkMuted : AppTokens.lightMuted);
-
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? color.withValues(alpha: 0.2)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: isSelected ? color : Colors.transparent,
-          ),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: color, size: 22),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 9,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                color: color,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Enum per indicare il livello di utilizzo del punto
-enum PointUsageLevel {
-  neverUsed, // Mai usato - verde
-  safe, // >14 giorni - verde
-  caution, // 7-14 giorni - giallo
-  warning, // 3-7 giorni - arancione
-  avoid, // <3 giorni - rosso
-}
-
-extension PointUsageLevelExtension on PointUsageLevel {
-  Color getColor(bool isDark) {
-    return switch (this) {
-      PointUsageLevel.neverUsed => isDark ? AppTokens.accent : AppTokens.accent,
-      PointUsageLevel.safe => isDark ? AppTokens.accent : AppTokens.accent,
-      PointUsageLevel.caution => isDark ? AppTokens.warnDark : AppTokens.warnLight,
-      PointUsageLevel.warning => Colors.orange,
-      PointUsageLevel.avoid => isDark ? AppTokens.dangerDark : AppTokens.dangerLight,
-    };
-  }
-
-  String get label => switch (this) {
-    PointUsageLevel.neverUsed => 'Mai usato',
-    PointUsageLevel.safe => 'Consigliato',
-    PointUsageLevel.caution => 'Attenzione',
-    PointUsageLevel.warning => 'Recente',
-    PointUsageLevel.avoid => 'Evitare',
-  };
-
-  IconData get icon => switch (this) {
-    PointUsageLevel.neverUsed => PhosphorIconsDuotone.star,
-    PointUsageLevel.safe => PhosphorIconsDuotone.checkCircle,
-    PointUsageLevel.caution => PhosphorIconsDuotone.info,
-    PointUsageLevel.warning => PhosphorIconsDuotone.warning,
-    PointUsageLevel.avoid => PhosphorIconsDuotone.prohibit,
-  };
-
-  static PointUsageLevel fromDaysSinceLastUse(int? days) {
-    if (days == null) return PointUsageLevel.neverUsed;
-    if (days > 14) return PointUsageLevel.safe;
-    if (days >= 7) return PointUsageLevel.caution;
-    if (days >= 3) return PointUsageLevel.warning;
-    return PointUsageLevel.avoid;
-  }
-}
-
-/// Point history item with usage indicator
-class _PointHistoryItem {
-  final int pointNumber;
-  final String pointLabel;
-  final DateTime? lastUsed;
-  final int? daysSinceLastUse;
-  final PointUsageLevel usageLevel;
-  final bool isBlacklisted;
-
-  _PointHistoryItem({
-    required this.pointNumber,
-    required this.pointLabel,
-    required this.lastUsed,
-    required this.isBlacklisted,
-  })  : daysSinceLastUse = lastUsed != null
-            ? DateTime.now().difference(lastUsed).inDays
-            : null,
-        usageLevel = PointUsageLevelExtension.fromDaysSinceLastUse(
-          lastUsed != null ? DateTime.now().difference(lastUsed).inDays : null,
-        );
-}
-
-/// Widget for displaying point usage history
-class _PointHistoryList extends StatelessWidget {
-  const _PointHistoryList({
-    required this.items,
-    required this.selectedPoint,
-    required this.isDark,
-    required this.onPointTap,
-  });
-
-  final List<_PointHistoryItem> items;
-  final int? selectedPoint;
-  final bool isDark;
-  final void Function(int) onPointTap;
-
-  @override
-  Widget build(BuildContext context) {
-    // Ordina per data di utilizzo: mai usati prima, poi dal meno recente
-    final sortedItems = List<_PointHistoryItem>.from(items)
-      ..sort((a, b) {
-        // Blacklisted punti sempre alla fine
-        if (a.isBlacklisted && !b.isBlacklisted) return 1;
-        if (!a.isBlacklisted && b.isBlacklisted) return -1;
-
-        // Mai usati prima
-        if (a.lastUsed == null && b.lastUsed == null) {
-          return a.pointNumber.compareTo(b.pointNumber);
-        }
-        if (a.lastUsed == null) return -1;
-        if (b.lastUsed == null) return 1;
-
-        // Ordina per data (meno recente prima)
-        return a.lastUsed!.compareTo(b.lastUsed!);
-      });
-
-    return ListView.separated(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: sortedItems.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 8),
-      itemBuilder: (context, index) {
-        final item = sortedItems[index];
-        return _PointHistoryCard(
-          item: item,
-          isSelected: item.pointNumber == selectedPoint,
-          isDark: isDark,
-          onTap: item.isBlacklisted ? null : () => onPointTap(item.pointNumber),
-        );
-      },
-    );
-  }
-}
-
-/// Card for a single point in the history list
-class _PointHistoryCard extends StatelessWidget {
-  const _PointHistoryCard({
-    required this.item,
-    required this.isSelected,
-    required this.isDark,
-    this.onTap,
-  });
-
-  final _PointHistoryItem item;
-  final bool isSelected;
-  final bool isDark;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final usageColor = item.usageLevel.getColor(isDark);
-
-    return Material(
-      color: isSelected
-          ? usageColor.withValues(alpha: 0.2)
-          : (isDark ? AppTokens.darkOverlay : AppTokens.lightOverlay),
-      borderRadius: BorderRadius.circular(12),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            border: isSelected
-                ? Border.all(color: usageColor, width: 2)
-                : Border.all(
-                    color: isDark
-                        ? Colors.white.withValues(alpha: 0.1)
-                        : Colors.black.withValues(alpha: 0.1),
-                  ),
-          ),
-          child: Row(
-            children: [
-              // Usage indicator
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: item.isBlacklisted
-                      ? Colors.grey.withValues(alpha: 0.3)
-                      : usageColor.withValues(alpha: 0.2),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  item.isBlacklisted ? PhosphorIconsDuotone.prohibit : item.usageLevel.icon,
-                  color: item.isBlacklisted ? Colors.grey : usageColor,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 12),
-              // Point info
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      item.pointLabel,
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        decoration:
-                            item.isBlacklisted ? TextDecoration.lineThrough : null,
-                        color: item.isBlacklisted
-                            ? (isDark ? AppTokens.darkMuted : AppTokens.lightMuted)
-                            : null,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      item.isBlacklisted
-                          ? 'Punto escluso'
-                          : (item.lastUsed != null
-                              ? 'Ultima: ${DateFormat('d MMM yyyy', 'it').format(item.lastUsed!)}'
-                              : 'Mai usato'),
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // Days indicator
-              if (!item.isBlacklisted) ...[
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: usageColor.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        item.daysSinceLastUse != null
-                            ? '${item.daysSinceLastUse} gg fa'
-                            : '★ Nuovo',
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: usageColor,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      item.usageLevel.label,
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: usageColor,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(width: 8),
-                Icon(
-                  PhosphorIconsDuotone.caretRight,
-                  color: isDark ? AppTokens.darkMuted : AppTokens.lightMuted,
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Indicatore di avanzamento ① Zona · ② Punto · ③ Conferma sotto l'AppBar.
-class _ProgressBar extends StatelessWidget implements PreferredSizeWidget {
-  const _ProgressBar({
-    required this.zoneDone,
-    required this.pointDone,
-    required this.mode,
-    required this.isDark,
-  });
-
-  final bool zoneDone;
-  final bool pointDone;
-  final PointSelectionMode mode;
-  final bool isDark;
-
-  @override
-  Size get preferredSize => const Size.fromHeight(34);
-
-  @override
-  Widget build(BuildContext context) {
-    final muted = isDark ? AppTokens.darkMuted : AppTokens.lightMuted;
-
-    Widget step(int n, String label, bool done) {
-      final color = done ? AppTokens.accent : muted;
-      return Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 18,
-            height: 18,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: done ? AppTokens.accent : Colors.transparent,
-              border: Border.all(color: color, width: 1.5),
-            ),
-            child: Text(
-              '$n',
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.bold,
-                color: done ? Colors.white : color,
-              ),
-            ),
-          ),
-          const SizedBox(width: 5),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: color,
-            ),
-          ),
-        ],
-      );
-    }
-
-    Widget connector() => Expanded(
-          child: Container(
-            height: 1,
-            margin: const EdgeInsets.symmetric(horizontal: 6),
-            color: muted.withValues(alpha: 0.4),
-          ),
-        );
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8, left: 16, right: 16),
-      child: Row(
-        children: [
-          step(1, 'Zona', zoneDone),
-          connector(),
-          step(2, 'Punto', pointDone),
-          connector(),
-          step(3, 'Conferma', pointDone),
-        ],
-      ),
-    );
   }
 }

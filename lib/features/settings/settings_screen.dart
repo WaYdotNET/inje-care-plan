@@ -24,6 +24,7 @@ import '../../models/therapy_plan.dart';
 import '../auth/auth_provider.dart';
 import '../home/home_layout_provider.dart';
 import '../injection/injection_provider.dart';
+import '../injection/point_selection_style_provider.dart';
 
 /// Settings screen
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -254,6 +255,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 title: const Text('Layout Home'),
                 subtitle: Text(label),
                 onTap: () => _showHomeLayoutSelector(context),
+              );
+            },
+          ),
+          Consumer(
+            builder: (context, ref, _) {
+              final style = ref.watch(pointSelectionStyleProvider);
+              final label = style == PointSelectionStyle.classic
+                  ? 'Classico (a step)'
+                  : 'Mappa del corpo';
+              return ListTile(
+                title: const Text('Stile selezione punto'),
+                subtitle: Text(label),
+                onTap: () => _showPointSelectionStyleSelector(context),
               );
             },
           ),
@@ -796,6 +810,37 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               title: Text('Silhouette'),
               subtitle: Text('Mappa del corpo con il punto'),
               value: HomeLayout.silhouette,
+            ),
+            SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showPointSelectionStyleSelector(BuildContext context) {
+    final current = ref.read(pointSelectionStyleProvider);
+
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (ctx) => RadioGroup<PointSelectionStyle>(
+        groupValue: current,
+        onChanged: (value) {
+          ref.read(pointSelectionStyleProvider.notifier).setStyle(value!);
+          Navigator.pop(ctx);
+        },
+        child: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            RadioListTile<PointSelectionStyle>(
+              title: Text('Mappa del corpo'),
+              subtitle: Text('Tutti i punti sulla silhouette, un tap per sceglierli'),
+              value: PointSelectionStyle.map,
+            ),
+            RadioListTile<PointSelectionStyle>(
+              title: Text('Classico (a step)'),
+              subtitle: Text('Scegli prima la zona, poi il punto'),
+              value: PointSelectionStyle.classic,
             ),
             SizedBox(height: 16),
           ],

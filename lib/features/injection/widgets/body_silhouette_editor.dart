@@ -40,6 +40,7 @@ class PositionedPoint {
   final double x; // 0.0 - 1.0 normalized
   final double y; // 0.0 - 1.0 normalized
   final BodyView bodyView; // front (default for legacy data) or back
+  final Color? color; // colore del marker per stato (null = colore di default)
 
   const PositionedPoint({
     required this.pointNumber,
@@ -47,6 +48,7 @@ class PositionedPoint {
     required this.x,
     required this.y,
     this.bodyView = BodyView.front,
+    this.color,
   });
 
   PositionedPoint copyWith({
@@ -55,6 +57,7 @@ class PositionedPoint {
     double? x,
     double? y,
     BodyView? bodyView,
+    Color? color,
   }) =>
       PositionedPoint(
         pointNumber: pointNumber ?? this.pointNumber,
@@ -62,6 +65,7 @@ class PositionedPoint {
         x: x ?? this.x,
         y: y ?? this.y,
         bodyView: bodyView ?? this.bodyView,
+        color: color ?? this.color,
       );
 }
 
@@ -236,7 +240,8 @@ class _BodySilhouetteEditorState extends State<BodySilhouetteEditor>
                 height: silhouetteHeight > 0 ? silhouetteHeight : 300,
                 child: Center(
                   child: AspectRatio(
-                    aspectRatio: 360 / 1086,
+                    // Rapporto della nuova silhouette CC0 (viewBox 150x446)
+                    aspectRatio: 150 / 446,
                     child: widget.enableZoom
                         ? InteractiveViewer(
                             transformationController: _transformationController,
@@ -269,10 +274,11 @@ class _BodySilhouetteEditorState extends State<BodySilhouetteEditor>
               child: SvgPicture.asset(
                 _svgAsset,
                 fit: BoxFit.fill, // Now fill is correct because parent has right AspectRatio
-                colorFilter: ColorFilter.mode(
-                  color.withValues(alpha: 0.7),
-                  BlendMode.srcIn,
-                ),
+                // currentColor tinge solo il corpo col colore del tema; i
+                // dettagli (contorno, volto sul fronte, curva glutei sul retro)
+                // restano col loro colore fisso. Niente srcIn: appiattirebbe
+                // i dettagli che distinguono fronte/retro.
+                theme: SvgTheme(currentColor: color.withValues(alpha: 0.7)),
               ),
             ),
 
@@ -336,8 +342,12 @@ class _BodySilhouetteEditorState extends State<BodySilhouetteEditor>
     final isSelected = point.pointNumber == widget.selectedPointNumber;
     final isDragging = point.pointNumber == _draggingPoint;
 
-    final primaryColor = isDark ? AppTokens.accent : AppTokens.accent;
-    final secondaryColor = isDark ? AppTokens.accentEnd : AppTokens.accentEnd;
+    // Colore del marker: se il punto porta un colore di stato lo usiamo (così
+    // i punti spiccano sul corpo mono e comunicano lo stato), altrimenti il
+    // colore accent di default.
+    final baseColor = point.color ?? AppTokens.accent;
+    final primaryColor = baseColor;
+    final secondaryColor = point.color ?? AppTokens.accentEnd;
     final textColor = isDark ? AppTokens.darkBg : AppTokens.lightBgTop;
 
     // Calcola posizione: usa offset locale durante drag per fluidità
@@ -721,6 +731,10 @@ List<PositionedPoint> generateDefaultPointPositions(
   final prefix = typeMap[zoneType];
   final suffix = sideMap[side];
 
+  // I glutei appartengono alla vista posteriore; tutte le altre zone al fronte.
+  final defaultView =
+      zoneType == 'buttock' ? BodyView.back : BodyView.front;
+
   if (prefix != null && suffix != null) {
     final code = '$prefix$suffix';
     final defaultPoints = BodyZonePoints.defaultPoints[code];
@@ -732,6 +746,7 @@ List<PositionedPoint> generateDefaultPointPositions(
                 pointNumber: defaultPoints.indexOf(p) + 1,
                 x: p.x,
                 y: p.y,
+                bodyView: defaultView,
               ))
           .toList();
     }
@@ -750,6 +765,7 @@ List<PositionedPoint> generateDefaultPointPositions(
       pointNumber: i + 1,
       x: (baseX + col * spacing).clamp(0.1, 0.9),
       y: (0.4 + row * spacing).clamp(0.1, 0.9),
+      bodyView: defaultView,
     ));
   }
   return points;

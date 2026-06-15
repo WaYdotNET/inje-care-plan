@@ -6,60 +6,64 @@ class BodyPoint {
 }
 
 class BodyZonePoints {
-  // Spacing minimo 0.14 orizzontale per evitare sovrapposizione punti
-  // con pointScale 0.6 su schermi mobili (~180px larghezza silhouette)
+  // Coordinate normalizzate (0..1) sulla silhouette CC0 (viewBox 150x446,
+  // nicubunu/OpenClipart). Calibrate sulla geometria reale del corpo:
+  // braccia (B) sulla parte alta del braccio, addome (A) sul basso ventre,
+  // cosce (C) sulla coscia anteriore, glutei (G) sul retro.
+  // Convenzione lato: D = destra (schermo-destra, x maggiore),
+  // S = sinistra (schermo-sinistra, x minore).
   static const Map<String, List<BodyPoint>> defaultPoints = {
     'CD': [
-      BodyPoint(0.53, 0.57), // 1
-      BodyPoint(0.67, 0.57), // 2
-      BodyPoint(0.53, 0.65), // 3
-      BodyPoint(0.67, 0.65), // 4
-      BodyPoint(0.53, 0.73), // 5
-      BodyPoint(0.67, 0.73), // 6
+      BodyPoint(0.587, 0.601), // 1
+      BodyPoint(0.693, 0.601), // 2
+      BodyPoint(0.587, 0.673), // 3
+      BodyPoint(0.693, 0.673), // 4
+      BodyPoint(0.587, 0.744), // 5
+      BodyPoint(0.693, 0.744), // 6
     ],
     'CS': [
-      BodyPoint(0.33, 0.57), // 1
-      BodyPoint(0.47, 0.57), // 2
-      BodyPoint(0.33, 0.65), // 3
-      BodyPoint(0.47, 0.65), // 4
-      BodyPoint(0.33, 0.73), // 5
-      BodyPoint(0.47, 0.73), // 6
+      BodyPoint(0.353, 0.601), // 1
+      BodyPoint(0.460, 0.601), // 2
+      BodyPoint(0.353, 0.673), // 3
+      BodyPoint(0.460, 0.673), // 4
+      BodyPoint(0.353, 0.744), // 5
+      BodyPoint(0.460, 0.744), // 6
     ],
     'BD': [
-      BodyPoint(0.61, 0.28), // 1 — bicipite alto
-      BodyPoint(0.75, 0.28), // 2
-      BodyPoint(0.61, 0.36), // 3 — bicipite basso
-      BodyPoint(0.75, 0.36), // 4
+      BodyPoint(0.800, 0.250), // 1 — braccio alto
+      BodyPoint(0.900, 0.250), // 2
+      BodyPoint(0.800, 0.355), // 3 — braccio basso
+      BodyPoint(0.900, 0.355), // 4
     ],
     'BS': [
-      BodyPoint(0.25, 0.28), // 1 — bicipite alto
-      BodyPoint(0.39, 0.28), // 2
-      BodyPoint(0.25, 0.36), // 3 — bicipite basso
-      BodyPoint(0.39, 0.36), // 4
+      BodyPoint(0.080, 0.250), // 1 — braccio alto
+      BodyPoint(0.180, 0.250), // 2
+      BodyPoint(0.080, 0.355), // 3 — braccio basso
+      BodyPoint(0.180, 0.355), // 4
     ],
     'AD': [
-      BodyPoint(0.50, 0.34), // 1
-      BodyPoint(0.64, 0.34), // 2
-      BodyPoint(0.50, 0.43), // 3
-      BodyPoint(0.64, 0.43), // 4
+      BodyPoint(0.600, 0.404), // 1
+      BodyPoint(0.720, 0.404), // 2
+      BodyPoint(0.600, 0.466), // 3
+      BodyPoint(0.720, 0.466), // 4
     ],
     'AS': [
-      BodyPoint(0.36, 0.34), // 1
-      BodyPoint(0.50, 0.34), // 2
-      BodyPoint(0.36, 0.43), // 3
-      BodyPoint(0.50, 0.43), // 4
+      BodyPoint(0.387, 0.404), // 1
+      BodyPoint(0.507, 0.404), // 2
+      BodyPoint(0.387, 0.466), // 3
+      BodyPoint(0.507, 0.466), // 4
     ],
     'GD': [
-      BodyPoint(0.56, 0.50), // 1
-      BodyPoint(0.70, 0.50), // 2
-      BodyPoint(0.56, 0.57), // 3
-      BodyPoint(0.70, 0.57), // 4
+      BodyPoint(0.520, 0.511), // 1
+      BodyPoint(0.640, 0.511), // 2
+      BodyPoint(0.520, 0.565), // 3
+      BodyPoint(0.640, 0.565), // 4
     ],
     'GS': [
-      BodyPoint(0.30, 0.50), // 1
-      BodyPoint(0.44, 0.50), // 2
-      BodyPoint(0.30, 0.57), // 3
-      BodyPoint(0.44, 0.57), // 4
+      BodyPoint(0.267, 0.511), // 1
+      BodyPoint(0.387, 0.511), // 2
+      BodyPoint(0.267, 0.565), // 3
+      BodyPoint(0.387, 0.565), // 4
     ],
   };
 }

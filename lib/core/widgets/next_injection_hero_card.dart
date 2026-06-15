@@ -49,11 +49,25 @@ class NextInjectionHeroCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
-    final gradient = state == HeroState.overdue
-        ? AppTokens.warnGradient
-        : AppTokens.accentGradient;
+    // Colore base tenue per stato (coerente con lo stile Pop Gradient):
+    // accent per prossima/futura, warn per ritardo.
+    final base = state == HeroState.overdue
+        ? (isDark ? AppTokens.warnDark : AppTokens.warnLight)
+        : AppTokens.accent;
+    // Sfondo a tinta soft (non più gradiente saturo), testo scuro leggibile.
+    final gradient = LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [
+        base.withValues(alpha: isDark ? 0.30 : 0.16),
+        base.withValues(alpha: isDark ? 0.16 : 0.07),
+      ],
+    );
+    final onSurface = theme.colorScheme.onSurface;
+    final muted = isDark ? AppTokens.darkMuted : AppTokens.lightMuted;
 
     final IconData icon;
     switch (state) {
@@ -85,85 +99,106 @@ class NextInjectionHeroCard extends StatelessWidget {
     final sub = DateFormat('EEEE d MMM', 'it').format(scheduledAt);
 
     return Container(
-      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: gradient,
         borderRadius: BorderRadius.circular(AppRadius.card),
+        border: Border.all(color: base.withValues(alpha: 0.25)),
         boxShadow: AppTokens.softShadow(dark: isDark),
       ),
-      child: Column(
-        // Centra verticalmente quando la card viene allungata (vista Settimana,
-        // hero in Expanded); resta in alto quando è dimensionata sul contenuto.
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.22),
-              borderRadius: BorderRadius.circular(AppRadius.pill),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        child: Stack(
+          children: [
+            // Icona watermark di sfondo, leggera differenza di tonalità.
+            Positioned(
+              right: -18,
+              bottom: -22,
+              child: Icon(
+                icon,
+                size: 150,
+                color: base.withValues(alpha: isDark ? 0.18 : 0.12),
+              ),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(icon, color: Colors.white, size: 16),
-                const SizedBox(width: 4),
-                Text(
-                  chipText,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w800,
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: base.withValues(alpha: isDark ? 0.28 : 0.18),
+                      borderRadius: BorderRadius.circular(AppRadius.pill),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(icon, color: base, size: 16),
+                        const SizedBox(width: 4),
+                        Text(
+                          chipText,
+                          style: TextStyle(
+                            color: base,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            pointLabel,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            sub,
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.85),
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Semantics(
-            button: true,
-            label: ctaLabel,
-            child: Material(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(AppRadius.button),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(AppRadius.button),
-                onTap: onCta,
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 11),
-                  alignment: Alignment.center,
-                  child: Text(
-                    ctaLabel,
-                    style: const TextStyle(
-                      color: AppTokens.accent,
-                      fontSize: 13,
+                  const SizedBox(height: 10),
+                  Text(
+                    pointLabel,
+                    style: TextStyle(
+                      color: onSurface,
+                      fontSize: 18,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
-                ),
+                  const SizedBox(height: 2),
+                  Text(
+                    sub,
+                    style: TextStyle(
+                      color: muted,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Semantics(
+                    button: true,
+                    label: ctaLabel,
+                    child: Material(
+                      color: base,
+                      borderRadius: BorderRadius.circular(AppRadius.button),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(AppRadius.button),
+                        onTap: onCta,
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 11),
+                          alignment: Alignment.center,
+                          child: Text(
+                            ctaLabel,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

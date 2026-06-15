@@ -187,12 +187,13 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
     }
   }
 
-  ({List<DayStatus> statuses, List<int?> ids}) _weekData(
+  ({List<DayStatus> statuses, List<int?> ids, List<int> counts}) _weekData(
     List<db.Injection> injections,
     DateTime startOfWeek,
   ) {
     final statuses = List<DayStatus>.filled(7, DayStatus.none);
     final ids = List<int?>.filled(7, null);
+    final counts = List<int>.filled(7, 0);
     final start = DateTime(startOfWeek.year, startOfWeek.month, startOfWeek.day);
     for (final inj in injections) {
       final d = inj.scheduledAt;
@@ -201,8 +202,9 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
       if (i < 0 || i > 6) continue;
       statuses[i] = dayStatusFromString(inj.status);
       ids[i] = inj.id;
+      counts[i]++;
     }
-    return (statuses: statuses, ids: ids);
+    return (statuses: statuses, ids: ids, counts: counts);
   }
 
   /// Renders the original silhouette view (next/suggested injection body map).
@@ -363,6 +365,7 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
                     child: WeekDots(
                       weekStart: startOfWeek,
                       statuses: wd.statuses,
+                      counts: wd.counts,
                       onTapDay: (i) {
                         final id = wd.ids[i];
                         if (id != null) context.push('/injection/$id');
@@ -559,6 +562,7 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
 
       var created = 0;
       var skipped = 0;
+      final createdIds = <int>[];
       for (final day in daysToPlan) {
         final scheduledAt = DateTime(day.year, day.month, day.day, hour, minute);
 
@@ -595,7 +599,10 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
           updatedAt: now,
         );
 
-        final newId = await repository.createInjection(record);
+        // syncCalendar: false — la sincronizzazione avviene in background dopo
+        // il loop per non bloccare la UI durante la pianificazione batch.
+        final newId = await repository.createInjection(record, syncCalendar: false);
+        createdIds.add(newId);
         created++;
 
         final zones = await ref.read(bodyZonesProvider.future);
@@ -631,6 +638,19 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
         _showSnack(
           'Nessun punto suggerito: verifica zone e pattern di rotazione',
         );
+      }
+
+      // Sincronizzazione calendario in background: non blocca la UI.
+      // Il calendar sync avviene dopo il toast per garantire che la pianificazione
+      // sia percepita come immediata anche se il plugin del calendario è lento.
+      if (createdIds.isNotEmpty) {
+        // ignore: unawaited_futures
+        Future(() async {
+          for (final id in createdIds) {
+            await repository.syncInjectionToCalendar(id);
+          }
+          ref.invalidate(nextScheduledInjectionProvider);
+        });
       }
     } catch (e, st) {
       DiagnosticLogService.instance.logError('planning', e, st);

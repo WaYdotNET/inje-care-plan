@@ -9,6 +9,7 @@ import '../../core/theme/app_tokens.dart';
 import '../../core/theme/injection_status_colors.dart';
 import '../../core/database/app_database.dart' as db;
 import '../../app/router.dart';
+import '../../core/services/diagnostic_log_service.dart';
 import '../../core/services/missed_injection_service.dart';
 import '../../core/services/notification_service.dart';
 import '../../core/services/notification_settings_provider.dart';
@@ -188,6 +189,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           final dateToUse = selectedDay ?? focusedDay;
+          DiagnosticLogService.instance.logEvent('add-date', 'FAB selectedDay=$selectedDay focusedDay=$focusedDay -> dateToUse=$dateToUse');
           context.push(
             AppRoutes.bodyMap,
             extra: {'scheduledDate': dateToUse},
@@ -672,6 +674,7 @@ class _InjectionCard extends ConsumerWidget {
             if (confirm != true) return;
           }
           if (!context.mounted) return;
+          DiagnosticLogService.instance.logEvent('add-date', 'onChangePoint scheduledDate=${injection.scheduledAt}');
           context.push(
             AppRoutes.bodyMap,
             extra: {

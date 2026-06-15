@@ -127,8 +127,16 @@ class InjectionRepository {
     return _db.getLastInjectionForPoint(zoneId, pointNumber);
   }
 
-  /// Create a new injection record
-  Future<int> createInjection(models.InjectionRecord record) async {
+  /// Create a new injection record.
+  ///
+  /// Se [syncCalendar] è `true` (default) sincronizza immediatamente il
+  /// calendario del device. Passa `syncCalendar: false` per le operazioni
+  /// di pianificazione batch che sincronizzano il calendario in background
+  /// dopo aver creato tutte le iniezioni, evitando di bloccare la UI.
+  Future<int> createInjection(
+    models.InjectionRecord record, {
+    bool syncCalendar = true,
+  }) async {
     final id = await _db.insertInjection(InjectionsCompanion.insert(
       zoneId: record.zoneId,
       pointNumber: record.pointNumber,
@@ -141,9 +149,17 @@ class InjectionRepository {
       sideEffects: Value(record.sideEffects.join(',')),
       calendarEventId: Value(record.calendarEventId),
     ));
-    await _syncToCalendar(id);
+    if (syncCalendar) await _syncToCalendar(id);
     return id;
   }
+
+  /// Sincronizza l'iniezione [injectionId] con il calendario del device.
+  ///
+  /// Esposto pubblicamente per consentire la sincronizzazione in background
+  /// dopo operazioni batch (es. pianificazione) che usano
+  /// `createInjection(record, syncCalendar: false)`.
+  Future<void> syncInjectionToCalendar(int injectionId) =>
+      _syncToCalendar(injectionId);
 
   /// Update an injection record
   Future<int> updateInjection(int id, models.InjectionRecord record) async {

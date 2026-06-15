@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
+import '../../core/services/diagnostic_log_service.dart';
 import '../../core/theme/app_tokens.dart';
 import '../../core/database/app_database.dart' as db;
 import '../../core/database/database_provider.dart';
@@ -62,7 +63,7 @@ class _PointSelectionScreenState extends ConsumerState<PointSelectionScreen> {
       _scheduledDateTime = base;
       _scheduledTime = TimeOfDay.fromDateTime(_scheduledDateTime);
     }
-
+    DiagnosticLogService.instance.logEvent('add-date', 'PointSelection init widget.scheduledDate=${widget.scheduledDate} -> _scheduledDateTime=$_scheduledDateTime');
   }
 
   bool _isDateOnly(DateTime dt) =>
@@ -363,6 +364,7 @@ class _PointSelectionScreenState extends ConsumerState<PointSelectionScreen> {
     final zone = zones.firstWhere((z) => z.id == _selectedZoneId);
 
     if (widget.mode == PointSelectionMode.injection) {
+      DiagnosticLogService.instance.logEvent('add-date', 'PointSelection save scheduledAt=$_scheduledDateTime');
       // Navigate to record screen with selected point and updated datetime
       context.push(
         '/record',

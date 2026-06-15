@@ -69,6 +69,7 @@ class InjectionStats {
   final DateTime? lastInjection;
   final int completedCount;
   final int skippedCount;
+  final int missedCount;
   final int scheduledCount;
 
   const InjectionStats({
@@ -84,6 +85,7 @@ class InjectionStats {
     this.lastInjection,
     required this.completedCount,
     required this.skippedCount,
+    required this.missedCount,
     required this.scheduledCount,
   });
 
@@ -98,6 +100,7 @@ class InjectionStats {
     longestStreak: 0,
     completedCount: 0,
     skippedCount: 0,
+    missedCount: 0,
     scheduledCount: 0,
   );
 }
@@ -155,11 +158,15 @@ Future<InjectionStats> injectionStats(Ref ref) async {
   // Conta per stato
   final completedCount = injections.where((i) => i.status == 'completed').length;
   final skippedCount = injections.where((i) => i.status == 'skipped').length;
+  // 'missed' = iniezioni scadute (marcate da MissedInjectionService dopo il periodo di grazia)
+  // 'delayed' = ancora in attesa entro il periodo di grazia → escluse dal denominatore
+  // 'scheduled' = future/non ancora dovute → escluse dal denominatore
+  final missedCount = injections.where((i) => i.status == 'missed').length;
   final scheduledCount = injections.where((i) => i.status == 'scheduled').length;
 
-  // Calcola aderenza
+  // Calcola aderenza: denominatore = iniezioni che erano dovute (completed + skipped + missed)
   final totalDone = completedCount;
-  final totalExpected = completedCount + skippedCount;
+  final totalExpected = completedCount + skippedCount + missedCount;
   final adherenceRate = totalExpected > 0 ? (totalDone / totalExpected) * 100 : 0.0;
 
   // Calcola utilizzo zone
@@ -214,6 +221,7 @@ Future<InjectionStats> injectionStats(Ref ref) async {
     lastInjection: completedInjections.isNotEmpty ? completedInjections.last.completedAt : null,
     completedCount: completedCount,
     skippedCount: skippedCount,
+    missedCount: missedCount,
     scheduledCount: scheduledCount,
   );
 }
@@ -237,7 +245,7 @@ List<MonthlyData> _calculateMonthlyTrend(
 
     final completed = monthInjections.where((i) => i.status == 'completed').length;
     final expected = monthInjections.where((i) =>
-      i.status == 'completed' || i.status == 'skipped'
+      i.status == 'completed' || i.status == 'skipped' || i.status == 'missed'
     ).length;
 
     result.add(MonthlyData(
@@ -274,7 +282,7 @@ List<WeeklyData> _calculateWeeklyTrend(
 
     final completed = weekInjections.where((i) => i.status == 'completed').length;
     final expected = weekInjections.where((i) =>
-      i.status == 'completed' || i.status == 'skipped'
+      i.status == 'completed' || i.status == 'skipped' || i.status == 'missed'
     ).length;
 
     result.add(WeeklyData(

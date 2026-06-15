@@ -55,6 +55,14 @@ class CalendarSyncService {
   static const _calendarIdKey = 'injecare_calendar_id';
   static const _calendarName = 'InjeCare';
 
+  // ── Timeout helper ────────────────────────────────────────────────────────────
+
+  /// Applica un timeout di 8 secondi a qualsiasi chiamata al plugin del
+  /// dispositivo. La [TimeoutException] viene catturata dai try/catch esistenti
+  /// (best-effort) e il metodo restituisce null/false come in caso di errore.
+  Future<T> _withTimeout<T>(Future<T> future) =>
+      future.timeout(const Duration(seconds: 8));
+
   // ── Permessi ─────────────────────────────────────────────────────────────────
 
   /// Verifica (e richiede se necessario) i permessi del calendario.
@@ -63,10 +71,10 @@ class CalendarSyncService {
   /// (incluso in caso di errore).
   Future<bool> ensureCalendarPermission() async {
     try {
-      final has = await _plugin.hasPermissions();
+      final has = await _withTimeout(_plugin.hasPermissions());
       if (has.data == true) return true;
 
-      final req = await _plugin.requestPermissions();
+      final req = await _withTimeout(_plugin.requestPermissions());
       return req.data == true;
     } catch (e) {
       debugPrint('[CalendarSyncService] ensureCalendarPermission error: $e');
@@ -91,7 +99,7 @@ class CalendarSyncService {
       if (saved != null && saved.isNotEmpty) return saved;
 
       // Recupera calendari esistenti.
-      final calResult = await _plugin.retrieveCalendars();
+      final calResult = await _withTimeout(_plugin.retrieveCalendars());
       final calendars = calResult.data;
 
       if (calendars != null) {
@@ -107,9 +115,11 @@ class CalendarSyncService {
       }
 
       // Crea un nuovo calendario.
-      final createResult = await _plugin.createCalendar(
-        _calendarName,
-        localAccountName: 'InjeCare',
+      final createResult = await _withTimeout(
+        _plugin.createCalendar(
+          _calendarName,
+          localAccountName: 'InjeCare',
+        ),
       );
       if (createResult.isSuccess && createResult.data != null) {
         await prefs.setString(_calendarIdKey, createResult.data!);
@@ -145,6 +155,9 @@ class CalendarSyncService {
   ///   incluso solo se [settings.includeFeedback] è `true`.
   /// - Durata fissa di 15 minuti.
   /// - I [Reminder] sono allegati solo se [settings.channelIncludesCalendar].
+  /// - Il campo [Event.url] viene impostato al deeplink
+  ///   `injecare://injection/<id>` per consentire l'apertura diretta
+  ///   dell'iniezione dal calendario del device.
   ///
   /// Restituisce l'eventId (nuovo o esistente), oppure `null` in caso di
   /// errore o se il risultato non è disponibile.
@@ -184,9 +197,10 @@ class CalendarSyncService {
         start: start,
         end: end,
         reminders: reminders,
+        url: Uri.parse('injecare:///injection/${injection.id}'),
       );
 
-      final result = await _plugin.createOrUpdateEvent(event);
+      final result = await _withTimeout(_plugin.createOrUpdateEvent(event));
       if (result == null) return null;
       return result.isSuccess ? result.data : null;
     } catch (e) {
@@ -205,7 +219,7 @@ class CalendarSyncService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final calendarId = prefs.getString(_calendarIdKey);
-      await _plugin.deleteEvent(calendarId, injection.calendarEventId);
+      await _withTimeout(_plugin.deleteEvent(calendarId, injection.calendarEventId));
     } catch (e) {
       debugPrint('[CalendarSyncService] removeEvent error: $e');
       DiagnosticLogService.instance.logError('calendar', e);
@@ -249,9 +263,10 @@ class CalendarSyncService {
         start: start,
         end: end,
         reminders: const [],
+        url: Uri.parse('injecare:///injection/${injection.id}'),
       );
 
-      await _plugin.createOrUpdateEvent(event);
+      await _withTimeout(_plugin.createOrUpdateEvent(event));
     } catch (e) {
       debugPrint('[CalendarSyncService] markDone error: $e');
       DiagnosticLogService.instance.logError('calendar', e);
@@ -267,7 +282,7 @@ class CalendarSyncService {
       final prefs = await SharedPreferences.getInstance();
       final calendarId = prefs.getString(_calendarIdKey);
       if (calendarId != null && calendarId.isNotEmpty) {
-        await _plugin.deleteCalendar(calendarId);
+        await _withTimeout(_plugin.deleteCalendar(calendarId));
         await prefs.remove(_calendarIdKey);
       }
     } catch (e) {

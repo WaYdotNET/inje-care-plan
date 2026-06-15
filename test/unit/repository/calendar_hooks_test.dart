@@ -125,6 +125,67 @@ void main() {
     expect(saved.first.pointLabel, 'Coscia Dx · 1');
   });
 
+  test('createInjection(syncCalendar: false) non chiama upsertEvent', () async {
+    final db = createTestDatabase();
+    addTearDown(db.close);
+    final sync = _MockSync();
+
+    final repo = InjectionRepository(
+      database: db,
+      calendarSync: sync,
+      isCalendarEnabled: () => true,
+    );
+    await repo.createInjection(
+      InjectionRecord(
+        zoneId: 1,
+        pointNumber: 1,
+        scheduledAt: DateTime(2026, 6, 20, 20),
+        status: InjectionStatus.scheduled,
+        customPointLabel: 'Coscia Dx · 1',
+        createdAt: DateTime(2026, 6, 15),
+        updatedAt: DateTime(2026, 6, 15),
+      ),
+      syncCalendar: false,
+    );
+
+    verifyNever(() => sync.upsertEvent(any(), any(), any()));
+  });
+
+  test('syncInjectionToCalendar chiama upsertEvent', () async {
+    final db = createTestDatabase();
+    addTearDown(db.close);
+    final sync = _MockSync();
+    when(() => sync.upsertEvent(any(), any(), any()))
+        .thenAnswer((_) async => 'evt-sync');
+
+    final repo = InjectionRepository(
+      database: db,
+      calendarSync: sync,
+      isCalendarEnabled: () => true,
+    );
+
+    // Prima crea senza sync calendario.
+    final id = await repo.createInjection(
+      InjectionRecord(
+        zoneId: 1,
+        pointNumber: 1,
+        scheduledAt: DateTime(2026, 6, 20, 20),
+        status: InjectionStatus.scheduled,
+        customPointLabel: 'Coscia Dx · 1',
+        createdAt: DateTime(2026, 6, 15),
+        updatedAt: DateTime(2026, 6, 15),
+      ),
+      syncCalendar: false,
+    );
+
+    verifyNever(() => sync.upsertEvent(any(), any(), any()));
+
+    // Poi sincronizza esplicitamente.
+    await repo.syncInjectionToCalendar(id);
+
+    verify(() => sync.upsertEvent(any(), any(), any())).called(1);
+  });
+
   test('deleteInjection non-blocking: errore removeEvent non blocca la cancellazione', () async {
     final db = createTestDatabase();
     addTearDown(db.close);

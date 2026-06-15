@@ -95,7 +95,7 @@ Tests in `test/` organized as `unit/`, `widget/`, `integration/`. Uses `mocktail
 
 When bumping the version and releasing, **always** update **all** of these (changelog, version bump, web version, READMEs):
 
-1. `pubspec.yaml` — bump `version` (e.g. `4.8.3+12`). **IMPORTANT**: the version code (number after `+`) must be strictly greater than any previously uploaded to Google Play Store. Current highest: **18**.
+1. `pubspec.yaml` — bump `version` (e.g. `4.8.3+12`). **IMPORTANT**: the version code (number after `+`) must be strictly greater than any previously uploaded to Google Play Store. Current highest: **19**.
 2. `CHANGELOG.md` — add a new `## <version> - <YYYY-MM-DD>` heading at the top with the changes (`### Corretto` / `### Aggiunto`).
 3. `pages/index.html` (web version) — add the changelog block in **both** IT (`<h3>Versione X (..)</h3>`) and EN (`<h3>Version X (..)</h3>`) sections, **and** bump the footer version `InjeCare Plan vX` (two lines: IT + EN, currently ~398 and ~408).
 4. `README.md` (and any other README) — keep in sync: it has **no** version number/changelog today (feature docs only), so usually no change is needed — but verify and update the relevant section if a feature/behavior described there changed.

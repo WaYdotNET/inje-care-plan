@@ -1,5 +1,17 @@
 # Changelog
 
+## 4.11.1 - 2026-06-15
+
+### Corretto
+- **Pianificazione settimanale/mensile**: non si blocca più. La sincronizzazione col calendario ora è **non bloccante** e con timeout; l'inserimento è veloce e dà sempre un riscontro.
+- **Statistiche**: l'aderenza ora conta correttamente le iniezioni **saltate/mancate** (niente più 100% falso quando ne hai mancate).
+- **Notifiche doppie**: con canale "Solo calendario", le notifiche app pre-iniezione già programmate vengono cancellate (niente più doppio avviso app + calendario).
+- **Barra di stato**: le icone (ora, batteria) ora sono visibili sul tema chiaro.
+
+### Aggiunto
+- **Deeplink negli eventi del calendario**: toccando l'evento dell'iniezione si apre l'app sul dettaglio.
+- **"Questa settimana"**: badge col numero quando un giorno ha più di un'iniezione.
+
 ## 4.11.0 - 2026-06-15
 
 ### Aggiunto

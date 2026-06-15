@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:injecare_plan/core/services/calendar_sync_service.dart';
 import 'package:injecare_plan/core/database/app_database.dart';
 import 'package:injecare_plan/models/reminder_rule.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -57,6 +58,8 @@ const _noReminders = ReminderSettingsView(
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  setUpAll(() => initializeDateFormatting('it'));
 
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
@@ -215,6 +218,162 @@ void main() {
     expect(capturedEvent?.title, startsWith('✓'));
     // Nessun reminder per evento "done"
     expect(capturedEvent?.reminders, anyOf(isNull, isEmpty));
+  });
+
+  // ── Update path: eventId sul Event passato a createOrUpdateEvent ─────────────
+
+  group('upsertEvent — update vs create path (eventId sull\'Event)', () {
+    test('injection con calendarEventId non vuoto passa eventId all\'Event', () async {
+      SharedPreferences.setMockInitialValues({'injecare_calendar_id': 'cal-1'});
+      final plugin = _MockPlugin();
+      when(() => plugin.createOrUpdateEvent(any()))
+          .thenAnswer((_) async => _resultOk<String>('existing-evt'));
+
+      final svc = CalendarSyncService(plugin: plugin);
+      await svc.upsertEvent(
+        _inj(calendarEventId: 'existing-evt'),
+        null,
+        _noReminders,
+      );
+
+      final captured = verify(() => plugin.createOrUpdateEvent(captureAny())).captured;
+      final event = captured.single as Event;
+      expect(event.eventId, 'existing-evt');
+    });
+
+    test('injection con calendarEventId vuoto passa eventId null all\'Event', () async {
+      SharedPreferences.setMockInitialValues({'injecare_calendar_id': 'cal-1'});
+      final plugin = _MockPlugin();
+      when(() => plugin.createOrUpdateEvent(any()))
+          .thenAnswer((_) async => _resultOk<String>('new-evt'));
+
+      final svc = CalendarSyncService(plugin: plugin);
+      await svc.upsertEvent(
+        _inj(calendarEventId: ''),
+        null,
+        _noReminders,
+      );
+
+      final captured = verify(() => plugin.createOrUpdateEvent(captureAny())).captured;
+      final event = captured.single as Event;
+      expect(event.eventId, isNull);
+    });
+  });
+
+  // ── Reminders: allegati solo quando channelIncludesCalendar == true ──────────
+
+  group('upsertEvent — reminders sul Event', () {
+    test('channelIncludesCalendar=true con regola 30m allega un Reminder con minutes==30', () async {
+      SharedPreferences.setMockInitialValues({'injecare_calendar_id': 'cal-1'});
+      final plugin = _MockPlugin();
+      when(() => plugin.createOrUpdateEvent(any()))
+          .thenAnswer((_) async => _resultOk<String>('evt-r'));
+
+      const settings = ReminderSettingsView(
+        channelIncludesCalendar: true,
+        includeFeedback: false,
+        activeRules: [ReminderRule(minutesBefore: 30, enabled: true)],
+      );
+
+      final svc = CalendarSyncService(plugin: plugin);
+      await svc.upsertEvent(_inj(), null, settings);
+
+      final captured = verify(() => plugin.createOrUpdateEvent(captureAny())).captured;
+      final event = captured.single as Event;
+      expect(event.reminders, isNotNull);
+      expect(event.reminders, isNotEmpty);
+      expect(event.reminders!.any((r) => r.minutes == 30), isTrue);
+    });
+
+    test('channelIncludesCalendar=false non allega reminders all\'Event', () async {
+      SharedPreferences.setMockInitialValues({'injecare_calendar_id': 'cal-1'});
+      final plugin = _MockPlugin();
+      when(() => plugin.createOrUpdateEvent(any()))
+          .thenAnswer((_) async => _resultOk<String>('evt-r2'));
+
+      const settings = ReminderSettingsView(
+        channelIncludesCalendar: false,
+        includeFeedback: false,
+        activeRules: [ReminderRule(minutesBefore: 30, enabled: true)],
+      );
+
+      final svc = CalendarSyncService(plugin: plugin);
+      await svc.upsertEvent(_inj(), null, settings);
+
+      final captured = verify(() => plugin.createOrUpdateEvent(captureAny())).captured;
+      final event = captured.single as Event;
+      expect(event.reminders, anyOf(isNull, isEmpty));
+    });
+  });
+
+  // ── includeFeedback: "Ultima volta" nella description ────────────────────────
+
+  group('upsertEvent — includeFeedback nella description', () {
+    final prev = _inj(
+      id: 99,
+      scheduledAt: DateTime(2026, 6, 8, 20),
+      sideEffects: 'arrossamento',
+      notes: 'gonfiore lieve',
+      status: 'completed',
+    );
+
+    test('includeFeedback=true con prev completo include "Ultima volta" nella description', () async {
+      SharedPreferences.setMockInitialValues({'injecare_calendar_id': 'cal-1'});
+      final plugin = _MockPlugin();
+      when(() => plugin.createOrUpdateEvent(any()))
+          .thenAnswer((_) async => _resultOk<String>('evt-f1'));
+
+      const settings = ReminderSettingsView(
+        channelIncludesCalendar: false,
+        includeFeedback: true,
+        activeRules: [],
+      );
+
+      final svc = CalendarSyncService(plugin: plugin);
+      await svc.upsertEvent(_inj(), prev, settings);
+
+      final captured = verify(() => plugin.createOrUpdateEvent(captureAny())).captured;
+      final event = captured.single as Event;
+      expect(event.description, contains('Ultima volta'));
+    });
+
+    test('includeFeedback=false non include "Ultima volta" nella description', () async {
+      SharedPreferences.setMockInitialValues({'injecare_calendar_id': 'cal-1'});
+      final plugin = _MockPlugin();
+      when(() => plugin.createOrUpdateEvent(any()))
+          .thenAnswer((_) async => _resultOk<String>('evt-f2'));
+
+      const settings = ReminderSettingsView(
+        channelIncludesCalendar: false,
+        includeFeedback: false,
+        activeRules: [],
+      );
+
+      final svc = CalendarSyncService(plugin: plugin);
+      await svc.upsertEvent(_inj(), prev, settings);
+
+      final captured = verify(() => plugin.createOrUpdateEvent(captureAny())).captured;
+      final event = captured.single as Event;
+      expect(event.description, isNot(contains('Ultima volta')));
+    });
+  });
+
+  // ── Fallback calendar: quando createCalendar fallisce usa il primo scrivibile ─
+
+  test('ensureInjeCareCalendar usa fallback al primo calendario scrivibile se createCalendar fallisce', () async {
+    final plugin = _MockPlugin();
+    // Un calendario scrivibile non chiamato "InjeCare"
+    final writableCal = Calendar(id: 'fallback-cal', name: 'Personal', isReadOnly: false);
+    final calList = UnmodifiableListView<Calendar>([writableCal]);
+    when(() => plugin.retrieveCalendars())
+        .thenAnswer((_) async => _resultOk(calList));
+    // createCalendar fallisce: Result senza data né successo
+    when(() => plugin.createCalendar(any(), calendarColor: any(named: 'calendarColor'), localAccountName: any(named: 'localAccountName')))
+        .thenAnswer((_) async => _resultFail<String>());
+
+    final svc = CalendarSyncService(plugin: plugin);
+    final id = await svc.ensureInjeCareCalendar();
+    expect(id, 'fallback-cal');
   });
 }
 

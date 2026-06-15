@@ -1,5 +1,21 @@
 # Changelog
 
+## 4.13.0 - 2026-06-15
+
+### Aggiunto
+- **Mappa del corpo per la selezione punto**: una sola schermata mostra **tutti i punti di tutte le zone** sulla silhouette, colorati per stato (verde = disponibile, ambra = usato di recente, rosso = da evitare, grigio = escluso) con il punto **consigliato** evidenziato. Un tocco sceglie zona e punto, con legenda sempre visibile e data dell'iniezione in alto ("Oggi" o il giorno scelto).
+- **Due stili di selezione punto** scegliibili da Impostazioni → "Stile selezione punto": la nuova **Mappa** (predefinita) o la versione **Classica a step** (zona poi punto). La scelta è salvata e inclusa in backup/ripristino.
+- **Le note dell'iniezione finiscono nell'evento del calendario** e modificarle ri-sincronizza l'evento.
+
+### Cambiato
+- **Nuove silhouette fronte/retro** più chiare e leggibili; posizioni dei punti ricalibrate.
+- **Home**: in vista Silhouette la mappa del corpo è ora **a schermo intero**; card "prossima iniezione" con colori più tenui e coerenti.
+- **Impostazioni riordinate**: sezione "Terapia" unificata, strumenti di test spostati in Diagnostica, export storico in un'unica voce; anticipo/tolleranza/effetti collaterali ora con **selettore libero** (− valore +).
+- Colori dell'app resi più coerenti con la palette.
+
+### Corretto
+- Risolti i problemi di layout (overflow) nella schermata **Gestisci zone**; la maniglia di riordino ora funziona.
+
 ## 4.12.0 - 2026-06-15
 
 ### Cambiato

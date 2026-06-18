@@ -101,7 +101,7 @@ When bumping the version and releasing, **always** update **all** of these (chan
 4. `README.md` (and any other README) — keep in sync: it has **no** version number/changelog today (feature docs only), so usually no change is needed — but verify and update the relevant section if a feature/behavior described there changed.
 5. `.github/workflows/build-apk.yml` and `pages.yml` — if Flutter SDK was upgraded, update `flutter-version` to match (currently `3.41.6`).
 6. Commit, tag (`v<version>`), push with `--tags` to trigger GitHub Actions release.
-7. Verify the pipelines: both **Deploy Pages** and **Build APK & App Bundle** run **only on tags** `v*` (and via manual `workflow_dispatch`). Pushing the release tag triggers both; plain pushes/merges to `main` trigger **nothing** (no web build, no APK build) to avoid wasting CI time.
+7. Verify the pipelines: **Deploy Pages** runs on push to `main` (and `workflow_dispatch`) — the `github-pages` environment has a branch-protection rule that only allows deploys from `main`, so it **cannot** be made tag-only without adding a `v*` tag policy to that environment. **Build APK & App Bundle** runs **only on tags** `v*` (and via manual `workflow_dispatch`; this is the heavy run that produces the APK/AAB and creates the GitHub Release). NOTE: the APK/App Bundle build does **not** run on plain pushes/merges to `main` — only tags trigger it.
 
 ### Two BodyZone types
 

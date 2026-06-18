@@ -220,7 +220,13 @@ class _BodyPointMapState extends State<BodyPointMap> {
               left: onLeftHalf ? 0 : null,
               right: onLeftHalf ? null : 0,
               child: OverflowBox(
+                // Rilascia sia larghezza che altezza: il chip si dimensiona sul
+                // testo (una riga) invece di essere stirato all'altezza del
+                // blocco. Allineato al bordo esterno, centrato in verticale.
+                minWidth: 0,
                 maxWidth: double.infinity,
+                minHeight: 0,
+                maxHeight: double.infinity,
                 alignment:
                     onLeftHalf ? Alignment.centerRight : Alignment.centerLeft,
                 child: label,

@@ -456,6 +456,7 @@ class BodyMapPoint {
     required this.usageLevel,
     required this.isBlacklisted,
     required this.isSuggested,
+    this.customName,
   });
 
   final int zoneId;
@@ -469,7 +470,18 @@ class BodyMapPoint {
   final bool isBlacklisted;
   final bool isSuggested;
 
-  String get fullLabel => '$zoneEmoji $zoneName · Punto $pointNumber';
+  /// Nome personalizzato del punto (PointConfig.customName), se configurato.
+  final String? customName;
+
+  /// True se il punto ha un nome personalizzato non vuoto.
+  bool get hasCustomName => customName != null && customName!.isNotEmpty;
+
+  /// Etichetta leggibile del punto: usa il nome custom se presente, altrimenti
+  /// ripiega sul numero. Es. "Coscia Dx · Spalla" oppure "Coscia Dx · 3".
+  String get label =>
+      hasCustomName ? '$zoneName · $customName' : '$zoneName · $pointNumber';
+
+  String get fullLabel => '$zoneEmoji $label';
 }
 
 /// Aggrega i punti di tutte le zone abilitate con posizione e stato (uso,
@@ -491,6 +503,12 @@ final bodyMapPointsProvider = FutureProvider.family<List<BodyMapPoint>,
   final result = <BodyMapPoint>[];
   for (final zone in zones) {
     final configs = await database.getPointConfigsForZone(zone.id);
+    // Nomi personalizzati dei punti (PointConfig.customName), per esporli sulla
+    // mappa/silhouette invece della sola numerazione.
+    final customNames = <int, String>{
+      for (final c in configs)
+        if (c.customName.isNotEmpty) c.pointNumber: c.customName,
+    };
     final positions = <int, PositionedPoint>{};
     if (configs.isEmpty) {
       for (final p in generateDefaultPointPositions(
@@ -540,6 +558,7 @@ final bodyMapPointsProvider = FutureProvider.family<List<BodyMapPoint>,
         isBlacklisted: blacklisted.contains(n),
         isSuggested:
             suggested?.zoneId == zone.id && suggested?.pointNumber == n,
+        customName: customNames[n],
       ));
     }
   }

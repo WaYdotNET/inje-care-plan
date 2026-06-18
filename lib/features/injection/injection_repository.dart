@@ -192,7 +192,15 @@ class InjectionRepository {
       status: Value(record.status.name),
       notes: Value(record.notes),
       sideEffects: Value(record.sideEffects.join(',')),
-      calendarEventId: Value(record.calendarEventId),
+      // Preserva il collegamento all'evento calendario esistente: i record
+      // costruiti dalla UI (es. record_screen in modifica) NON trasportano il
+      // calendarEventId, quindi scriverlo incondizionatamente lo azzererebbe.
+      // Con l'id perso, _syncToCalendar creerebbe un NUOVO evento lasciando
+      // orfano il vecchio (mismatch calendario↔app). Tocchiamo la colonna solo
+      // quando il record porta un id reale.
+      calendarEventId: record.calendarEventId.isNotEmpty
+          ? Value(record.calendarEventId)
+          : const Value.absent(),
       updatedAt: Value(DateTime.now()),
     ));
     await _syncToCalendar(id);

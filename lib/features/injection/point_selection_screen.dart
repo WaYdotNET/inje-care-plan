@@ -272,8 +272,11 @@ class _PointSelectionMapScreenState
           onPressed: () => context.pop(),
         ),
       ),
-      bottomNavigationBar:
-          _buildStickyCta(zonesAsync.asData?.value ?? const <BodyZone>[], isDark),
+      bottomNavigationBar: _buildStickyCta(
+        zonesAsync.asData?.value ?? const <BodyZone>[],
+        mapAsync.asData?.value ?? const <BodyMapPoint>[],
+        isDark,
+      ),
       body: Column(
         children: [
           // Banner data/ora (solo injection): mostra QUANDO verrà salvata.
@@ -369,14 +372,27 @@ class _PointSelectionMapScreenState
   }
 
   /// Barra d'azione fissa in basso con recap + pulsante primario.
-  Widget _buildStickyCta(List<BodyZone> zones, bool isDark) {
+  Widget _buildStickyCta(
+    List<BodyZone> zones,
+    List<BodyMapPoint> points,
+    bool isDark,
+  ) {
     final muted = isDark ? AppTokens.darkMuted : AppTokens.lightMuted;
     final zone = _selectedZoneId == null
         ? null
         : zones.where((z) => z.id == _selectedZoneId).firstOrNull;
-    final pointLabel = (zone != null && _selectedPoint != null)
-        ? zone.pointLabel(_selectedPoint!)
+    // Etichetta del punto selezionato: preferisci il label della mappa (che
+    // include il nome custom del punto); ripiega sulla zona+numero.
+    final selectedPoint = (_selectedZoneId != null && _selectedPoint != null)
+        ? points
+            .where((p) =>
+                p.zoneId == _selectedZoneId && p.pointNumber == _selectedPoint)
+            .firstOrNull
         : null;
+    final pointLabel = selectedPoint?.label ??
+        ((zone != null && _selectedPoint != null)
+            ? zone.pointLabel(_selectedPoint!)
+            : null);
     final recap = pointLabel == null
         ? 'Seleziona zona e punto'
         : (widget.mode == PointSelectionMode.injection

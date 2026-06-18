@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.13.1 - 2026-06-18
+
+### Corretto
+- **Calendario allineato all'app**: cambiando il punto di un'iniezione, l'evento del calendario viene ora **aggiornato** invece di crearne uno nuovo. Non restano più eventi "fantasma" con il punto vecchio diverso da quello mostrato nell'app.
+- **Nomi dei punti sulla mappa/silhouette**: la selezione punto e la vista Silhouette mostrano ora il **nome personalizzato** del punto (quando configurato) invece della sola numerazione.
+
 ## 4.13.0 - 2026-06-15
 
 ### Aggiunto

@@ -186,6 +186,64 @@ void main() {
     verify(() => sync.upsertEvent(any(), any(), any())).called(1);
   });
 
+  test(
+      'updateInjection preserva il calendarEventId esistente quando il record '
+      'non lo trasporta (no eventi orfani)', () async {
+    final db = createTestDatabase();
+    addTearDown(db.close);
+    final sync = _MockSync();
+    when(() => sync.upsertEvent(any(), any(), any()))
+        .thenAnswer((_) async => 'evt-1');
+
+    final repo = InjectionRepository(
+      database: db,
+      calendarSync: sync,
+      isCalendarEnabled: () => true,
+    );
+
+    // Crea: l'evento calendario riceve id 'evt-1' e viene salvato sull'iniezione.
+    final id = await repo.createInjection(
+      InjectionRecord(
+        zoneId: 1,
+        pointNumber: 2,
+        scheduledAt: DateTime(2026, 6, 17, 20, 30),
+        status: InjectionStatus.scheduled,
+        customPointLabel: 'Braccio Sx · 20 (2)',
+        createdAt: DateTime(2026, 6, 15),
+        updatedAt: DateTime(2026, 6, 15),
+      ),
+    );
+    expect((await db.getInjectionById(id))!.calendarEventId, 'evt-1');
+
+    // Modifica il punto come fa record_screen: record SENZA calendarEventId.
+    await repo.updateInjection(
+      id,
+      InjectionRecord(
+        zoneId: 2,
+        pointNumber: 1,
+        scheduledAt: DateTime(2026, 6, 17, 20, 30),
+        status: InjectionStatus.scheduled,
+        customPointLabel: 'Gluteo Dx · 27 (1)',
+        createdAt: DateTime(2026, 6, 15),
+        updatedAt: DateTime(2026, 6, 15),
+      ),
+    );
+
+    // L'iniezione passata all'upsert in fase di MODIFICA deve conservare
+    // l'eventId esistente, così device_calendar AGGIORNA lo stesso evento
+    // invece di crearne uno nuovo (lasciando orfano il vecchio).
+    final captured =
+        verify(() => sync.upsertEvent(captureAny(), any(), any())).captured;
+    final updateArg = captured.last as Injection;
+    expect(updateArg.pointLabel, 'Gluteo Dx · 27 (1)');
+    expect(
+      updateArg.calendarEventId,
+      'evt-1',
+      reason: 'calendarEventId non deve essere azzerato dalla modifica: '
+          'altrimenti si crea un nuovo evento lasciando orfano il vecchio',
+    );
+  });
+
   test('deleteInjection non-blocking: errore removeEvent non blocca la cancellazione', () async {
     final db = createTestDatabase();
     addTearDown(db.close);

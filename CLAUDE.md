@@ -95,13 +95,13 @@ Tests in `test/` organized as `unit/`, `widget/`, `integration/`. Uses `mocktail
 
 When bumping the version and releasing, **always** update **all** of these (changelog, version bump, web version, READMEs):
 
-1. `pubspec.yaml` — bump `version` (e.g. `4.8.3+12`). **IMPORTANT**: the version code (number after `+`) must be strictly greater than any previously uploaded to Google Play Store. Current highest: **21**.
+1. `pubspec.yaml` — bump `version` (e.g. `4.8.3+12`). **IMPORTANT**: the version code (number after `+`) must be strictly greater than any previously uploaded to Google Play Store. Current highest: **23**.
 2. `CHANGELOG.md` — add a new `## <version> - <YYYY-MM-DD>` heading at the top with the changes (`### Corretto` / `### Aggiunto`).
 3. `pages/index.html` (web version) — add the changelog block in **both** IT (`<h3>Versione X (..)</h3>`) and EN (`<h3>Version X (..)</h3>`) sections, **and** bump the footer version `InjeCare Plan vX` (two lines: IT + EN, currently ~398 and ~408).
 4. `README.md` (and any other README) — keep in sync: it has **no** version number/changelog today (feature docs only), so usually no change is needed — but verify and update the relevant section if a feature/behavior described there changed.
 5. `.github/workflows/build-apk.yml` and `pages.yml` — if Flutter SDK was upgraded, update `flutter-version` to match (currently `3.41.6`).
 6. Commit, tag (`v<version>`), push with `--tags` to trigger GitHub Actions release.
-7. Verify the pipelines: **Deploy Pages** (runs on push to `main`) and **Build APK & App Bundle** (runs **only on tags** `v*` — and via manual `workflow_dispatch`; this is the run that produces the APK/AAB and creates the GitHub Release). NOTE: the APK/App Bundle build does **not** run on plain pushes/merges to `main` — only tags trigger it.
+7. Verify the pipelines: both **Deploy Pages** and **Build APK & App Bundle** run **only on tags** `v*` (and via manual `workflow_dispatch`). Pushing the release tag triggers both; plain pushes/merges to `main` trigger **nothing** (no web build, no APK build) to avoid wasting CI time.
 
 ### Two BodyZone types
 

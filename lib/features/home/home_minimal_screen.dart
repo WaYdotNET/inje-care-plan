@@ -233,6 +233,14 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
           ),
         );
 
+        // Punti della mappa (con nomi custom) per la data mostrata, così la
+        // silhouette può etichettare il punto col suo nome anziché il numero.
+        final bodyMapAsync = ref.watch(
+          bodyMapPointsProvider(
+            (scheduledAt: displayDate, ignoreInjectionId: nextScheduled?.id),
+          ),
+        );
+
         return suggestedForDateAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, st) => _ErrorView(message: e.toString()),
@@ -254,6 +262,22 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
                 orElse: () => zones.first,
               );
               pointNumber = suggestedForDate.pointNumber;
+            }
+
+            // Nome personalizzato del punto mostrato (se configurato).
+            String? pointName;
+            final selectedZone = zone;
+            final selectedPoint = pointNumber;
+            if (selectedZone != null && selectedPoint != null) {
+              for (final p
+                  in bodyMapAsync.asData?.value ?? const <BodyMapPoint>[]) {
+                if (p.zoneId == selectedZone.id &&
+                    p.pointNumber == selectedPoint &&
+                    p.hasCustomName) {
+                  pointName = p.customName;
+                  break;
+                }
+              }
             }
 
             final isScheduled = nextScheduled != null;
@@ -297,6 +321,7 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
                               isDark: isDark,
                               isScheduled: isScheduled,
                               pointNumber: pointNumber,
+                              pointName: pointName,
                             ),
                           ),
                           const SizedBox(height: 24),
@@ -855,6 +880,7 @@ class _MainCard extends StatefulWidget {
     required this.isDark,
     this.isScheduled = false,
     this.pointNumber,
+    this.pointName,
   });
 
   final model.BodyZone? zone;
@@ -864,6 +890,9 @@ class _MainCard extends StatefulWidget {
   final bool isDark;
   final bool isScheduled;
   final int? pointNumber;
+
+  /// Nome personalizzato del punto mostrato (se configurato).
+  final String? pointName;
 
   @override
   State<_MainCard> createState() => _MainCardState();
@@ -1021,6 +1050,16 @@ class _MainCardState extends State<_MainCard> {
                                 : AppTokens.accent,
                           ),
                         ),
+
+                        if (widget.pointName != null) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            widget.pointName!,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
 
                         const SizedBox(height: 8),
 

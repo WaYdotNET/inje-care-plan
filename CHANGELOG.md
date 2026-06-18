@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.14.0 - 2026-06-18
+
+### Aggiunto
+- **Blocchi zona sulla mappa del corpo**: nella selezione del punto ogni zona è ora racchiusa in un riquadro tenue, con il **nome della zona** a lato (es. "Coscia Dx", "Coscia Sx") e un **colore dedicato**. I gruppi rispecchiano le zone reali — anche **Dx e Sx separate** e le **zone personalizzate** che crei — così è più facile capire a colpo d'occhio a quale zona appartiene ogni punto.
+
 ## 4.13.2 - 2026-06-18
 
 ### Corretto

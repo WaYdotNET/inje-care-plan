@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.13.2 - 2026-06-18
+
+### Corretto
+- **Nomi dei punti sulla silhouette**: i pallini sulla mappa del corpo mostrano ora il **nome personalizzato** del punto (es. "27") invece del solo numero progressivo, come già avviene nell'editor "Posiziona punti". Completa il fix della 4.13.1 (che aggiornava solo l'etichetta in basso).
+
 ## 4.13.1 - 2026-06-18
 
 ### Corretto

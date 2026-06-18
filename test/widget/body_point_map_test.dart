@@ -5,7 +5,8 @@ import 'package:injecare_plan/features/injection/widgets/body_point_map.dart';
 import 'package:injecare_plan/features/injection/widgets/body_silhouette_editor.dart';
 import 'package:injecare_plan/features/injection/point_usage_level.dart';
 
-BodyMapPoint _p(int zid, int n, BodyView v) => BodyMapPoint(
+BodyMapPoint _p(int zid, int n, BodyView v, {String? customName}) =>
+    BodyMapPoint(
       zoneId: zid,
       zoneName: 'Z$zid',
       zoneEmoji: '•',
@@ -16,7 +17,22 @@ BodyMapPoint _p(int zid, int n, BodyView v) => BodyMapPoint(
       usageLevel: PointUsageLevel.neverUsed,
       isBlacklisted: false,
       isSuggested: false,
+      customName: customName,
     );
+
+Future<void> _pumpSingle(WidgetTester tester, BodyMapPoint point) async {
+  await tester.pumpWidget(MaterialApp(
+    home: Scaffold(
+      body: BodyPointMap(
+        points: [point],
+        selectedZoneId: null,
+        selectedPointNumber: null,
+        onTap: (_) {},
+      ),
+    ),
+  ));
+  await tester.pumpAndSettle();
+}
 
 void main() {
   testWidgets('tap su un punto invoca onTap col punto giusto', (tester) async {
@@ -52,5 +68,24 @@ void main() {
     await tester.pumpAndSettle();
     // Vista fronte: vede il punto front (zona 1), non quello back.
     expect(find.text('1'), findsOneWidget);
+  });
+
+  testWidgets('il marker mostra il nome custom del punto invece del numero',
+      (tester) async {
+    await _pumpSingle(tester, _p(1, 2, BodyView.front, customName: '27'));
+    expect(find.text('27'), findsOneWidget);
+    expect(find.text('2'), findsNothing);
+  });
+
+  testWidgets('nome custom lungo troncato a 3 caratteri sul marker',
+      (tester) async {
+    await _pumpSingle(tester, _p(1, 1, BodyView.front, customName: 'Spalla'));
+    expect(find.text('Spa'), findsOneWidget);
+  });
+
+  testWidgets('senza nome custom il marker mostra il numero del punto',
+      (tester) async {
+    await _pumpSingle(tester, _p(1, 3, BodyView.front));
+    expect(find.text('3'), findsOneWidget);
   });
 }

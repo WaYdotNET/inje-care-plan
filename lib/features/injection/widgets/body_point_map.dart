@@ -99,6 +99,16 @@ class _BodyPointMapState extends State<BodyPointMap> {
     );
   }
 
+  /// Etichetta del marker: nome custom del punto (troncato a 3 caratteri per
+  /// stare nel cerchio, come nell'editor silhouette) altrimenti il numero.
+  String _markerLabel(BodyMapPoint p) {
+    final name = p.customName;
+    if (name != null && name.isNotEmpty) {
+      return name.length > 3 ? name.substring(0, 3) : name;
+    }
+    return '${p.pointNumber}';
+  }
+
   Widget _marker(BodyMapPoint p, BoxConstraints c, bool isDark) {
     final selected = p.zoneId == widget.selectedZoneId &&
         p.pointNumber == widget.selectedPointNumber;
@@ -144,11 +154,13 @@ class _BodyPointMapState extends State<BodyPointMap> {
               ),
               alignment: Alignment.center,
               child: Text(
-                '${p.pointNumber}',
-                style: const TextStyle(
+                _markerLabel(p),
+                textAlign: TextAlign.center,
+                style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
-                  fontSize: 10,
+                  // Nome custom (anche corto) leggermente più piccolo del numero.
+                  fontSize: p.hasCustomName ? 8 : 10,
                 ),
               ),
             ),

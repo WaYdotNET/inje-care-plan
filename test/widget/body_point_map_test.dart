@@ -10,6 +10,7 @@ BodyMapPoint _p(int zid, int n, BodyView v, {String? customName}) =>
       zoneId: zid,
       zoneName: 'Z$zid',
       zoneEmoji: '•',
+      zoneType: 'thigh',
       pointNumber: n,
       x: 0.5,
       y: 0.5,
@@ -87,5 +88,30 @@ void main() {
       (tester) async {
     await _pumpSingle(tester, _p(1, 3, BodyView.front));
     expect(find.text('3'), findsOneWidget);
+  });
+
+  testWidgets('disegna un blocco per zona con etichetta = nome zona',
+      (tester) async {
+    // Il blocco di raggruppamento mostra il nome della zona (displayName).
+    await _pumpSingle(tester, _p(1, 1, BodyView.front));
+    expect(find.text('Z1'), findsOneWidget);
+  });
+
+  testWidgets('zone diverse hanno blocchi (etichette) separati',
+      (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: BodyPointMap(
+          points: [_p(1, 1, BodyView.front), _p(2, 1, BodyView.front)],
+          selectedZoneId: null,
+          selectedPointNumber: null,
+          onTap: (_) {},
+        ),
+      ),
+    ));
+    await tester.pumpAndSettle();
+    // Una etichetta-blocco per ciascuna zona (Z1 e Z2), non un blocco unico.
+    expect(find.text('Z1'), findsOneWidget);
+    expect(find.text('Z2'), findsOneWidget);
   });
 }

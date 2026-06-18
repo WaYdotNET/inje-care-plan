@@ -449,6 +449,7 @@ class BodyMapPoint {
     required this.zoneId,
     required this.zoneName,
     required this.zoneEmoji,
+    required this.zoneType,
     required this.pointNumber,
     required this.x,
     required this.y,
@@ -462,6 +463,10 @@ class BodyMapPoint {
   final int zoneId;
   final String zoneName;
   final String zoneEmoji;
+
+  /// Tipo anatomico della zona (thigh, arm, abdomen, buttock, custom): usato per
+  /// raggruppare i punti in regioni sulla mappa.
+  final String zoneType;
   final int pointNumber;
   final double x;
   final double y;
@@ -550,6 +555,7 @@ final bodyMapPointsProvider = FutureProvider.family<List<BodyMapPoint>,
         zoneId: zone.id,
         zoneName: zone.displayName,
         zoneEmoji: zone.emoji,
+        zoneType: zone.type,
         pointNumber: n,
         x: pos.x,
         y: pos.y,

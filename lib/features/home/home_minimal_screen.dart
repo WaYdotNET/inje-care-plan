@@ -25,6 +25,7 @@ import '../../core/ml/rotation_pattern_engine.dart';
 import '../../core/utils/schedule_utils.dart';
 import '../injection/injection_provider.dart' hide bodyZonesProvider;
 import '../injection/injection_repository.dart';
+import '../injection/point_usage_level.dart';
 import '../injection/zone_provider.dart';
 import '../injection/widgets/body_silhouette_editor.dart';
 import 'home_layout_provider.dart';
@@ -285,6 +286,35 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
             final view = _getViewForZone(zone?.type);
             final displayTime = DateFormat('HH:mm').format(displayDate);
 
+            // Punti della zona da disegnare sulla silhouette: tutti i punti
+            // della zona target, colorati per stato d'uso (come nella mappa di
+            // selezione). Il punto da fare resta col colore accent (null) così
+            // l'editor lo evidenzia come "principale".
+            final zonePoints = <PositionedPoint>[];
+            if (zone != null) {
+              final mutedColor =
+                  isDark ? AppTokens.darkMuted : AppTokens.lightMuted;
+              for (final p
+                  in bodyMapAsync.asData?.value ?? const <BodyMapPoint>[]) {
+                if (p.zoneId != zone.id) continue;
+                final isTarget = p.pointNumber == pointNumber;
+                zonePoints.add(
+                  PositionedPoint(
+                    pointNumber: p.pointNumber,
+                    customName: p.customName,
+                    x: p.x,
+                    y: p.y,
+                    bodyView: p.bodyView,
+                    color: isTarget
+                        ? null
+                        : (p.isBlacklisted
+                            ? mutedColor
+                            : p.usageLevel.getColor(isDark)),
+                  ),
+                );
+              }
+            }
+
             return Column(
               children: [
                 Expanded(
@@ -309,7 +339,7 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
                           }
                         : null,
                     child: Padding(
-                      padding: const EdgeInsets.all(24),
+                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
                       child: Column(
                         children: [
                           Expanded(
@@ -322,9 +352,10 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
                               isScheduled: isScheduled,
                               pointNumber: pointNumber,
                               pointName: pointName,
+                              zonePoints: zonePoints,
                             ),
                           ),
-                          const SizedBox(height: 24),
+                          const SizedBox(height: 16),
                           if (zone != null)
                             Text(
                               isScheduled
@@ -341,11 +372,55 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
                     ),
                   ),
                 ),
+                _silhouetteWeekStrip(context),
               ],
             );
           },
         );
       },
+    );
+  }
+
+  /// Mini widget "Questa settimana" mostrato sotto la silhouette, ancorato in
+  /// basso. Riusa gli stessi pallini di stato della vista Settimana; tocca un
+  /// giorno per aprire il dettaglio dell'iniezione.
+  Widget _silhouetteWeekStrip(BuildContext context) {
+    final now = DateTime.now();
+    final weekStart = now.subtract(Duration(days: now.weekday - 1));
+    final startOfWeek =
+        DateTime(weekStart.year, weekStart.month, weekStart.day);
+    final endOfWeek =
+        startOfWeek.add(const Duration(days: 6, hours: 23, minutes: 59));
+    final weekInjections = ref
+            .watch(
+              injectionsInRangeProvider((start: startOfWeek, end: endOfWeek)),
+            )
+            .asData
+            ?.value ??
+        const <db.Injection>[];
+    final wd = _weekData(weekInjections, startOfWeek);
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text('QUESTA SETTIMANA',
+              style: Theme.of(context).textTheme.labelMedium),
+          const SizedBox(height: 8),
+          AppCard(
+            child: WeekDots(
+              weekStart: startOfWeek,
+              statuses: wd.statuses,
+              counts: wd.counts,
+              onTapDay: (i) {
+                final id = wd.ids[i];
+                if (id != null) context.push('/injection/$id');
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -564,23 +639,34 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
         return;
       }
 
-      // Punto di partenza del pattern: se NON esiste alcuno storico (di
-      // qualsiasi stato), chiediamo all'utente da dove partire. Se lo storico
-      // c'è, la suggestion segue già dall'ultima iniezione registrata.
-      final history = await dbi.getAllInjections();
-      ({int zoneId, int pointNumber})? seed;
-      if (history.isEmpty) {
-        seed = await _askStartPoint();
-        if (!mounted) return;
-        if (seed == null) {
-          _showSnack('Pianificazione annullata');
-          return;
-        }
-      }
-
       final parts = plan.preferredTime.split(':');
       final hour = parts.length >= 2 ? int.tryParse(parts[0]) ?? 20 : 20;
       final minute = parts.length >= 2 ? int.tryParse(parts[1]) ?? 0 : 0;
+
+      // Punto di partenza del pattern: mostriamo SEMPRE una conferma con la
+      // rotazione attiva e il punto suggerito pre-compilato, così l'utente può
+      // verificare/correggere da dove parte la pianificazione. Con storico il
+      // suggerimento segue dall'ultima iniezione (qualsiasi stato); senza
+      // storico va scelta la zona di partenza.
+      final history = await dbi.getAllInjections();
+      final firstDay = daysToPlan.first;
+      final firstScheduledAt =
+          DateTime(firstDay.year, firstDay.month, firstDay.day, hour, minute);
+      ({int zoneId, int pointNumber})? suggestedStart;
+      if (history.isNotEmpty) {
+        suggestedStart = await ref.read(
+          suggestedPointForDateProvider(
+            (scheduledAt: firstScheduledAt, ignoreInjectionId: null),
+          ).future,
+        );
+        if (!mounted) return;
+      }
+      var seed = await _confirmStartPoint(suggested: suggestedStart);
+      if (!mounted) return;
+      if (seed == null) {
+        _showSnack('Pianificazione annullata');
+        return;
+      }
 
       // Log granulare: conferma che siamo arrivati oltre gli await pre-loop.
       DiagnosticLogService.instance.logEvent(
@@ -710,9 +796,92 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
       );
   }
 
-  /// Dialog per scegliere la zona/punto da cui far partire il pattern quando
-  /// non esiste alcuno storico. Ritorna null se annullato.
-  Future<({int zoneId, int pointNumber})?> _askStartPoint() async {
+  /// Conferma (pre-compilata) del punto di partenza della rotazione, mostrata
+  /// SEMPRE prima di pianificare. `suggested` è il punto che la rotazione
+  /// propone per il primo giorno da pianificare (null quando non c'è storico:
+  /// in tal caso si sceglie direttamente la zona). Mostra la rotazione attiva
+  /// e permette di confermare o cambiare il punto. Ritorna il punto da usare
+  /// come seed, oppure null se annullato.
+  Future<({int zoneId, int pointNumber})?> _confirmStartPoint({
+    required ({int zoneId, int pointNumber})? suggested,
+  }) async {
+    // Nome della rotazione attiva, mostrato per dare contesto.
+    String? rotationName;
+    try {
+      final activePlan = await ref.read(databaseProvider).getCurrentTherapyPlan();
+      rotationName = activePlan?.name;
+    } catch (_) {/* best-effort */}
+    if (!mounted) return null;
+
+    // Senza storico non c'è un suggerimento: scegli direttamente la zona.
+    if (suggested == null) {
+      return _pickStartZone(rotationName);
+    }
+
+    // Etichetta leggibile del punto suggerito (zona + nome/numero punto).
+    final suggestedLabel = await ref
+        .read(injectionRepositoryProvider)
+        .resolvePointLabel(suggested.zoneId, suggested.pointNumber);
+    if (!mounted) return null;
+
+    final muted = Theme.of(context).brightness == Brightness.dark
+        ? AppTokens.darkMuted
+        : AppTokens.lightMuted;
+
+    final choice = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Da quale punto partire?'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (rotationName != null && rotationName.isNotEmpty) ...[
+              Text(
+                'Rotazione: $rotationName',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: muted,
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
+            const Text('La pianificazione partirà da:'),
+            const SizedBox(height: 4),
+            Text(
+              suggestedLabel,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, 'cancel'),
+            child: const Text('Annulla'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, 'change'),
+            child: const Text('Cambia punto'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, 'confirm'),
+            child: const Text('Conferma'),
+          ),
+        ],
+      ),
+    );
+    if (!mounted) return null;
+    if (choice == 'confirm') return suggested;
+    if (choice == 'change') return _pickStartZone(rotationName);
+    return null;
+  }
+
+  /// Selettore della zona da cui far partire il pattern (punto 1 della zona).
+  /// Ritorna null se annullato o se non ci sono zone.
+  Future<({int zoneId, int pointNumber})?> _pickStartZone(
+    String? rotationName,
+  ) async {
     // Attende le zone (await), invece di leggere uno stato che potrebbe non
     // essere ancora caricato (asData null) e far uscire silenziosamente.
     List<model.BodyZone> zones;
@@ -722,14 +891,6 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
       zones = const <model.BodyZone>[];
     }
     if (zones.isEmpty || !mounted) return null;
-
-    // Nome della rotazione attiva, mostrato nel dialog per dare contesto.
-    String? rotationName;
-    try {
-      final activePlan = await ref.read(databaseProvider).getCurrentTherapyPlan();
-      rotationName = activePlan?.name;
-    } catch (_) {/* best-effort */}
-    if (!mounted) return null;
 
     return showDialog<({int zoneId, int pointNumber})>(
       context: context,
@@ -881,6 +1042,7 @@ class _MainCard extends StatefulWidget {
     this.isScheduled = false,
     this.pointNumber,
     this.pointName,
+    this.zonePoints = const <PositionedPoint>[],
   });
 
   final model.BodyZone? zone;
@@ -893,6 +1055,11 @@ class _MainCard extends StatefulWidget {
 
   /// Nome personalizzato del punto mostrato (se configurato).
   final String? pointName;
+
+  /// Tutti i punti della zona da disegnare sulla silhouette (colorati per
+  /// stato d'uso). Il punto da fare è quello in `pointNumber` ed è evidenziato
+  /// dall'editor. Se vuoto, si ripiega sulle posizioni di default.
+  final List<PositionedPoint> zonePoints;
 
   @override
   State<_MainCard> createState() => _MainCardState();
@@ -1000,25 +1167,20 @@ class _MainCardState extends State<_MainCard> {
                         final scale =
                             (constraints.maxHeight / 400).clamp(0.5, 0.6);
 
-                        final allPoints = generateDefaultPointPositions(
-                          zone.numberOfPoints,
-                          zone.type,
-                          zone.side,
-                        );
-
-                        final targetPoint = allPoints.firstWhere(
-                          (p) => p.pointNumber == displayPointNumber,
-                          orElse: () => allPoints.isNotEmpty
-                              ? allPoints.first
-                              : const PositionedPoint(
-                                  pointNumber: 1,
-                                  x: 0.5,
-                                  y: 0.5,
-                                ),
-                        );
+                        // Tutti i punti della zona (colorati per stato), così è
+                        // chiaro dove sta il punto da fare rispetto agli altri.
+                        // Fallback alle posizioni di default se i dati della
+                        // mappa non sono ancora pronti.
+                        final allPoints = widget.zonePoints.isNotEmpty
+                            ? widget.zonePoints
+                            : generateDefaultPointPositions(
+                                zone.numberOfPoints,
+                                zone.type,
+                                zone.side,
+                              );
 
                         return BodySilhouetteEditor(
-                          points: [targetPoint],
+                          points: allPoints,
                           onPointMoved: (p, x, y, v) {},
                           onPointTapped: (p) {},
                           selectedPointNumber: displayPointNumber,

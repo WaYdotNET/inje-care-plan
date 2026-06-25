@@ -1,5 +1,14 @@
 # Changelog
 
+## 4.16.0 - 2026-06-25
+
+### Aggiunto
+- **Backup automatico locale**: l'app può salvare automaticamente un backup completo nella **cartella che scegli tu** sul dispositivo, all'apertura dell'app quando è passato abbastanza tempo dall'ultimo (frequenza **giornaliera** o **settimanale**). Tutto **offline**, nessun cloud. Da Impostazioni → "Backup automatico": scegli la cartella, la frequenza, quanti backup conservare e — opzionale ma consigliato — la **cifratura AES-256 con password**. Disponibile su Android (su web resta il backup manuale).
+- **Ripristino dei backup cifrati**: "Ripristina da backup" accetta ora anche i file cifrati (`.enc`) e chiede la password per decifrarli.
+
+### Migliorato
+- **Backup davvero completo**: oltre a tutti i dati (iniezioni, zone, piani, punti, profilo) il backup include e ripristina anche **tutte le impostazioni** (notifiche, aspetto, backup automatico), così ripristinando torni allo stesso stato. Restano escluse, per sicurezza, le informazioni legate al singolo dispositivo (permessi, cartella scelta) e la password di cifratura.
+
 ## 4.15.0 - 2026-06-25
 
 ### Aggiunto

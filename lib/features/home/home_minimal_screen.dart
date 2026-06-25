@@ -16,6 +16,7 @@ import '../../models/body_zone.dart' as model;
 import '../../models/injection_record.dart' as inj;
 import '../../models/therapy_plan.dart';
 import '../../app/router.dart';
+import '../../core/services/auto_backup_provider.dart';
 import '../../core/services/diagnostic_log_service.dart';
 import '../../core/services/missed_injection_service.dart';
 import '../../core/services/notification_settings_provider.dart';
@@ -63,6 +64,8 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       ref.read(notificationSettingsProvider.notifier).refreshPermissionStatus();
+      // Ri-valuta il backup automatico alla ripresa dell'app.
+      ref.invalidate(autoBackupRunnerProvider);
     }
   }
 
@@ -78,6 +81,10 @@ class _HomeMinimalScreenState extends ConsumerState<HomeMinimalScreen>
 
     // Controlla iniezioni mancate all'avvio (una volta per sessione container)
     ref.watch(checkMissedInjectionsProvider);
+
+    // Backup automatico opportunistico: gira una volta per sessione (e di nuovo
+    // su resume, vedi didChangeAppLifecycleState). Non blocca la UI.
+    ref.watch(autoBackupRunnerProvider);
 
     final now = DateTime.now();
     final weekStart = now.subtract(Duration(days: now.weekday - 1));

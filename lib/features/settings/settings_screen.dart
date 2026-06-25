@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -7,12 +9,16 @@ import 'package:file_picker/file_picker.dart';
 import '../../core/theme/app_tokens.dart';
 import '../../core/theme/theme_provider.dart';
 import '../info/info_screen.dart' show packageInfoProvider;
+import '../../core/services/auto_backup_provider.dart';
+import '../../core/services/auto_backup_service.dart';
 import '../../core/services/backup_service.dart';
+import '../../core/services/crypto_service.dart';
 import '../../core/services/export_service.dart';
 import '../../core/services/import_service.dart';
 import '../../core/services/notification_settings_provider.dart';
 import 'diagnostic_screen.dart';
 import 'reminder_calendar_screen.dart';
+import '../../core/utils/picked_file_to_bytes.dart';
 import '../../core/utils/picked_file_to_string.dart';
 import '../../core/database/app_database.dart' as db;
 import '../../core/database/database_provider.dart';
@@ -24,6 +30,7 @@ import '../auth/auth_provider.dart';
 import '../home/home_layout_provider.dart';
 import '../injection/injection_provider.dart';
 import '../injection/point_selection_style_provider.dart';
+import 'widgets/auto_backup_section.dart';
 
 /// Settings screen
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -268,6 +275,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             titleColor: isDark ? AppTokens.dangerDark : AppTokens.dangerLight,
             onTap: () => _showDeleteConfirmation(context),
           ),
+
+          const AutoBackupSection(),
 
           const _SectionHeader(title: 'AIUTO'),
           _SettingsTile(
@@ -924,11 +933,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     try {
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
-        allowedExtensions: ['json'],
+        allowedExtensions: ['json', 'enc'],
         allowMultiple: false,
       );
 
       if (result == null || result.files.isEmpty) return;
+
+      // Risolve il contenuto: i backup cifrati (.enc) vanno decifrati con la
+      // password (quella salvata o chiesta all'utente) prima dell'import.
+      final pickedFile = result.files.first;
+      final String content;
+      if (AutoBackupService.isEncryptedBackup(pickedFile.name)) {
+        final decrypted = await _decryptPickedBackup(pickedFile);
+        if (decrypted == null) return; // annullato o errore già notificato
+        content = decrypted;
+      } else {
+        content = await readPickedFileAsString(pickedFile);
+      }
 
       // Scegli strategia
       final strategy = await showDialog<ImportStrategy>(
@@ -976,7 +997,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         );
       }
 
-      final content = await readPickedFileAsString(result.files.first);
       final importResult = await BackupService.instance.importBackup(
         db,
         content,
@@ -1048,6 +1068,64 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         );
       }
     }
+  }
+
+  /// Decifra un backup `.enc` scelto. Prova la password salvata; se assente o
+  /// errata la chiede all'utente (con possibilità di riprovare). Ritorna il
+  /// JSON in chiaro, oppure null se l'utente annulla.
+  Future<String?> _decryptPickedBackup(PlatformFile file) async {
+    final bytes = await readPickedFileAsBytes(file);
+    final crypto = CryptoService();
+
+    final stored =
+        await ref.read(autoBackupSettingsProvider.notifier).readPassword();
+    if (stored != null &&
+        stored.isNotEmpty &&
+        crypto.verifyPassword(bytes, stored)) {
+      return utf8.decode(crypto.decryptBytesWithPassword(bytes, stored));
+    }
+
+    while (mounted) {
+      final pwd = await _askDecryptPassword();
+      if (pwd == null) return null; // annullato
+      if (crypto.verifyPassword(bytes, pwd)) {
+        return utf8.decode(crypto.decryptBytesWithPassword(bytes, pwd));
+      }
+      if (!mounted) return null;
+      ScaffoldMessenger.of(context)
+        ..clearSnackBars()
+        ..showSnackBar(const SnackBar(content: Text('Password errata')));
+    }
+    return null;
+  }
+
+  Future<String?> _askDecryptPassword() {
+    final controller = TextEditingController();
+    return showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Backup cifrato'),
+        content: TextField(
+          controller: controller,
+          obscureText: true,
+          autofocus: true,
+          decoration: const InputDecoration(
+            labelText: 'Password del backup',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Annulla'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, controller.text),
+            child: const Text('Decifra'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showDeleteConfirmation(BuildContext context) {

@@ -931,9 +931,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final db = ref.read(databaseProvider);
 
     try {
+      // FileType.any: i backup cifrati hanno estensione .json.enc e su Android
+      // il selettore SAF, filtrando per MIME, disabiliterebbe i .enc con un
+      // filtro custom. Il contenuto viene comunque validato/decifrato dopo.
       final result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['json', 'enc'],
+        type: FileType.any,
         allowMultiple: false,
       );
 
@@ -1103,28 +1105,42 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final controller = TextEditingController();
     return showDialog<String>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Backup cifrato'),
-        content: TextField(
-          controller: controller,
-          obscureText: true,
-          autofocus: true,
-          decoration: const InputDecoration(
-            labelText: 'Password del backup',
-            border: OutlineInputBorder(),
+      builder: (ctx) {
+        var obscure = true;
+        return StatefulBuilder(
+          builder: (ctx, setLocal) => AlertDialog(
+            title: const Text('Backup cifrato'),
+            content: TextField(
+              controller: controller,
+              obscureText: obscure,
+              autofocus: true,
+              decoration: InputDecoration(
+                labelText: 'Password del backup',
+                border: const OutlineInputBorder(),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    obscure
+                        ? PhosphorIconsDuotone.eye
+                        : PhosphorIconsDuotone.eyeSlash,
+                  ),
+                  tooltip: obscure ? 'Mostra' : 'Nascondi',
+                  onPressed: () => setLocal(() => obscure = !obscure),
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Annulla'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx, controller.text),
+                child: const Text('Decifra'),
+              ),
+            ],
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Annulla'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, controller.text),
-            child: const Text('Decifra'),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 

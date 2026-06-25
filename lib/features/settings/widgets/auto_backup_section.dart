@@ -220,16 +220,23 @@ class _AutoBackupSectionState extends ConsumerState<AutoBackupSection> {
   }
 
   Future<void> _setPassword() async {
-    await _promptPassword();
+    // Pre-compila con la password salvata: così, se l'utente l'ha dimenticata,
+    // può rivelarla (occhio) e recuperarla — è custodita nel secure storage del
+    // dispositivo. Per i backup già cifrati la password non è altrimenti
+    // recuperabile altrove (è la natura della cifratura).
+    final current = await _controller.readPassword();
+    if (!mounted) return;
+    await _promptPassword(initial: current);
   }
 
   /// Mostra il dialog di impostazione password. Ritorna true se salvata.
-  Future<bool> _promptPassword() async {
-    final controllerText = TextEditingController();
+  Future<bool> _promptPassword({String? initial}) async {
+    final controllerText = TextEditingController(text: initial ?? '');
     final saved = await showDialog<bool>(
       context: context,
       builder: (ctx) {
         String? error;
+        var obscure = true;
         return StatefulBuilder(
           builder: (ctx, setLocal) => AlertDialog(
             title: const Text('Password di cifratura'),
@@ -237,18 +244,28 @@ class _AutoBackupSectionState extends ConsumerState<AutoBackupSection> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Text(
-                  'Se la perdi, i backup cifrati non saranno ripristinabili.',
+                  'Se la perdi, i backup cifrati non saranno ripristinabili. '
+                  'Tocca l’occhio per rivedere quella salvata.',
                   style: TextStyle(fontSize: 13),
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: controllerText,
-                  obscureText: true,
+                  obscureText: obscure,
                   autofocus: true,
                   decoration: InputDecoration(
                     labelText: 'Password (min 8 caratteri)',
                     errorText: error,
                     border: const OutlineInputBorder(),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        obscure
+                            ? PhosphorIconsDuotone.eye
+                            : PhosphorIconsDuotone.eyeSlash,
+                      ),
+                      tooltip: obscure ? 'Mostra' : 'Nascondi',
+                      onPressed: () => setLocal(() => obscure = !obscure),
+                    ),
                   ),
                 ),
               ],

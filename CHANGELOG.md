@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.16.1 - 2026-06-25
+
+### Corretto
+- **Ripristino dei backup cifrati**: il selettore file ora mostra e permette di scegliere anche i backup cifrati (`.enc`), che su Android risultavano non selezionabili.
+- **Password visibile e recuperabile**: i campi password (sia in fase di ripristino sia di impostazione) hanno ora il pulsante **occhio** per mostrarla mentre la si digita. Inoltre la schermata "Password di cifratura" del backup automatico **ripropone la password salvata**, così se l'hai dimenticata puoi rivederla sul tuo dispositivo. Sullo stesso dispositivo, i backup cifrati vengono decifrati automaticamente con la password salvata.
+
 ## 4.16.0 - 2026-06-25
 
 ### Aggiunto

@@ -1,5 +1,14 @@
 # Changelog
 
+## 4.15.0 - 2026-06-25
+
+### Aggiunto
+- **Tutti i punti della zona sulla silhouette in Home**: nella vista Silhouette la mappa del corpo mostra ora **tutti i punti della zona**, colorati per stato d'uso (verde = disponibile, ambra = usato di recente, rosso = da evitare, grigio = escluso) e con il **nome personalizzato** quando configurato. Il punto da fare resta evidenziato in viola, così è subito chiaro quale sia il punto esatto rispetto agli altri — come nella schermata di selezione punto.
+- **Widget "Questa settimana" anche nella vista Silhouette**: i pallini dei 7 giorni con lo stato di ogni iniezione (come nella vista Settimana) sono ora ancorati in fondo alla Home Silhouette e toccabili per aprire il dettaglio del giorno.
+
+### Corretto
+- **Conferma del punto di partenza nella pianificazione**: pianificando i prossimi 7 o 30 giorni viene ora **sempre** mostrata una conferma con la **rotazione attiva** e il **punto di partenza suggerito** (pre-compilato), con la possibilità di confermarlo o cambiarlo. Prima, in presenza di storico, la rotazione proseguiva in automatico senza dare modo di verificare da quale punto ripartire.
+
 ## 4.14.0 - 2026-06-18
 
 ### Aggiunto

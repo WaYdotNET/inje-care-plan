@@ -364,5 +364,49 @@ void main() {
       expect(prefs.getString('home_layout'), 'silhouette');
       expect(prefs.getString('point_selection_style'), 'classic');
     });
+
+    test('backup completo: include notifiche e backup automatico (tipizzati), '
+        'esclude le chiavi specifiche del dispositivo', () async {
+      TestWidgetsFlutterBinding.ensureInitialized();
+      SharedPreferences.setMockInitialValues({
+        'notification_enabled': true,
+        'notification_minutes_before': 45,
+        'auto_backup_enabled': true,
+        'auto_backup_retention': 14,
+        // Chiavi device-specific: NON devono finire nel backup.
+        'auto_backup_destination_token': 'content://tree/primary%3ADocuments',
+        'notification_permissions_granted': true,
+      });
+      final data = await BackupService.instance.generateBackupJson(db);
+      final prefs = data['preferences'] as Map<String, dynamic>;
+      expect(prefs['notification_enabled'], true);
+      expect(prefs['notification_minutes_before'], 45);
+      expect(prefs['auto_backup_enabled'], true);
+      expect(prefs['auto_backup_retention'], 14);
+      expect(prefs.containsKey('auto_backup_destination_token'), isFalse);
+      expect(prefs.containsKey('notification_permissions_granted'), isFalse);
+    });
+
+    test('importBackup ripristina preferenze tipizzate (bool/int)', () async {
+      TestWidgetsFlutterBinding.ensureInitialized();
+      SharedPreferences.setMockInitialValues({});
+      final backup = {
+        'version': 2,
+        'createdAt': DateTime.now().toIso8601String(),
+        'bodyZones': <dynamic>[],
+        'therapyPlans': <dynamic>[],
+        'injections': <dynamic>[],
+        'preferences': {
+          'notification_enabled': false,
+          'notification_minutes_before': 30,
+          'auto_backup_encrypted': true,
+        },
+      };
+      await BackupService.instance.importBackup(db, jsonEncode(backup));
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getBool('notification_enabled'), false);
+      expect(prefs.getInt('notification_minutes_before'), 30);
+      expect(prefs.getBool('auto_backup_encrypted'), true);
+    });
   });
 }

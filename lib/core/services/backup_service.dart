@@ -40,12 +40,30 @@ class BackupService {
 
   static const _backupVersion = 2;
 
+  /// Chiavi SharedPreferences incluse nel backup. Sono TUTTE le preferenze
+  /// significative dell'app (aspetto, notifiche, backup automatico), così il
+  /// ripristino riporta l'app allo stesso stato. Sono volutamente ESCLUSE le
+  /// chiavi specifiche del dispositivo (permessi OS, id calendario, cartella di
+  /// destinazione/ultimo backup, flag di onboarding/migrazione) e i segreti
+  /// (la password di cifratura vive nel secure storage, mai nel file).
   static const _prefKeys = [
+    // Aspetto / layout
     'home_layout',
     'point_selection_style',
     'theme_mode',
     'app_theme_mode',
     'scheduled_dark_mode_config',
+    // Notifiche (escluso notification_permissions_granted: stato OS)
+    'notification_enabled',
+    'notification_minutes_before',
+    'notification_missed_dose',
+    'notification_overdue_grace_minutes',
+    'side_effects_reminder_hours',
+    // Backup automatico (escluse token/label/last: specifici del dispositivo)
+    'auto_backup_enabled',
+    'auto_backup_frequency',
+    'auto_backup_encrypted',
+    'auto_backup_retention',
   ];
 
   /// Chiave SharedPreferences usata da ReminderSettingsNotifier.
@@ -83,7 +101,10 @@ class BackupService {
     final sharedPrefs = await SharedPreferences.getInstance();
     final preferences = <String, dynamic>{};
     for (final key in _prefKeys) {
-      final value = sharedPrefs.getString(key);
+      // get() preserva il tipo nativo (bool/int/double/String/List): così
+      // anche le impostazioni non-stringa (notifiche, backup) finiscono nel
+      // backup e sono ripristinabili fedelmente.
+      final value = sharedPrefs.get(key);
       if (value != null) preferences[key] = value;
     }
 
@@ -576,14 +597,26 @@ class BackupService {
   Future<void> _restorePreferences(Map<String, dynamic> data) async {
     final prefs = await SharedPreferences.getInstance();
 
-    // Ripristina preferenze UI (layout, tema, ecc.)
+    // Ripristina le preferenze (aspetto, notifiche, backup) preservando il tipo.
     final raw = data['preferences'];
     if (raw is Map) {
       for (final entry in raw.entries) {
         final key = entry.key.toString();
+        if (!_prefKeys.contains(key)) continue;
         final value = entry.value;
-        if (_prefKeys.contains(key) && value is String) {
+        if (value is bool) {
+          await prefs.setBool(key, value);
+        } else if (value is int) {
+          await prefs.setInt(key, value);
+        } else if (value is double) {
+          await prefs.setDouble(key, value);
+        } else if (value is String) {
           await prefs.setString(key, value);
+        } else if (value is List) {
+          await prefs.setStringList(
+            key,
+            value.map((e) => e.toString()).toList(),
+          );
         }
       }
     }
